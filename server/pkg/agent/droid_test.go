@@ -17,20 +17,27 @@ func TestNewReturnsDroidBackend(t *testing.T) {
 
 func TestDroidToolNameFromTitle(t *testing.T) {
 	t.Parallel()
+	// Names mirror what `droid exec --output-format stream-json` emits in
+	// its system/init event under the `tools` array — see the help output
+	// of `droid exec` for the canonical list.
 	tests := []struct {
 		title string
 		want  string
 	}{
-		{"Read file: /tmp/foo.go", "read_file"},
-		{"Write: /tmp/bar.go", "write_file"},
-		{"Patch: /tmp/x", "edit_file"},
-		{"Shell: ls -la", "terminal"},
-		{"Run command: pwd", "terminal"},
-		{"grep", "search_files"},
-		{"Glob: *.go", "glob"},
-		{"Code", "code"},
-		{"Todo List", "todo_write"},
-		{"Custom Thing", "custom_thing"},
+		{"Read", "read_file"},
+		{"Create", "write_file"},
+		{"Edit", "edit_file"},
+		{"ApplyPatch", "edit_file"},
+		{"Execute", "terminal"},
+		{"Grep", "search_files"},
+		{"Glob", "glob"},
+		{"LS", "list_files"},
+		{"WebSearch", "web_search"},
+		{"FetchUrl", "web_fetch"},
+		{"TodoWrite", "todo_write"},
+		{"AskUser", "ask_user"},
+		{"Task", "task"},
+		{"GenerateDroid", "generatedroid"}, // not in mapping → snake_case lowercased
 		{"", ""},
 	}
 	for _, tt := range tests {
