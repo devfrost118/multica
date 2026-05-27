@@ -234,7 +234,7 @@ var launchHeaders = map[string]string{
 	"codex":       "codex app-server",
 	"copilot":     "copilot (json)",
 	"cursor":      "cursor-agent (stream-json)",
-	"droid":       "droid acp",
+	"droid":       "droid exec (stream-json)",
 	"hermes":      "hermes acp",
 	"kimi":        "kimi acp",
 	"kiro":        "kiro-cli acp",
