@@ -3,33 +3,61 @@ package agent
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os/exec"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
 // droidBlockedArgs are flags hardcoded by the daemon that must not be
-// overridden by user-configured custom_args. `--output-format` pins the ACP
-// transport this backend depends on, and `--resume` is owned by the daemon
-// via ExecOptions.ResumeSessionID so a custom_args override would race with
-// our explicit session/load call.
+// overridden by user-configured custom_args. --output-format pins the
+// stream-json transport this backend depends on, --input-format and
+// --session-id / -s / --fork are owned by Multica via ExecOptions.
 var droidBlockedArgs = map[string]blockedArgMode{
+	"-o":              blockedWithValue,
 	"--output-format": blockedWithValue,
-	"--resume":        blockedWithValue,
+	"--input-format":  blockedWithValue,
+	"-s":              blockedWithValue,
+	"--session-id":    blockedWithValue,
+	"--fork":          blockedWithValue,
 }
 
-// droidBackend implements Backend by spawning `droid --output-format acp` and
-// communicating via the standard ACP JSON-RPC 2.0 transport over stdin/stdout.
+// droidBackend implements Backend by spawning `droid exec` with
+// stream-json output. Unlike Hermes/Kimi/Kiro, droid does NOT speak
+// the Agent Client Protocol — its native streaming format is its own
+// NDJSON schema (see droidStreamEvent below).
 //
-// Factory.ai's droid CLI advertises ACP natively (the same protocol Hermes /
-// Kimi / Kiro speak), so the existing hermesClient drives it with only
-// provider-specific launch and tool-name normalization.
+// Each backend invocation is a fresh `droid exec` process; multi-turn
+// continuation happens via ExecOptions.ResumeSessionID → `-s <id>`.
 type droidBackend struct {
 	cfg Config
+}
+
+// droidStreamEvent is one parsed line from `droid exec --output-format
+// stream-json`. Only the union of fields we consume is modeled; unknown
+// fields are ignored.
+type droidStreamEvent struct {
+	Type      string          `json:"type"`
+	Subtype   string          `json:"subtype,omitempty"`
+	SessionID string          `json:"session_id,omitempty"`
+	Role      string          `json:"role,omitempty"`
+	Text      string          `json:"text,omitempty"`
+	FinalText string          `json:"finalText,omitempty"`
+	Name      string          `json:"name,omitempty"`
+	ID        string          `json:"id,omitempty"`
+	ToolUseID string          `json:"tool_use_id,omitempty"`
+	Input     json.RawMessage `json:"input,omitempty"`
+	Output    string          `json:"output,omitempty"`
+	NumTurns  int             `json:"numTurns,omitempty"`
+	Usage     *struct {
+		InputTokens         int64 `json:"input_tokens"`
+		OutputTokens        int64 `json:"output_tokens"`
+		CacheReadTokens     int64 `json:"cache_read_input_tokens"`
+		CacheCreationTokens int64 `json:"cache_creation_input_tokens"`
+	} `json:"usage,omitempty"`
 }
 
 func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOptions) (*Session, error) {
@@ -47,15 +75,30 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	}
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 
-	// TODO: confirm against `droid --help` whether the canonical ACP-server
-	// invocation is `droid --output-format acp` (as documented), `droid acp`,
-	// or `droid exec --output-format acp`. The flag form matches Factory.ai
-	// docs at https://docs.factory.ai/cli — adapt here if the actual binary
-	// differs.
-	droidArgs := append([]string{"--output-format", "acp"}, filterCustomArgs(opts.CustomArgs, droidBlockedArgs, b.cfg.Logger)...)
-	cmd := exec.CommandContext(runCtx, execPath, droidArgs...)
+	args := []string{"exec", "--output-format", "stream-json", "--auto", "medium"}
+	if opts.Cwd != "" {
+		args = append(args, "--cwd", opts.Cwd)
+	}
+	if opts.Model != "" {
+		args = append(args, "--model", opts.Model)
+	}
+	if opts.ResumeSessionID != "" {
+		args = append(args, "-s", opts.ResumeSessionID)
+	}
+	args = append(args, filterCustomArgs(opts.CustomArgs, droidBlockedArgs, b.cfg.Logger)...)
+
+	// Final positional: the prompt itself. droid exec takes prompt as
+	// a positional argument; SystemPrompt is folded in by daemon.go
+	// (providerNeedsInlineSystemPrompt is true for droid).
+	userText := prompt
+	if opts.SystemPrompt != "" {
+		userText = opts.SystemPrompt + "\n\n---\n\n" + prompt
+	}
+	args = append(args, userText)
+
+	cmd := exec.CommandContext(runCtx, execPath, args...)
 	hideAgentWindow(cmd)
-	b.cfg.Logger.Info("agent command", "exec", execPath, "args", droidArgs)
+	b.cfg.Logger.Info("agent command", "exec", execPath, "args_count", len(args))
 	if opts.Cwd != "" {
 		cmd.Dir = opts.Cwd
 	}
@@ -66,16 +109,6 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		cancel()
 		return nil, fmt.Errorf("droid stdout pipe: %w", err)
 	}
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		cancel()
-		return nil, fmt.Errorf("droid stdin pipe: %w", err)
-	}
-	// StderrPipe + an explicit copier give us a join point
-	// (`stderrDone`) that fires before the failure-promotion
-	// decision; see the matching comment in hermes.go for why the
-	// io.MultiWriter form races with stopReason=end_turn under load.
-	providerErr := newACPProviderErrorSniffer("droid")
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		cancel()
@@ -87,60 +120,34 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		return nil, fmt.Errorf("start droid: %w", err)
 	}
 
-	stderrSink := io.MultiWriter(newLogWriter(b.cfg.Logger, "[droid:stderr] "), providerErr)
 	stderrDone := make(chan struct{})
 	go func() {
 		defer close(stderrDone)
-		_, _ = io.Copy(stderrSink, stderr)
+		_, _ = io.Copy(newLogWriter(b.cfg.Logger, "[droid:stderr] "), stderr)
 	}()
 
-	b.cfg.Logger.Info("droid acp started", "pid", cmd.Process.Pid, "cwd", opts.Cwd)
+	b.cfg.Logger.Info("droid exec started", "pid", cmd.Process.Pid, "cwd", opts.Cwd, "model", opts.Model)
 
 	msgCh := make(chan Message, 256)
 	resCh := make(chan Result, 1)
 
-	var outputMu sync.Mutex
-	var output strings.Builder
-	var streamingCurrentTurn atomic.Bool
-
-	promptDone := make(chan hermesPromptResult, 1)
-
-	c := &hermesClient{
-		cfg:          b.cfg,
-		stdin:        stdin,
-		pending:      make(map[int]*pendingRPC),
-		pendingTools: make(map[string]*pendingToolCall),
-		acceptNotification: func(string) bool {
-			return streamingCurrentTurn.Load()
-		},
-		onMessage: func(msg Message) {
-			if !streamingCurrentTurn.Load() {
-				return
-			}
-			if msg.Type == MessageToolUse {
-				msg.Tool = droidToolNameFromTitle(msg.Tool)
-			}
-			if msg.Type == MessageText {
-				outputMu.Lock()
-				output.WriteString(msg.Content)
-				outputMu.Unlock()
-			}
-			trySend(msgCh, msg)
-		},
-		onPromptDone: func(result hermesPromptResult) {
-			if !streamingCurrentTurn.Load() {
-				return
-			}
-			select {
-			case promptDone <- result:
-			default:
-			}
-		},
-	}
-
-	readerDone := make(chan struct{})
 	go func() {
-		defer close(readerDone)
+		defer cancel()
+		defer close(msgCh)
+		defer close(resCh)
+		defer func() {
+			_ = cmd.Wait()
+		}()
+
+		startTime := time.Now()
+		var outputMu sync.Mutex
+		var outputBuf strings.Builder
+		var sessionID string
+		var finalUsage TokenUsage
+		var finalModel string
+		finalStatus := "completed"
+		var finalError string
+
 		scanner := bufio.NewScanner(stdout)
 		scanner.Buffer(make([]byte, 0, 1024*1024), 10*1024*1024)
 		for scanner.Scan() {
@@ -148,179 +155,110 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 			if line == "" {
 				continue
 			}
-			c.handleLine(line)
-		}
-		c.closeAllPending(fmt.Errorf("droid process exited"))
-	}()
-
-	go func() {
-		defer cancel()
-		defer close(msgCh)
-		defer close(resCh)
-		defer func() {
-			stdin.Close()
-			_ = cmd.Wait()
-		}()
-
-		startTime := time.Now()
-		finalStatus := "completed"
-		var finalError string
-		var sessionID string
-
-		_, err := c.request(runCtx, "initialize", map[string]any{
-			"protocolVersion": 1,
-			"clientInfo": map[string]any{
-				"name":    "multica-agent-sdk",
-				"version": "0.2.0",
-			},
-			"clientCapabilities": map[string]any{},
-		})
-		if err != nil {
-			finalStatus = "failed"
-			finalError = fmt.Sprintf("droid initialize failed: %v", err)
-			resCh <- Result{Status: finalStatus, Error: finalError, DurationMs: time.Since(startTime).Milliseconds()}
-			return
-		}
-
-		cwd := opts.Cwd
-		if cwd == "" {
-			cwd = "."
-		}
-
-		if opts.ResumeSessionID != "" {
-			result, err := c.request(runCtx, "session/load", map[string]any{
-				"cwd":        cwd,
-				"sessionId":  opts.ResumeSessionID,
-				"mcpServers": []any{},
-			})
-			if err != nil {
-				finalStatus = "failed"
-				finalError = fmt.Sprintf("droid session/load failed: %v", err)
-				resCh <- Result{Status: finalStatus, Error: finalError, DurationMs: time.Since(startTime).Milliseconds()}
-				return
+			var ev droidStreamEvent
+			if err := json.Unmarshal([]byte(line), &ev); err != nil {
+				b.cfg.Logger.Warn("droid: unparseable stream line", "line", line, "err", err)
+				continue
 			}
-			var changed bool
-			sessionID, changed = resolveResumedSessionID(opts.ResumeSessionID, result)
-			if changed {
-				b.cfg.Logger.Warn("agent returned a different session id on resume — original was likely lost; continuing with the new id",
-					"backend", "droid",
-					"requested", opts.ResumeSessionID,
-					"actual", sessionID,
-				)
+			if ev.SessionID != "" && sessionID == "" {
+				sessionID = ev.SessionID
 			}
-		} else {
-			result, err := c.request(runCtx, "session/new", map[string]any{
-				"cwd":        cwd,
-				"mcpServers": []any{},
-			})
-			if err != nil {
-				finalStatus = "failed"
-				finalError = fmt.Sprintf("droid session/new failed: %v", err)
-				resCh <- Result{Status: finalStatus, Error: finalError, DurationMs: time.Since(startTime).Milliseconds()}
-				return
-			}
-			sessionID = extractACPSessionID(result)
-			if sessionID == "" {
-				finalStatus = "failed"
-				finalError = "droid session/new returned no session ID"
-				resCh <- Result{Status: finalStatus, Error: finalError, DurationMs: time.Since(startTime).Milliseconds()}
-				return
-			}
-		}
 
-		c.sessionID = sessionID
-		b.cfg.Logger.Info("droid session created", "session_id", sessionID)
-
-		if opts.Model != "" {
-			if _, err := c.request(runCtx, "session/set_model", map[string]any{
-				"sessionId": sessionID,
-				"modelId":   opts.Model,
-			}); err != nil {
-				b.cfg.Logger.Warn("droid set_session_model failed", "error", err, "requested_model", opts.Model)
-				finalStatus = "failed"
-				finalError = fmt.Sprintf("droid could not switch to model %q: %v", opts.Model, err)
-				resCh <- Result{
-					Status:     finalStatus,
-					Error:      finalError,
-					DurationMs: time.Since(startTime).Milliseconds(),
-					SessionID:  sessionID,
+			switch ev.Type {
+			case "system":
+				// init: capture model + session, nothing to emit to UI
+				if ev.Subtype == "init" {
+					b.cfg.Logger.Info("droid session opened", "session_id", ev.SessionID, "model", droidModelFromEvent(line))
 				}
-				return
-			}
-			b.cfg.Logger.Info("droid session model set", "model", opts.Model)
-		}
-
-		userText := prompt
-		if opts.SystemPrompt != "" {
-			userText = opts.SystemPrompt + "\n\n---\n\n" + prompt
-		}
-
-		promptBlocks := []map[string]any{
-			{"type": "text", "text": userText},
-		}
-		// Send both `content` and `prompt` for the same defensive reason
-		// kiro/kimi do — different ACP implementations have landed on
-		// different canonical field names and accepting both keeps us
-		// forward-compatible.
-		streamingCurrentTurn.Store(true)
-		_, err = c.request(runCtx, "session/prompt", map[string]any{
-			"sessionId": sessionID,
-			"content":   promptBlocks,
-			"prompt":    promptBlocks,
-		})
-		if err != nil {
-			if runCtx.Err() == context.DeadlineExceeded {
-				finalStatus = "timeout"
-				finalError = fmt.Sprintf("droid timed out after %s", timeout)
-			} else if runCtx.Err() == context.Canceled {
-				finalStatus = "aborted"
-				finalError = "execution cancelled"
-			} else {
-				finalStatus = "failed"
-				finalError = fmt.Sprintf("droid session/prompt failed: %v", err)
-			}
-		} else {
-			select {
-			case pr := <-promptDone:
-				if pr.stopReason == "cancelled" {
-					finalStatus = "aborted"
-					finalError = "droid cancelled the prompt"
+			case "message":
+				if ev.Role == "assistant" && ev.Text != "" {
+					outputMu.Lock()
+					outputBuf.WriteString(ev.Text)
+					outputMu.Unlock()
+					trySend(msgCh, Message{Type: MessageText, Content: ev.Text})
 				}
-				c.usageMu.Lock()
-				c.usage.InputTokens += pr.usage.InputTokens
-				c.usage.OutputTokens += pr.usage.OutputTokens
-				c.usageMu.Unlock()
-			default:
+				// role=user is an echo of our own prompt — skip.
+			case "tool_use":
+				input := map[string]any{}
+				if len(ev.Input) > 0 {
+					_ = json.Unmarshal(ev.Input, &input)
+				}
+				trySend(msgCh, Message{
+					Type:   MessageToolUse,
+					Tool:   droidToolNameFromTitle(ev.Name),
+					CallID: ev.ID,
+					Input:  input,
+				})
+			case "tool_result":
+				trySend(msgCh, Message{
+					Type:   MessageToolResult,
+					CallID: ev.ToolUseID,
+					Output: ev.Output,
+				})
+			case "completion":
+				if ev.FinalText != "" {
+					outputMu.Lock()
+					if outputBuf.Len() == 0 {
+						outputBuf.WriteString(ev.FinalText)
+					}
+					outputMu.Unlock()
+				}
+				if ev.Usage != nil {
+					finalUsage = TokenUsage{
+						InputTokens:     ev.Usage.InputTokens,
+						OutputTokens:    ev.Usage.OutputTokens,
+						CacheReadTokens: ev.Usage.CacheReadTokens,
+					}
+				}
+			case "error":
+				finalStatus = "failed"
+				if ev.Text != "" {
+					finalError = ev.Text
+				} else {
+					finalError = "droid emitted an error event"
+				}
 			}
 		}
+		if err := scanner.Err(); err != nil {
+			b.cfg.Logger.Warn("droid: stdout scan error", "err", err)
+		}
 
-		duration := time.Since(startTime)
-		b.cfg.Logger.Info("droid finished", "pid", cmd.Process.Pid, "status", finalStatus, "duration", duration.Round(time.Millisecond).String())
-
-		stdin.Close()
-		cancel()
-
-		<-readerDone
 		<-stderrDone
 
+		// If the context expired mid-stream, surface a precise reason
+		// even if droid happened to exit cleanly.
+		if runCtx.Err() == context.DeadlineExceeded {
+			finalStatus = "timeout"
+			finalError = fmt.Sprintf("droid timed out after %s", timeout)
+		} else if runCtx.Err() == context.Canceled && finalStatus == "completed" {
+			finalStatus = "aborted"
+			finalError = "execution cancelled"
+		}
+
 		outputMu.Lock()
-		finalOutput := output.String()
+		finalOutput := outputBuf.String()
 		outputMu.Unlock()
 
-		finalStatus, finalError = promoteACPResultOnProviderError(finalStatus, finalError, finalOutput, providerErr)
-
-		c.usageMu.Lock()
-		u := c.usage
-		c.usageMu.Unlock()
-
 		var usageMap map[string]TokenUsage
-		if u.InputTokens > 0 || u.OutputTokens > 0 || u.CacheReadTokens > 0 {
+		if finalUsage.InputTokens > 0 || finalUsage.OutputTokens > 0 || finalUsage.CacheReadTokens > 0 {
 			model := opts.Model
+			if model == "" {
+				model = finalModel
+			}
 			if model == "" {
 				model = "unknown"
 			}
-			usageMap = map[string]TokenUsage{model: u}
+			usageMap = map[string]TokenUsage{model: finalUsage}
 		}
+
+		duration := time.Since(startTime)
+		b.cfg.Logger.Info("droid finished",
+			"pid", cmd.Process.Pid,
+			"status", finalStatus,
+			"duration", duration.Round(time.Millisecond).String(),
+			"session_id", sessionID,
+			"output_bytes", len(finalOutput),
+		)
 
 		resCh <- Result{
 			Status:     finalStatus,
@@ -335,43 +273,55 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	return &Session{Messages: msgCh, Result: resCh}, nil
 }
 
-// droidToolNameFromTitle normalizes Factory.ai droid's tool titles into the
-// canonical Multica names. The mapping mirrors kiroToolNameFromTitle since
-// droid emits ACP tool calls under similar human-readable labels; if a real
-// droid run surfaces different titles, extend the switch.
+// droidModelFromEvent pulls a "model" field out of a raw JSON line
+// without re-parsing the full event — used only for the init log line
+// so we can record which model the session opened with.
+func droidModelFromEvent(line string) string {
+	var m struct {
+		Model string `json:"model"`
+	}
+	_ = json.Unmarshal([]byte(line), &m)
+	return m.Model
+}
+
+// droidToolNameFromTitle normalizes Factory.ai droid's built-in tool
+// names (from the stream-json init event's `tools` list) into the
+// canonical Multica names used by the UI.
 func droidToolNameFromTitle(title string) string {
 	t := strings.TrimSpace(title)
 	if t == "" {
 		return ""
 	}
-
 	if idx := strings.Index(t, ":"); idx > 0 {
 		t = strings.TrimSpace(t[:idx])
 	}
-
-	lower := strings.ToLower(t)
-	switch lower {
-	case "read", "read file":
+	switch t {
+	case "Read":
 		return "read_file"
-	case "write", "write file":
+	case "Create":
 		return "write_file"
-	case "edit", "patch":
+	case "Edit", "ApplyPatch":
 		return "edit_file"
-	case "shell", "bash", "terminal", "run command", "run shell command":
+	case "Execute":
 		return "terminal"
-	case "grep", "search", "find":
+	case "Grep":
 		return "search_files"
-	case "glob":
+	case "Glob":
 		return "glob"
-	case "code":
-		return "code"
-	case "web search":
+	case "LS":
+		return "list_files"
+	case "WebSearch":
 		return "web_search"
-	case "fetch", "web fetch":
+	case "FetchUrl":
 		return "web_fetch"
-	case "todo", "todo write", "todo list", "todo_list":
+	case "TodoWrite":
 		return "todo_write"
+	case "AskUser":
+		return "ask_user"
+	case "Task":
+		return "task"
 	}
-
+	// Fallback: snake_case the original.
+	lower := strings.ToLower(t)
 	return strings.ReplaceAll(lower, " ", "_")
 }
