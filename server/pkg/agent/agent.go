@@ -271,7 +271,7 @@ var launchHeaders = map[string]string{
 	"copilot":     "copilot (json)",
 	"cursor":      "cursor-agent (stream-json)",
 	"deveco":      "deveco run (json)",
-	"droid":       "droid acp",
+	"droid":       "droid exec (stream-json)",
 	"hermes":      "hermes acp",
 	"kimi":        "kimi acp",
 	"kiro":        "kiro-cli acp",
