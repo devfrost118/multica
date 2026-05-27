@@ -218,6 +218,20 @@ function AntigravityLogo({ className }: { className: string }) {
   return <img src={antigravityLogoSrc} alt="Antigravity" className={className} />;
 }
 
+// Factory.ai droid CLI — placeholder mark (black rounded square with white "F").
+// Replace with the official Factory.ai brand asset when available.
+function DroidLogo({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <rect x="0" y="0" width="24" height="24" rx="5" fill="currentColor" />
+      <path
+        d="M8 6h9v2.6H10.4v3.1h5.7v2.6h-5.7V18H8z"
+        fill="#ffffff"
+      />
+    </svg>
+  );
+}
+
 // Kiro CLI — official icon sourced from kiro.dev/icon.svg.
 function KiroLogo({ className }: { className: string }) {
   const maskId = `kiro-logo-mask-${useId().replace(/:/g, "")}`;
@@ -317,6 +331,8 @@ export function ProviderLogo({
       return <KiroLogo className={className} />;
     case "qoder":
       return <QoderLogo className={className} />;
+    case "droid":
+      return <DroidLogo className={className} />;
     case "antigravity":
       return <AntigravityLogo className={className} />;
     case "traecli":
