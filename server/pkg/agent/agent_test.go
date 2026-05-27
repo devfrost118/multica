@@ -94,8 +94,8 @@ func TestLaunchHeaderCoversAllSupportedBackends(t *testing.T) {
 	// runtime the daemon actually spawns. If a new backend is added, add an
 	// entry to launchHeaders in agent.go and extend this list.
 	supported := []string{
-		"antigravity", "claude", "codebuddy", "codex", "copilot", "cursor", "gemini",
-		"hermes", "kimi", "kiro", "openclaw", "opencode", "pi",
+		"antigravity", "claude", "codebuddy", "codex", "copilot", "cursor", "droid",
+		"gemini", "hermes", "kimi", "kiro", "openclaw", "opencode", "pi",
 	}
 	for _, t_ := range supported {
 		if header := LaunchHeader(t_); header == "" {
