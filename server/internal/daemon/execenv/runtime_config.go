@@ -172,6 +172,7 @@ func formatProjectResource(r ProjectResourceForEnv) string {
 // For Antigravity: writes {workDir}/AGENTS.md  (agy CLI reads AGENTS.md natively; skills discovered natively from .agents/skills/ — see https://antigravity.google/docs/gcli-migration)
 // For Traecli:     writes {workDir}/AGENTS.md  (traecli reads .trae/rules/ not AGENTS.md, so the brief is delivered inline via providerNeedsInlineSystemPrompt; the file is written for parity/visibility only)
 // For Grok:        writes {workDir}/AGENTS.md  (Grok Build CLI reads AGENTS.md natively from the workdir)
+// For Droid:       writes {workDir}/AGENTS.md  (Factory.ai droid CLI reads AGENTS.md natively)
 func InjectRuntimeConfig(workDir, provider string, ctx TaskContextForEnv) (string, error) {
 	content := buildMetaSkillContent(provider, ctx)
 	path := runtimeConfigPath(workDir, provider)
@@ -198,7 +199,7 @@ func runtimeConfigPath(workDir, provider string) string {
 		// file"). CodeBuddy only reads CLAUDE.md if the user manually
 		// migrates/symlinks it in.
 		return filepath.Join(workDir, "CODEBUDDY.md")
-	case "codex", "copilot", "opencode", "deveco", "openclaw", "hermes", "pi", "cursor", "kimi", "kiro", "antigravity", "qoder", "traecli", "grok":
+	case "codex", "copilot", "opencode", "deveco", "openclaw", "hermes", "pi", "cursor", "kimi", "kiro", "antigravity", "qoder", "traecli", "grok", "droid":
 		return filepath.Join(workDir, "AGENTS.md")
 	default:
 		return ""
