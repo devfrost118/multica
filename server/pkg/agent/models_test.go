@@ -350,6 +350,21 @@ func TestListModelsQoderWithoutBinary(t *testing.T) {
 	}
 }
 
+func TestListModelsDroidWithoutBinary(t *testing.T) {
+	ctx := context.Background()
+	modelCacheMu.Lock()
+	delete(modelCache, "droid")
+	modelCacheMu.Unlock()
+
+	got, err := ListModels(ctx, "droid", "/nonexistent/droid")
+	if err != nil {
+		t.Fatalf("ListModels(droid) error: %v", err)
+	}
+	if got == nil {
+		t.Error("expected non-nil slice even when binary is missing")
+	}
+}
+
 func TestListModelsUnknownProvider(t *testing.T) {
 	ctx := context.Background()
 	_, err := ListModels(ctx, "nonexistent", "")
