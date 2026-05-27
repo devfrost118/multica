@@ -280,6 +280,7 @@ type ProviderName =
   | "kimi"
   | "kiro"
   | "qoder"
+  | "droid"
   | "pi"
   | "copilot"
   | "cursor";

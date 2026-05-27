@@ -139,6 +139,10 @@ func ListModels(ctx context.Context, providerType, executablePath string) ([]Mod
 		return cachedDiscovery(providerType, func() ([]Model, error) {
 			return discoverQoderModels(ctx, executablePath)
 		})
+	case "droid":
+		return cachedDiscovery(providerType, func() ([]Model, error) {
+			return discoverDroidModels(ctx, executablePath)
+		})
 	case "opencode":
 		return cachedDiscovery(discoveryCacheKey(providerType, executablePath), func() ([]Model, error) {
 			return discoverOpenCodeModels(ctx, executablePath)
@@ -825,6 +829,18 @@ func discoverKiroModels(ctx context.Context, executablePath string) ([]Model, er
 		defaultBin:   "kiro-cli",
 		clientName:   "multica-model-discovery",
 		tmpdirPrefix: "multica-kiro-discovery-",
+	})
+}
+
+// discoverDroidModels spins up a throwaway `droid --output-format acp` process
+// and parses the models block returned from session/new. Factory.ai's droid
+// CLI is ACP-native, so the same handshake used for hermes/kimi/kiro applies.
+func discoverDroidModels(ctx context.Context, executablePath string) ([]Model, error) {
+	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
+		defaultBin:   "droid",
+		clientName:   "multica-model-discovery",
+		tmpdirPrefix: "multica-droid-discovery-",
+		acpArgs:      []string{"--output-format", "acp"},
 	})
 }
 
