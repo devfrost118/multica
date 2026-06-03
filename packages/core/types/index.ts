@@ -34,6 +34,8 @@ export type {
   SkillFile,
   CreateSkillRequest,
   UpdateSkillRequest,
+  SkillCandidate,
+  SkillDiscoveryResult,
   SetAgentSkillsRequest,
   RuntimeUsage,
   RuntimeHourlyActivity,
