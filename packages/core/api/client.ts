@@ -41,6 +41,7 @@ import type {
   SkillSummary,
   CreateSkillRequest,
   UpdateSkillRequest,
+  SkillDiscoveryResult,
   SetAgentSkillsRequest,
   PersonalAccessToken,
   CreatePersonalAccessTokenRequest,
@@ -1600,6 +1601,13 @@ export class ApiClient {
 
   async importSkill(data: { url: string }): Promise<Skill> {
     return this.fetch("/api/skills/import", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async discoverSkills(data: { url: string }): Promise<SkillDiscoveryResult> {
+    return this.fetch("/api/skills/discover", {
       method: "POST",
       body: JSON.stringify(data),
     });
