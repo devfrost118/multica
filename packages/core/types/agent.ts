@@ -506,6 +506,18 @@ export interface CreateSkillRequest {
   files?: { path: string; content: string }[];
 }
 
+export interface SkillCandidate {
+  name: string;
+  description: string;
+  path: string;
+  import_url: string;
+}
+
+export interface SkillDiscoveryResult {
+  candidates: SkillCandidate[];
+  truncated: boolean;
+}
+
 export interface UpdateSkillRequest {
   name?: string;
   description?: string;
