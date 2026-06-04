@@ -7,6 +7,8 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	skillpkg "github.com/multica-ai/multica/server/internal/skill"
 )
 
 // maxDiscoverCandidates caps how many skills one discovery call returns.
@@ -106,7 +108,7 @@ func (h *Handler) discoverGitHubSkills(rawURL string) (*SkillDiscoveryResponse, 
 			// unreadable/oversize SKILL.md → skip this candidate
 			continue
 		}
-		name, description := parseSkillFrontmatter(string(body))
+		name, description := skillpkg.ParseSkillFrontmatter(string(body))
 		if name == "" {
 			if dir == "" {
 				name = spec.repo
