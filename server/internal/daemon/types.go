@@ -8,6 +8,15 @@ type AgentEntry struct {
 	Model string // model override (optional)
 }
 
+// TaskScoutData is the workspace scout agent's identity as delivered by the
+// claim endpoint. Nil when no scout is configured, the scout is archived, or
+// the claiming agent IS the scout. Old daemons safely ignore the field.
+type TaskScoutData struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Instructions string `json:"instructions"`
+}
+
 // Runtime represents a registered daemon runtime.
 type Runtime struct {
 	ID       string `json:"id"`
@@ -80,6 +89,10 @@ type Task struct {
 	// when description is empty so the agent doesn't see a useless heading.
 	RequestingUserName               string `json:"requesting_user_name,omitempty"`
 	RequestingUserProfileDescription string `json:"requesting_user_profile_description,omitempty"`
+	// Scout is the workspace's designated scout agent. Present only when the
+	// scout is set, active (not archived), and is not the same agent claiming
+	// this task. Old daemons safely ignore the field (nil = no scout).
+	Scout *TaskScoutData `json:"scout,omitempty"`
 	// AuthToken is the task-scoped credential the server mints at claim time.
 	// The daemon injects it into the spawned agent as MULTICA_TOKEN so the
 	// agent never sees the daemon's own (often workspace-owner) credential.

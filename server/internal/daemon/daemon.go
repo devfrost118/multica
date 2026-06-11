@@ -153,6 +153,17 @@ type Daemon struct {
 	// New() and overridable in tests so the auto-update poller can be exercised
 	// without touching the real network or the brew CLI.
 	runUpdateFn func(targetVersion string) (string, error)
+
+	// scoutMu guards scoutRegistry.
+	scoutMu sync.Mutex
+	// scoutRegistry maps task_id → scoutEntry for every active task that has
+	// a scout assigned and a caller provider that supports MCP. Entries are
+	// inserted at task start and removed when the task finishes.
+	scoutRegistry map[string]*scoutEntry
+	// scoutSem is a buffered channel semaphore that caps the number of
+	// concurrent scout agent executions daemon-wide. Requests that cannot
+	// acquire a slot immediately receive 503.
+	scoutSem chan struct{}
 }
 
 // New creates a new Daemon instance.
@@ -178,6 +189,8 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 		reregisterNextAttempt:     make(map[string]time.Time),
 		reregisterLastCompletedAt: make(map[string]time.Time),
 		cancelPollInterval:        5 * time.Second,
+		scoutRegistry:             make(map[string]*scoutEntry),
+		scoutSem:                  make(chan struct{}, scoutMaxConcurrent),
 	}
 	d.runner = taskRunnerFunc(d.runTask)
 	d.runUpdateFn = d.runUpdate
@@ -2604,6 +2617,41 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	if task.Agent != nil {
 		agentMcpConfig = task.Agent.McpConfig
 	}
+
+	// Scout registry: register a per-task entry and inject the managed MCP
+	// server so the parent agent can delegate work to the scout via MCP tools.
+	// Conditions: scout is present, caller provider supports MCP, and the
+	// claiming agent is not the scout itself (self-scout skip).
+	var registeredScoutEntry *scoutEntry
+	if task.Scout != nil && isCallerProviderForScout(provider) && task.AgentID != task.Scout.ID {
+		nonce, nonceErr := generateScoutNonce()
+		if nonceErr != nil {
+			taskLog.Warn("scout: failed to generate nonce, skipping scout injection", "error", nonceErr)
+		} else {
+			entry := &scoutEntry{
+				Nonce:         nonce,
+				Scout:         task.Scout,
+				CallerWorkDir: "", // filled after env is prepared; placeholder until then
+				WorkspaceID:   task.WorkspaceID,
+			}
+			d.scoutMu.Lock()
+			d.scoutRegistry[task.ID] = entry
+			d.scoutMu.Unlock()
+			registeredScoutEntry = entry
+			defer func() {
+				d.scoutMu.Lock()
+				delete(d.scoutRegistry, task.ID)
+				d.scoutMu.Unlock()
+			}()
+
+			if selfBin, binErr := os.Executable(); binErr != nil {
+				taskLog.Warn("scout: os.Executable failed, skipping MCP injection", "error", binErr)
+			} else {
+				agentMcpConfig = injectScoutMCPServer(selfBin, task.ID, nonce, d.cfg.HealthPort, agentMcpConfig)
+			}
+		}
+	}
+
 	if task.PriorWorkDir != "" && localAssignment == nil {
 		env = execenv.Reuse(execenv.ReuseParams{
 			WorkDir:      task.PriorWorkDir,
@@ -2640,6 +2688,13 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	if env.RootDir != predictedRoot && env.RootDir != "" {
 		d.markActiveEnvRoot(env.RootDir)
 		defer d.unmarkActiveEnvRoot(env.RootDir)
+	}
+
+	// Now that env is ready, record the parent task's workdir in the scout
+	// registry entry so the /scout/run handler can find it. The workdir is
+	// only available after Prepare/Reuse resolves it.
+	if registeredScoutEntry != nil {
+		registeredScoutEntry.CallerWorkDir = env.WorkDir
 	}
 
 	// Inject runtime-specific config (meta skill) so the agent discovers .agent_context/.
@@ -2789,11 +2844,14 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 
 	var customArgs []string
 	extraArgs := defaultArgsForProvider(d.cfg, provider)
-	var mcpConfig json.RawMessage
 	if task.Agent != nil {
 		customArgs = task.Agent.CustomArgs
-		mcpConfig = task.Agent.McpConfig
 	}
+	// mcpConfig is the (potentially scout-injected) config used for both
+	// execOpts.McpConfig (claude/codex --mcp-config) and openclaw config.
+	// agentMcpConfig was already patched by injectScoutMCPServer above when
+	// the scout entry was registered.
+	mcpConfig := agentMcpConfig
 	// Two-tier model resolution: an explicit agent.model wins,
 	// then the daemon-wide MULTICA_<PROVIDER>_MODEL env var. If
 	// both are empty we deliberately pass "" through — each
@@ -2941,6 +2999,13 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 			CacheReadTokens:  u.CacheReadTokens,
 			CacheWriteTokens: u.CacheWriteTokens,
 		})
+	}
+
+	// Merge scout usage into the parent task's usage report. Scout runs are
+	// synchronous MCP calls from the parent agent, so all scout usage is
+	// accumulated by the time the agent finishes.
+	if registeredScoutEntry != nil {
+		usageEntries = append(usageEntries, registeredScoutEntry.drainUsage()...)
 	}
 
 	switch result.Status {
