@@ -36,6 +36,7 @@ import {
   X,
   Zap,
   Users,
+  ShieldCheck,
 } from "lucide-react";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 import { ActorAvatar } from "@multica/ui/components/common/actor-avatar";
@@ -120,6 +121,7 @@ type NavKey =
   | "usage"
   | "runtimes"
   | "skills"
+  | "rules"
   | "settings";
 
 // Static schema (key + icon) — labels resolved at render via useT("layout").
@@ -135,6 +137,7 @@ type NavLabelKey =
   | "usage"
   | "runtimes"
   | "skills"
+  | "rules"
   | "settings";
 
 const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
@@ -155,6 +158,7 @@ const workspaceNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[]
 const configureNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
   { key: "runtimes", labelKey: "runtimes", icon: Monitor },
   { key: "skills", labelKey: "skills", icon: BookOpenText },
+  { key: "rules", labelKey: "rules", icon: ShieldCheck },
   { key: "settings", labelKey: "settings", icon: Settings },
 ];
 
