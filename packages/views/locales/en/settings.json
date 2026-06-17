@@ -382,6 +382,13 @@
     "rule_count": "{{count}} rules",
     "binding_count": "{{count}} bindings",
     "manage_rules": "Manage rules",
+    "page": {
+      "title": "Rules",
+      "groups_label": "Rule groups",
+      "search_placeholder": "Search rule groups…",
+      "select_group": "Select a rule group to see its rules.",
+      "no_results": "No rule groups match your search."
+    },
     "toast_created": "Rule group created",
     "toast_create_failed": "Failed to create rule group",
     "toast_updated": "Rule group updated",
@@ -427,7 +434,7 @@
       "attach": "Attach rule group",
       "attach_dialog_title": "Attach rule group",
       "none_available": "All rule groups are already attached.",
-      "no_groups": "No rule groups exist yet. Create one in workspace settings.",
+      "no_groups": "No rule groups exist yet. Create one on the Rules page.",
       "detach_tooltip": "Detach",
       "detach_dialog_title": "Detach rule group",
       "detach_dialog_description": "Detach \"{{name}}\" from this {{scope}}? The group itself is not deleted.",
