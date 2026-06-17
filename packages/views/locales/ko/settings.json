@@ -469,13 +469,6 @@
     "rule_count": "규칙 {{count}}개",
     "binding_count": "연결 {{count}}개",
     "manage_rules": "규칙 관리",
-    "page": {
-      "title": "규칙",
-      "groups_label": "규칙 그룹",
-      "search_placeholder": "규칙 그룹 검색…",
-      "select_group": "규칙을 보려면 규칙 그룹을 선택하세요.",
-      "no_results": "검색과 일치하는 규칙 그룹이 없습니다."
-    },
     "toast_created": "규칙 그룹이 생성되었습니다",
     "toast_create_failed": "규칙 그룹 생성에 실패했습니다",
     "toast_updated": "규칙 그룹이 업데이트되었습니다",
@@ -487,6 +480,7 @@
     "description_label": "설명",
     "description_placeholder": "이 규칙은 무엇을 강제하나요?",
     "enabled_label": "활성화됨",
+    "builtin_readonly_hint": "기본 제공 그룹은 플랫폼에서 관리합니다. 활성화/비활성화는 가능하지만 내용은 편집할 수 없습니다.",
     "create_dialog_title": "규칙 그룹 만들기",
     "edit_dialog_title": "규칙 그룹 편집",
     "save": "저장",
@@ -539,6 +533,13 @@
       "layer_project": "프로젝트",
       "layer_squad": "스쿼드",
       "layer_agent": "에이전트"
+    },
+    "page": {
+      "title": "규칙",
+      "groups_label": "규칙 그룹",
+      "search_placeholder": "규칙 그룹 검색…",
+      "select_group": "규칙을 보려면 규칙 그룹을 선택하세요.",
+      "no_results": "검색과 일치하는 규칙 그룹이 없습니다."
     }
   }
 }
