@@ -106,7 +106,10 @@
     "./skills": "./skills/index.ts",
     "./skills/frontmatter": "./skills/frontmatter.ts",
     "./skills/stores": "./skills/stores/index.ts",
-    "./autopilots/stores": "./autopilots/stores/index.ts"
+    "./autopilots/stores": "./autopilots/stores/index.ts",
+    "./rule-groups": "./rule-groups/index.ts",
+    "./rule-groups/queries": "./rule-groups/queries.ts",
+    "./rule-groups/mutations": "./rule-groups/mutations.ts"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "catalog:",

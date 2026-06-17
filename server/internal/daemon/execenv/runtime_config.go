@@ -469,6 +469,32 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 		b.WriteString("\n\n")
 	}
 
+	if len(ctx.EffectiveRules) > 0 {
+		b.WriteString("## Rule Groups\n\n")
+		b.WriteString("The following workspace rule-group rules were resolved at task claim time. Follow them unless a more specific task instruction conflicts. They are ordered by scope precedence (workspace, project, squad, agent) and configured sort order.\n\n")
+		for _, rule := range ctx.EffectiveRules {
+			content := strings.TrimRight(rule.Content, " \t\r\n")
+			if strings.TrimSpace(content) == "" {
+				continue
+			}
+			scope := rule.ScopeType
+			if scope == "" {
+				scope = "workspace"
+			}
+			if rule.RuleGroupName != "" {
+				fmt.Fprintf(&b, "### [%s] %s / %s\n\n", scope, rule.RuleGroupName, rule.RuleName)
+			} else {
+				fmt.Fprintf(&b, "### [%s] %s\n\n", scope, rule.RuleName)
+			}
+			if strings.TrimSpace(rule.Description) != "" {
+				b.WriteString(strings.TrimRight(rule.Description, " \t\r\n"))
+				b.WriteString("\n\n")
+			}
+			b.WriteString(content)
+			b.WriteString("\n\n")
+		}
+	}
+
 	b.WriteString("## Available Commands\n\n")
 	b.WriteString("**Use `--output json` for structured data.** Human table output now prints routable issue keys (for example `MUL-123`) and short UUID prefixes for workspace resources; use `--full-id` on list commands when you need canonical UUIDs.\n\n")
 	b.WriteString("The default brief includes the commands needed for the core agent loop and common issue create/update tasks. For everything else, run `multica --help`, `multica <command> --help`, or `multica <command> <subcommand> --help`; prefer `--output json` when the command supports it.\n\n")

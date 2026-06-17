@@ -76,6 +76,7 @@ type TaskContextForEnv struct {
 	ProjectID               string                  // issue's project, when present
 	ProjectTitle            string                  // human-readable project title
 	ProjectResources        []ProjectResourceForEnv // resources attached to the project
+	EffectiveRules          []EffectiveRuleForEnv   // rule-group rules resolved by the server at claim time
 	ChatSessionID           string                  // non-empty for chat tasks
 	AutopilotRunID          string                  // non-empty for autopilot run_only tasks
 	AutopilotID             string
@@ -122,6 +123,16 @@ type SkillContextForEnv struct {
 type SkillFileContextForEnv struct {
 	Path    string
 	Content string
+}
+
+// EffectiveRuleForEnv is a markdown rule delivered in the task claim snapshot.
+type EffectiveRuleForEnv struct {
+	ScopeType     string
+	RuleGroupName string
+	RuleName      string
+	Description   string
+	Content       string
+	FileName      string
 }
 
 // Environment represents a prepared, isolated execution environment.
