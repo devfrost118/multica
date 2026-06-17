@@ -23,7 +23,7 @@ import { useT } from "../../i18n";
 /**
  * Create / edit a rule group's metadata (name, description). When `group` is
  * provided the dialog edits it; otherwise it creates a new group. Rule content
- * is managed separately in the rules dialog.
+ * is managed separately in the rules detail panel.
  */
 export function RuleGroupFormDialog({
   open,
