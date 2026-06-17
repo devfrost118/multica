@@ -122,6 +122,18 @@ import type {
   CreateBillingCheckoutSessionResponse,
   BillingCheckoutSessionStatus,
   CreateBillingPortalSessionResponse,
+  RuleGroupSummary,
+  RuleGroupWithRules,
+  RuleGroupRule,
+  RuleGroupBinding,
+  RuleGroup,
+  EffectiveRulesResponse,
+  CreateRuleGroupRequest,
+  UpdateRuleGroupRequest,
+  CreateRuleGroupRuleRequest,
+  UpdateRuleGroupRuleRequest,
+  CreateRuleGroupBindingRequest,
+  UpdateRuleGroupBindingRequest,
 } from "../types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import type {
@@ -199,6 +211,17 @@ import {
   EMPTY_BILLING_CHECKOUT_SESSION_STATUS,
   EMPTY_CREATE_BILLING_PORTAL_SESSION_RESPONSE,
   EMPTY_CANCEL_TASK_RESPONSE,
+  RuleGroupSummaryListSchema,
+  RuleGroupRuleListSchema,
+  RuleGroupWithRulesSchema,
+  RuleGroupBindingListSchema,
+  EffectiveRulesResponseSchema,
+  EMPTY_RULE_GROUP_SUMMARY_LIST,
+  EMPTY_RULE_GROUP_RULE_LIST,
+  EMPTY_RULE_GROUP_WITH_RULES,
+  EMPTY_RULE_GROUP_BINDING_LIST,
+  EMPTY_EFFECTIVE_RULES,
+
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -1942,6 +1965,124 @@ export class ApiClient {
     return this.fetch(`/api/issues/${issueId}/labels/${labelId}`, {
       method: "DELETE",
     });
+  }
+
+  // Rule Groups — workspace resolved server-side from the X-Workspace-Slug
+  // header (see server router /api/rule-groups). List/read responses run
+  // through schemas so a contract drift degrades instead of white-screening.
+  async listRuleGroups(): Promise<RuleGroupSummary[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups`);
+    return parseWithFallback(raw, RuleGroupSummaryListSchema, EMPTY_RULE_GROUP_SUMMARY_LIST, {
+      endpoint: "GET /api/rule-groups",
+    }) as RuleGroupSummary[];
+  }
+
+  async getRuleGroup(id: string): Promise<RuleGroupWithRules> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${id}`);
+    return parseWithFallback(raw, RuleGroupWithRulesSchema, EMPTY_RULE_GROUP_WITH_RULES, {
+      endpoint: "GET /api/rule-groups/:id",
+    }) as RuleGroupWithRules;
+  }
+
+  async createRuleGroup(data: CreateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroup(id: string, data: UpdateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroup(id: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${id}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupRules(groupId: string): Promise<RuleGroupRule[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${groupId}/rules`);
+    return parseWithFallback(raw, RuleGroupRuleListSchema, EMPTY_RULE_GROUP_RULE_LIST, {
+      endpoint: "GET /api/rule-groups/:id/rules",
+    }) as RuleGroupRule[];
+  }
+
+  async createRuleGroupRule(
+    groupId: string,
+    data: CreateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupRule(
+    groupId: string,
+    ruleId: string,
+    data: UpdateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupRule(groupId: string, ruleId: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupBindings(
+    scopeType?: string,
+    scopeId?: string,
+  ): Promise<RuleGroupBinding[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set("scope_type", scopeType);
+    if (scopeId) params.set("scope_id", scopeId);
+    const q = params.toString() ? `?${params.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rule-group-bindings${q}`);
+    return parseWithFallback(raw, RuleGroupBindingListSchema, EMPTY_RULE_GROUP_BINDING_LIST, {
+      endpoint: "GET /api/rule-group-bindings",
+    }) as RuleGroupBinding[];
+  }
+
+  async createRuleGroupBinding(data: CreateRuleGroupBindingRequest): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupBinding(
+    id: string,
+    data: UpdateRuleGroupBindingRequest,
+  ): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupBinding(id: string): Promise<void> {
+    await this.fetch(`/api/rule-group-bindings/${id}`, { method: "DELETE" });
+  }
+
+  async getEffectiveRules(params: {
+    projectId?: string;
+    squadId?: string;
+    agentId?: string;
+  }): Promise<EffectiveRulesResponse> {
+    const search = new URLSearchParams();
+    if (params.projectId) search.set("project_id", params.projectId);
+    if (params.squadId) search.set("squad_id", params.squadId);
+    if (params.agentId) search.set("agent_id", params.agentId);
+    const q = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rules/effective${q}`);
+    return parseWithFallback(raw, EffectiveRulesResponseSchema, EMPTY_EFFECTIVE_RULES, {
+      endpoint: "GET /api/rules/effective",
+    }) as EffectiveRulesResponse;
   }
 
   // Pins
