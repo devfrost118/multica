@@ -670,6 +670,13 @@
     "rule_count": "{{count}} 条规则",
     "binding_count": "{{count}} 个绑定",
     "manage_rules": "管理规则",
+    "page": {
+      "title": "规则",
+      "groups_label": "规则组",
+      "search_placeholder": "搜索规则组…",
+      "select_group": "选择一个规则组以查看其规则。",
+      "no_results": "没有与搜索匹配的规则组。"
+    },
     "toast_created": "规则组已创建",
     "toast_create_failed": "创建规则组失败",
     "toast_updated": "规则组已更新",
@@ -715,7 +722,7 @@
       "attach": "附加规则组",
       "attach_dialog_title": "附加规则组",
       "none_available": "所有规则组都已附加。",
-      "no_groups": "暂无规则组。请在工作区设置中创建。",
+      "no_groups": "暂无规则组。请在「规则」页面中创建。",
       "detach_tooltip": "移除",
       "detach_dialog_title": "移除规则组",
       "detach_dialog_description": "从此{{scope}}移除“{{name}}”？规则组本身不会被删除。",

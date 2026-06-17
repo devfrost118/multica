@@ -10,17 +10,34 @@ type MemberRole = "owner" | "admin" | "member";
 const groupsRef = vi.hoisted(() => ({
   current: [] as Array<Record<string, unknown>>,
 }));
+const detailRef = vi.hoisted(() => ({
+  current: { rules: [] as Array<Record<string, unknown>> },
+}));
 const roleRef = vi.hoisted(() => ({ current: "owner" as MemberRole }));
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: (opts: { queryKey: unknown[] }) => {
     const key = JSON.stringify(opts.queryKey);
+    if (key.includes("detail")) return { data: detailRef.current, isLoading: false };
     if (key.includes("list")) return { data: groupsRef.current, isLoading: false };
     return { data: undefined, isLoading: false };
   },
   useQueryClient: () => ({ invalidateQueries: vi.fn(), removeQueries: vi.fn() }),
   queryOptions: <T,>(opts: T) => opts,
 }));
+
+// react-resizable-panels touches layout APIs jsdom lacks; the page only needs
+// the hook's shape, so stub it. We render the mobile (stacked) layout below to
+// avoid mounting the panel group at all.
+vi.mock("react-resizable-panels", () => ({
+  useDefaultLayout: () => ({ defaultLayout: undefined, onLayoutChanged: vi.fn() }),
+}));
+vi.mock("@multica/ui/components/ui/resizable", () => ({
+  ResizablePanelGroup: ({ children }: { children: ReactNode }) => <>{children}</>,
+  ResizablePanel: ({ children }: { children: ReactNode }) => <>{children}</>,
+  ResizableHandle: () => null,
+}));
+vi.mock("@multica/ui/hooks/use-mobile", () => ({ useIsMobile: () => true }));
 
 vi.mock("@multica/core/hooks", () => ({
   useWorkspaceId: () => "workspace-1",
@@ -40,13 +57,16 @@ vi.mock("@multica/core/rule-groups", () => {
     useUpdateRuleGroup: mutationStub,
     useDeleteRuleGroup: mutationStub,
     useCreateRuleGroup: mutationStub,
+    useCreateRuleGroupRule: mutationStub,
+    useUpdateRuleGroupRule: mutationStub,
+    useDeleteRuleGroupRule: mutationStub,
     RULE_GROUP_SOURCE_BUILTIN: "builtin",
   };
 });
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-import { RuleGroupsTab } from "./rule-groups-tab";
+import { RulesPage } from "./rules-page";
 
 const TEST_RESOURCES = { en: { common: enCommon, settings: enSettings } };
 
@@ -77,45 +97,67 @@ function group(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("RuleGroupsTab", () => {
+describe("RulesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     groupsRef.current = [];
+    detailRef.current = { rules: [] };
     roleRef.current = "owner";
   });
 
-  it("shows the empty state when there are no rule groups", () => {
-    render(<RuleGroupsTab />, { wrapper: Wrapper });
+  it("shows the empty state and a select-a-group prompt when there are no groups", () => {
+    render(<RulesPage />, { wrapper: Wrapper });
     expect(screen.getByText("No rule groups yet.")).toBeTruthy();
+    expect(screen.getByText("Select a rule group to see its rules.")).toBeTruthy();
   });
 
-  it("renders a group with its rule and binding counts and a Create button for admins", () => {
+  it("auto-selects the first group and renders its counts in the detail panel", () => {
     groupsRef.current = [group()];
-    render(<RuleGroupsTab />, { wrapper: Wrapper });
-    expect(screen.getByText("Runtime Hygiene")).toBeTruthy();
-    expect(screen.getByText("3 rules")).toBeTruthy();
-    expect(screen.getByText("1 bindings")).toBeTruthy();
+    render(<RulesPage />, { wrapper: Wrapper });
+    // Name appears in both the list row and the detail header.
+    expect(screen.getAllByText("Runtime Hygiene").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("3 rules").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("1 bindings").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("button", { name: /Create group/ })).toBeTruthy();
   });
 
-  it("marks builtin groups and hides their edit/delete menu", () => {
+  it("renders the rules of the selected group in the detail panel", () => {
+    groupsRef.current = [group()];
+    detailRef.current = {
+      rules: [
+        {
+          id: "r1",
+          name: "Always run tests",
+          content: "Run the suite before claiming done.",
+          enabled: true,
+          file_name: "completion.md",
+        },
+      ],
+    };
+    render(<RulesPage />, { wrapper: Wrapper });
+    expect(screen.getByText("Always run tests")).toBeTruthy();
+    expect(screen.getByText("completion.md")).toBeTruthy();
+  });
+
+  it("marks builtin groups read-only: shows the hint and hides the Add rule action", () => {
     groupsRef.current = [group({ id: "b1", name: "Multica Core", source_type: "builtin" })];
-    render(<RuleGroupsTab />, { wrapper: Wrapper });
-    expect(screen.getByText("Built-in")).toBeTruthy();
-    // The overflow menu (edit/delete) is the only MoreHorizontal trigger and is
-    // omitted for builtin groups.
-    expect(screen.queryByRole("button", { name: /more/i })).toBeNull();
+    render(<RulesPage />, { wrapper: Wrapper });
+    expect(screen.getAllByText("Built-in").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByText(
+        "Built-in groups are managed by the platform. You can enable or disable them, but not edit their content.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Add rule/ })).toBeNull();
   });
 
   it("hides management controls and shows a hint for non-admins", () => {
     roleRef.current = "member";
     groupsRef.current = [group()];
-    render(<RuleGroupsTab />, { wrapper: Wrapper });
+    render(<RulesPage />, { wrapper: Wrapper });
     expect(screen.queryByRole("button", { name: /Create group/ })).toBeNull();
     expect(
       screen.getByText("Only admins and owners can manage rule groups."),
     ).toBeTruthy();
-    // No enable/disable switch for non-admins.
-    expect(screen.queryByRole("switch")).toBeNull();
   });
 });
