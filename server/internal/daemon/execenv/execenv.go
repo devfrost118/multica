@@ -118,6 +118,7 @@ type TaskContextForEnv struct {
 	ProjectTitle                  string                  // human-readable project title
 	ProjectDescription            string                  // durable project-level context, rendered into the brief's Project Context section
 	ProjectResources              []ProjectResourceForEnv // resources attached to the project
+	EffectiveRules                []EffectiveRuleForEnv   // rule-group rules resolved by the server at claim time
 	ChatSessionID                 string                  // non-empty for chat tasks
 	// ChatChannelType is the IM platform behind a chat session ("slack",
 	// "feishu"); empty for a web/mobile chat. The brief reads it for DELIVERY
@@ -177,6 +178,16 @@ type SkillContextForEnv struct {
 type SkillFileContextForEnv struct {
 	Path    string
 	Content string
+}
+
+// EffectiveRuleForEnv is a markdown rule delivered in the task claim snapshot.
+type EffectiveRuleForEnv struct {
+	ScopeType     string
+	RuleGroupName string
+	RuleName      string
+	Description   string
+	Content       string
+	FileName      string
 }
 
 // Environment represents a prepared, isolated execution environment.

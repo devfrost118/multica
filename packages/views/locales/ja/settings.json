@@ -1,12 +1,5 @@
 {
-  "auto_save": {
-    "saving": "保存中…",
-    "saved": "保存済み",
-    "failed": "保存できませんでした",
-    "toast_saved": "変更を保存しました"
-  },
   "preferences": {
-    "general_title": "一般",
     "theme": {
       "title": "テーマ",
       "light": "ライト",
@@ -131,7 +124,8 @@
       "labs": "ラボ",
       "members": "メンバー",
       "labels": "ラベル",
-      "properties": "プロパティ"
+      "properties": "プロパティ",
+      "rule_groups": "ルールグループ"
     }
   },
   "properties": {
@@ -243,8 +237,7 @@
     }
   },
   "account": {
-    "section_profile": "個人情報",
-    "avatar_label": "アバター",
+    "section_profile": "プロフィール",
     "click_avatar_hint": "クリックしてアバターをアップロード",
     "name_label": "名前",
     "profile_description_label": "自己紹介",
@@ -301,10 +294,7 @@
   },
   "tokens": {
     "title": "API トークン",
-    "description": "個人アクセストークンを使うと、CLI や外部連携があなたのアカウントで認証できます。multica login --token で使用するか、API 呼び出し時に Bearer トークンとして送信します。",
-    "security_note": "トークンはアカウントへのフルアクセスを付与します。パスワードと同じように厳重に管理してください。",
-    "empty": "API トークンはまだありません。上のフォームから作成できます。",
-    "load_failed": "API トークンを読み込めませんでした。ページを再読み込みしてもう一度お試しください。",
+    "description": "個人アクセストークンを使うと、CLI や外部連携があなたのアカウントで認証できます。",
     "name_placeholder": "トークン名（例: My CLI）",
     "expiry": {
       "30": "30 日",
@@ -331,20 +321,14 @@
       "confirm": "失効"
     },
     "created_dialog": {
-      "title": "個人アクセストークンを作成しました",
-      "warning_prefix": "新しい個人アクセストークンを作成しました。セキュリティ上の理由により、表示されるのは",
-      "warning_emphasis": "今回の一度だけ",
-      "warning_suffix": "です。安全に保管し、共有しないでください。紛失したトークンは復元できないため、失効して新しく作成してください。",
-      "confirm_stored": "このトークンを安全に保管しました。",
+      "title": "トークンを作成しました",
+      "description": "今すぐ個人アクセストークンをコピーしてください。再表示はできません。",
       "copy_tooltip": "トークンをコピー",
-      "cli_hint": "次のコマンドで CLI にログインできます:",
-      "copy_command_tooltip": "コマンドをコピー",
       "done": "完了"
     }
   },
   "workspace": {
-    "section_general": "ワークスペース情報",
-    "logo_label": "ワークスペースロゴ",
+    "section_general": "一般",
     "name_label": "名前",
     "description_label": "説明",
     "description_placeholder": "このワークスペースは何に注力していますか？",
@@ -601,10 +585,6 @@
     "edit_aria": "リポジトリを編集",
     "cancel_aria": "編集をキャンセル",
     "delete_aria": "リポジトリを削除",
-    "delete_confirm_title": "リポジトリを削除しますか？",
-    "delete_confirm_description": "このリポジトリはワークスペースから直ちに削除されます。",
-    "delete_confirm_cancel": "キャンセル",
-    "delete_confirm_action": "リポジトリを削除",
     "manage_hint": "リポジトリを管理できるのは admin と owner のみです。",
     "toast_saved": "リポジトリを保存しました",
     "toast_save_failed": "リポジトリを保存できませんでした"
@@ -669,6 +649,83 @@
         "label": "メンバー",
         "description": "イシューの作成と作業"
       }
+    }
+  },
+  "rule_groups": {
+    "title": "ルールグループ",
+    "description": "プロジェクト・スクワッド・エージェントに割り当てられる、再利用可能な Markdown ルールのセットです。有効なルールはワークスペース → プロジェクト → スクワッド → エージェントの順に重ねて適用されます。",
+    "create": "グループを作成",
+    "empty": "ルールグループはまだありません。",
+    "manage_hint": "ルールグループを管理できるのは管理者とオーナーのみです。",
+    "builtin_badge": "ビルトイン",
+    "disabled_badge": "無効",
+    "rule_count": "{{count}} 件のルール",
+    "binding_count": "{{count}} 件の割り当て",
+    "manage_rules": "ルールを管理",
+    "toast_created": "ルールグループを作成しました",
+    "toast_create_failed": "ルールグループの作成に失敗しました",
+    "toast_updated": "ルールグループを更新しました",
+    "toast_update_failed": "ルールグループの更新に失敗しました",
+    "toast_deleted": "ルールグループを削除しました",
+    "toast_delete_failed": "ルールグループの削除に失敗しました",
+    "name_label": "名前",
+    "name_placeholder": "例：ランタイム衛生",
+    "description_label": "説明",
+    "description_placeholder": "これらのルールは何を強制しますか？",
+    "enabled_label": "有効",
+    "builtin_readonly_hint": "ビルトイングループはプラットフォームが管理します。有効・無効の切り替えはできますが、内容は編集できません。",
+    "create_dialog_title": "ルールグループを作成",
+    "edit_dialog_title": "ルールグループを編集",
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "delete_dialog_title": "ルールグループを削除",
+    "delete_dialog_description": "「{{name}}」を削除しますか？ルールと、プロジェクト・スクワッド・エージェントへのすべての割り当てが削除されます。この操作は取り消せません。",
+    "rules": {
+      "title": "ルール",
+      "add": "ルールを追加",
+      "empty": "このグループにはまだルールがありません。",
+      "name_label": "名前",
+      "name_placeholder": "例：完了を宣言する前に必ずテストを実行する",
+      "content_label": "内容（Markdown）",
+      "content_placeholder": "Markdown でルールを記述…",
+      "file_name_label": "ファイル名（任意）",
+      "file_name_placeholder": "例：completion-evidence.md",
+      "create_dialog_title": "ルールを追加",
+      "edit_dialog_title": "ルールを編集",
+      "delete_dialog_title": "ルールを削除",
+      "delete_dialog_description": "ルール「{{name}}」を削除しますか？この操作は取り消せません。",
+      "toast_saved": "ルールを保存しました",
+      "toast_save_failed": "ルールの保存に失敗しました",
+      "toast_deleted": "ルールを削除しました",
+      "toast_delete_failed": "ルールの削除に失敗しました"
+    },
+    "bindings": {
+      "section_title": "ルールグループ",
+      "empty": "ルールグループが割り当てられていません。",
+      "attach": "ルールグループを割り当て",
+      "attach_dialog_title": "ルールグループを割り当て",
+      "none_available": "すべてのルールグループが既に割り当て済みです。",
+      "no_groups": "ルールグループがまだありません。ワークスペース設定で作成してください。",
+      "detach_tooltip": "解除",
+      "detach_dialog_title": "ルールグループを解除",
+      "detach_dialog_description": "この{{scope}}から「{{name}}」を解除しますか？グループ自体は削除されません。",
+      "toast_attached": "ルールグループを割り当てました",
+      "toast_attach_failed": "ルールグループの割り当てに失敗しました",
+      "toast_detached": "ルールグループを解除しました",
+      "toast_detach_failed": "ルールグループの解除に失敗しました",
+      "toast_toggle_failed": "割り当ての更新に失敗しました",
+      "scope_project": "プロジェクト",
+      "scope_squad": "スクワッド",
+      "scope_agent": "エージェント",
+      "preview": "有効なルールをプレビュー",
+      "preview_title": "有効なルール",
+      "preview_empty": "ここで有効なルールはありません。",
+      "layer_workspace": "ワークスペース",
+      "layer_project": "プロジェクト",
+      "layer_squad": "スクワッド",
+      "layer_agent": "エージェント"
     }
   }
 }

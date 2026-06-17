@@ -4080,6 +4080,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		ProjectTitle:                     task.ProjectTitle,
 		ProjectDescription:               task.ProjectDescription,
 		ProjectResources:                 convertProjectResourcesForEnv(task.ProjectResources),
+		EffectiveRules:                   convertEffectiveRulesForEnv(task.EffectiveRules),
 		ChatSessionID:                    task.ChatSessionID,
 		ChatChannelType:                  task.ChatChannelType,
 		AutopilotRunID:                   task.AutopilotRunID,
@@ -5279,6 +5280,24 @@ func convertProjectResourcesForEnv(resources []ProjectResourceData) []execenv.Pr
 			ResourceType: r.ResourceType,
 			ResourceRef:  r.ResourceRef,
 			Label:        r.Label,
+		}
+	}
+	return result
+}
+
+func convertEffectiveRulesForEnv(rules []EffectiveRuleData) []execenv.EffectiveRuleForEnv {
+	if len(rules) == 0 {
+		return nil
+	}
+	result := make([]execenv.EffectiveRuleForEnv, len(rules))
+	for i, r := range rules {
+		result[i] = execenv.EffectiveRuleForEnv{
+			ScopeType:     r.ScopeType,
+			RuleGroupName: r.RuleGroupName,
+			RuleName:      r.RuleName,
+			Description:   r.Description,
+			Content:       r.Content,
+			FileName:      r.FileName,
 		}
 	}
 	return result

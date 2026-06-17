@@ -54,6 +54,23 @@ type ProjectResourceData struct {
 // sharing the canonical JSON shape with the runtime app metadata package.
 type ConnectedAppData = runtimeapps.ConnectedApp
 
+// EffectiveRuleData is a claim-time snapshot of one resolved Rule Group rule.
+// Rows are already ordered by the server using scope precedence and sort keys.
+type EffectiveRuleData struct {
+	ScopeType      string          `json:"scope_type"`
+	RuleGroupID    string          `json:"rule_group_id"`
+	RuleGroupName  string          `json:"rule_group_name"`
+	RuleID         string          `json:"rule_id"`
+	RuleName       string          `json:"rule_name"`
+	Description    string          `json:"description,omitempty"`
+	Content        string          `json:"content"`
+	FileName       string          `json:"file_name,omitempty"`
+	RuntimeHints   json.RawMessage `json:"runtime_hints,omitempty"`
+	RuleSortOrder  int32           `json:"rule_sort_order"`
+	BindingID      string          `json:"binding_id"`
+	BindingSortKey int32           `json:"binding_sort_order"`
+}
+
 // Task represents a claimed task from the server.
 // Agent data (name, skills) is populated by the claim endpoint.
 type Task struct {
@@ -76,6 +93,7 @@ type Task struct {
 	ProjectDescription       string                 `json:"project_description,omitempty"`         // durable project-level context injected into the brief
 	ProjectResources         []ProjectResourceData  `json:"project_resources,omitempty"`           // project-scoped resources to expose to the agent
 	IsLeaderTask             bool                   `json:"is_leader_task,omitempty"`              // true when executing in the squad-leader coordinator role
+	EffectiveRules           []EffectiveRuleData    `json:"effective_rules,omitempty"`             // rule-group rules resolved at claim time for brief injection
 	PriorSessionID           string                 `json:"prior_session_id,omitempty"`            // Claude session ID from a previous task on this issue
 	PriorWorkDir             string                 `json:"prior_work_dir,omitempty"`              // work_dir from a previous task on this issue
 	TriggerCommentID         string                 `json:"trigger_comment_id,omitempty"`          // comment that triggered this task
@@ -109,6 +127,7 @@ type Task struct {
 	SquadName             string `json:"squad_name,omitempty"`              // display name for the picker squad, used in prompt text
 	ParentIssueID         string `json:"parent_issue_id,omitempty"`         // for quick-create tasks opened from "Add sub issue" — UUID of the parent issue the new issue should be filed under
 	ParentIssueIdentifier string `json:"parent_issue_identifier,omitempty"` // human-readable identifier (e.g. MUL-123) of the quick-create parent issue, used in prompt context
+
 	// RequestingUserName + RequestingUserProfileDescription describe the human
 	// the agent is working on behalf of. v1 sources them from the runtime
 	// owner (the user who registered the daemon). Empty when the runtime has

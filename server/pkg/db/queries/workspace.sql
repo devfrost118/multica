@@ -25,6 +25,11 @@ SELECT id, name
 FROM workspace
 WHERE id = $1;
 
+-- name: ListAllWorkspaceIDs :many
+-- Every workspace id, used by the startup backfill that seeds builtin rule
+-- groups into workspaces created before the seeder existed.
+SELECT id FROM workspace;
+
 -- name: GetWorkspace :one
 SELECT * FROM workspace
 WHERE id = $1;

@@ -24,6 +24,7 @@ import { ResourceLabelPicker } from "../../labels/resource-label-picker";
 import { ModelPicker } from "./inspector/model-picker";
 import { RuntimePicker } from "./inspector/runtime-picker";
 import { ThinkingSettingField } from "./inspector/thinking-prop-row";
+import { RuleGroupsBindingSection } from "../../rule-groups/components/rule-groups-binding-section";
 
 interface InspectorProps {
   agent: Agent;
@@ -265,6 +266,12 @@ export function AgentDetailInspector({
               onSave={(next) => update({ max_concurrent_tasks: next })}
             />
           </SettingsRow>
+        </SettingsCard>
+      </SettingsSection>
+
+      <SettingsSection title={ts(($) => $.rule_groups.bindings.section_title)}>
+        <SettingsCard>
+          <RuleGroupsBindingSection scopeType="agent" scopeId={agent.id} />
         </SettingsCard>
       </SettingsSection>
     </div>

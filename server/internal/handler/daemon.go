@@ -2405,6 +2405,27 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 		)
 	}
 
+	if resp.Agent != nil {
+		var projectID, squadID pgtype.UUID
+		if resp.ProjectID != "" {
+			projectID = parseUUID(resp.ProjectID)
+		}
+		if resp.SquadID != "" {
+			squadID = parseUUID(resp.SquadID)
+		}
+		rules, err := h.Queries.ListEffectiveRules(r.Context(), db.ListEffectiveRulesParams{
+			WorkspaceID: parseUUID(resp.WorkspaceID),
+			ProjectID: projectID,
+			SquadID: squadID,
+			AgentID: task.AgentID,
+		})
+		if err != nil {
+			slog.Warn("task claim: failed to load effective rule groups", "task_id", uuidToString(task.ID), "error", err)
+		} else if len(rules) > 0 {
+			resp.EffectiveRules = effectiveRulesToResponse(rules)
+		}
+	}
+
 	return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, nil
 }
 

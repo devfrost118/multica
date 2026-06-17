@@ -1,12 +1,5 @@
 {
-  "auto_save": {
-    "saving": "저장 중…",
-    "saved": "저장됨",
-    "failed": "저장하지 못했습니다",
-    "toast_saved": "변경사항을 저장했습니다"
-  },
   "preferences": {
-    "general_title": "일반",
     "theme": {
       "title": "테마",
       "light": "라이트",
@@ -132,7 +125,8 @@
       "labs": "실험실",
       "members": "멤버",
       "labels": "레이블",
-      "properties": "속성"
+      "properties": "속성",
+      "rule_groups": "규칙 그룹"
     }
   },
   "properties": {
@@ -244,8 +238,7 @@
     }
   },
   "account": {
-    "section_profile": "개인 정보",
-    "avatar_label": "아바타",
+    "section_profile": "프로필",
     "click_avatar_hint": "클릭해서 아바타 업로드",
     "name_label": "이름",
     "profile_description_label": "내 소개",
@@ -302,10 +295,7 @@
   },
   "tokens": {
     "title": "API 토큰",
-    "description": "개인 액세스 토큰을 사용하면 CLI와 외부 연동이 내 계정으로 인증할 수 있습니다. multica login --token 으로 사용하거나 API 호출 시 Bearer 토큰으로 보낼 수 있습니다.",
-    "security_note": "토큰은 계정에 대한 전체 접근 권한을 부여하므로 비밀번호처럼 안전하게 보관하세요.",
-    "empty": "아직 API 토큰이 없습니다. 위에서 만들어 시작하세요.",
-    "load_failed": "API 토큰을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도하세요.",
+    "description": "개인 액세스 토큰을 사용하면 CLI와 외부 연동이 내 계정으로 인증할 수 있습니다.",
     "name_placeholder": "토큰 이름(예: 내 CLI)",
     "expiry": {
       "30": "30일",
@@ -332,20 +322,14 @@
       "confirm": "폐기"
     },
     "created_dialog": {
-      "title": "개인 액세스 토큰이 생성되었습니다",
-      "warning_prefix": "새 개인 액세스 토큰이 생성되었습니다. 보안상의 이유로 ",
-      "warning_emphasis": "이번 한 번만 표시됩니다",
-      "warning_suffix": ". 안전하게 보관하고 공유하지 마세요. 분실한 토큰은 복구할 수 없으며 폐기 후 새로 만들어야 합니다.",
-      "confirm_stored": "이 토큰을 안전하게 보관했습니다.",
+      "title": "토큰 생성됨",
+      "description": "지금 개인 액세스 토큰을 복사하세요. 다시 볼 수 없습니다.",
       "copy_tooltip": "토큰 복사",
-      "cli_hint": "다음 명령으로 CLI에 로그인하세요:",
-      "copy_command_tooltip": "명령 복사",
       "done": "완료"
     }
   },
   "workspace": {
-    "section_general": "워크스페이스 정보",
-    "logo_label": "워크스페이스 로고",
+    "section_general": "일반",
     "change_logo_aria": "워크스페이스 로고 변경",
     "click_logo_hint": "로고를 클릭하여 새 이미지를 업로드하세요",
     "toast_logo_updated": "워크스페이스 로고를 업데이트했습니다",
@@ -454,10 +438,6 @@
     "edit_aria": "저장소 수정",
     "cancel_aria": "수정 취소",
     "delete_aria": "저장소 삭제",
-    "delete_confirm_title": "저장소를 삭제할까요?",
-    "delete_confirm_description": "이 저장소는 워크스페이스에서 즉시 제거됩니다.",
-    "delete_confirm_cancel": "취소",
-    "delete_confirm_action": "저장소 삭제",
     "manage_hint": "관리자와 소유자만 저장소를 관리할 수 있습니다.",
     "toast_saved": "저장소를 저장했습니다",
     "toast_save_failed": "저장소를 저장하지 못했습니다"
@@ -671,5 +651,82 @@
     "byo_cancel": "취소",
     "byo_success_toast": "Slack 봇을 연결했어요",
     "byo_failed_toast": "Slack 봇을 연결하지 못했어요"
+  },
+  "rule_groups": {
+    "title": "규칙 그룹",
+    "description": "프로젝트, 스쿼드, 에이전트에 연결할 수 있는 재사용 가능한 Markdown 규칙 모음입니다. 적용 규칙은 워크스페이스 → 프로젝트 → 스쿼드 → 에이전트 순으로 계층화됩니다.",
+    "create": "그룹 만들기",
+    "empty": "규칙 그룹이 아직 없습니다.",
+    "manage_hint": "규칙 그룹은 관리자와 소유자만 관리할 수 있습니다.",
+    "builtin_badge": "기본 제공",
+    "disabled_badge": "비활성화됨",
+    "rule_count": "규칙 {{count}}개",
+    "binding_count": "연결 {{count}}개",
+    "manage_rules": "규칙 관리",
+    "toast_created": "규칙 그룹이 생성되었습니다",
+    "toast_create_failed": "규칙 그룹 생성에 실패했습니다",
+    "toast_updated": "규칙 그룹이 업데이트되었습니다",
+    "toast_update_failed": "규칙 그룹 업데이트에 실패했습니다",
+    "toast_deleted": "규칙 그룹이 삭제되었습니다",
+    "toast_delete_failed": "규칙 그룹 삭제에 실패했습니다",
+    "name_label": "이름",
+    "name_placeholder": "예: 런타임 위생",
+    "description_label": "설명",
+    "description_placeholder": "이 규칙은 무엇을 강제하나요?",
+    "enabled_label": "활성화됨",
+    "builtin_readonly_hint": "기본 제공 그룹은 플랫폼에서 관리합니다. 활성화/비활성화는 가능하지만 내용은 편집할 수 없습니다.",
+    "create_dialog_title": "규칙 그룹 만들기",
+    "edit_dialog_title": "규칙 그룹 편집",
+    "save": "저장",
+    "saving": "저장 중...",
+    "cancel": "취소",
+    "delete": "삭제",
+    "delete_dialog_title": "규칙 그룹 삭제",
+    "delete_dialog_description": "\"{{name}}\"을(를) 삭제하시겠습니까? 해당 규칙과 프로젝트, 스쿼드, 에이전트에 대한 모든 연결이 제거됩니다. 이 작업은 되돌릴 수 없습니다.",
+    "rules": {
+      "title": "규칙",
+      "add": "규칙 추가",
+      "empty": "이 그룹에는 아직 규칙이 없습니다.",
+      "name_label": "이름",
+      "name_placeholder": "예: 완료를 선언하기 전에 항상 테스트 실행",
+      "content_label": "내용 (Markdown)",
+      "content_placeholder": "Markdown으로 규칙을 작성하세요…",
+      "file_name_label": "파일 이름 (선택 사항)",
+      "file_name_placeholder": "예: completion-evidence.md",
+      "create_dialog_title": "규칙 추가",
+      "edit_dialog_title": "규칙 편집",
+      "delete_dialog_title": "규칙 삭제",
+      "delete_dialog_description": "규칙 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "toast_saved": "규칙이 저장되었습니다",
+      "toast_save_failed": "규칙 저장에 실패했습니다",
+      "toast_deleted": "규칙이 삭제되었습니다",
+      "toast_delete_failed": "규칙 삭제에 실패했습니다"
+    },
+    "bindings": {
+      "section_title": "규칙 그룹",
+      "empty": "연결된 규칙 그룹이 없습니다.",
+      "attach": "규칙 그룹 연결",
+      "attach_dialog_title": "규칙 그룹 연결",
+      "none_available": "모든 규칙 그룹이 이미 연결되어 있습니다.",
+      "no_groups": "규칙 그룹이 아직 없습니다. 워크스페이스 설정에서 만드세요.",
+      "detach_tooltip": "연결 해제",
+      "detach_dialog_title": "규칙 그룹 연결 해제",
+      "detach_dialog_description": "이 {{scope}}에서 \"{{name}}\"의 연결을 해제하시겠습니까? 그룹 자체는 삭제되지 않습니다.",
+      "toast_attached": "규칙 그룹이 연결되었습니다",
+      "toast_attach_failed": "규칙 그룹 연결에 실패했습니다",
+      "toast_detached": "규칙 그룹 연결이 해제되었습니다",
+      "toast_detach_failed": "규칙 그룹 연결 해제에 실패했습니다",
+      "toast_toggle_failed": "연결 업데이트에 실패했습니다",
+      "scope_project": "프로젝트",
+      "scope_squad": "스쿼드",
+      "scope_agent": "에이전트",
+      "preview": "적용 규칙 미리보기",
+      "preview_title": "적용 규칙",
+      "preview_empty": "여기에 적용되는 규칙이 없습니다.",
+      "layer_workspace": "워크스페이스",
+      "layer_project": "프로젝트",
+      "layer_squad": "스쿼드",
+      "layer_agent": "에이전트"
+    }
   }
 }
