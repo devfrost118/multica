@@ -390,13 +390,6 @@
     "rule_count": "{{count}} 条规则",
     "binding_count": "{{count}} 个绑定",
     "manage_rules": "管理规则",
-    "page": {
-      "title": "规则",
-      "groups_label": "规则组",
-      "search_placeholder": "搜索规则组…",
-      "select_group": "选择一个规则组以查看其规则。",
-      "no_results": "没有与搜索匹配的规则组。"
-    },
     "toast_created": "规则组已创建",
     "toast_create_failed": "创建规则组失败",
     "toast_updated": "规则组已更新",
@@ -408,6 +401,7 @@
     "description_label": "描述",
     "description_placeholder": "这些规则要求什么？",
     "enabled_label": "已启用",
+    "builtin_readonly_hint": "内置规则组由平台管理。你可以启用或禁用它们，但无法编辑其内容。",
     "create_dialog_title": "创建规则组",
     "edit_dialog_title": "编辑规则组",
     "save": "保存",
@@ -460,6 +454,13 @@
       "layer_project": "项目",
       "layer_squad": "小队",
       "layer_agent": "智能体"
+    },
+    "page": {
+      "title": "规则",
+      "groups_label": "规则组",
+      "search_placeholder": "搜索规则组…",
+      "select_group": "选择一个规则组以查看其规则。",
+      "no_results": "没有与搜索匹配的规则组。"
     }
   }
 }

@@ -390,13 +390,6 @@
     "rule_count": "{{count}} rules",
     "binding_count": "{{count}} bindings",
     "manage_rules": "Manage rules",
-    "page": {
-      "title": "Rules",
-      "groups_label": "Rule groups",
-      "search_placeholder": "Search rule groups…",
-      "select_group": "Select a rule group to see its rules.",
-      "no_results": "No rule groups match your search."
-    },
     "toast_created": "Rule group created",
     "toast_create_failed": "Failed to create rule group",
     "toast_updated": "Rule group updated",
@@ -408,6 +401,7 @@
     "description_label": "Description",
     "description_placeholder": "What do these rules enforce?",
     "enabled_label": "Enabled",
+    "builtin_readonly_hint": "Built-in groups are managed by the platform. You can enable or disable them, but not edit their content.",
     "create_dialog_title": "Create rule group",
     "edit_dialog_title": "Edit rule group",
     "save": "Save",
@@ -460,6 +454,13 @@
       "layer_project": "Project",
       "layer_squad": "Squad",
       "layer_agent": "Agent"
+    },
+    "page": {
+      "title": "Rules",
+      "groups_label": "Rule groups",
+      "search_placeholder": "Search rule groups…",
+      "select_group": "Select a rule group to see its rules.",
+      "no_results": "No rule groups match your search."
     }
   }
 }
