@@ -372,6 +372,75 @@ func TestClaimTaskByRuntime_PopulatesWorkspaceContext(t *testing.T) {
 // not set a context. Important because the daemon's brief skips the heading
 // only on empty input — a stray "context: null" coming back as the string
 // "null" would render as a bogus paragraph.
+func TestClaimTaskByRuntime_IncludesEffectiveRuleGroups(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("database not available")
+	}
+	ctx := context.Background()
+	runtimeID := createClaimReclaimRuntime(t, ctx, "rule-groups-runtime")
+	agentID, issueID := createClaimReclaimAgentAndIssue(t, ctx, runtimeID, "rule-groups-agent")
+	createDispatchedClaimFixtureTask(t, ctx, agentID, runtimeID, issueID, "10 minutes", false)
+
+	var workspaceGroupID, agentGroupID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO rule_group (workspace_id, name, description, enabled, source_type, source_ref)
+		VALUES ($1, 'FRO66 Workspace Rules', '', true, 'manual', '{}'::jsonb)
+		RETURNING id
+	`, testWorkspaceID).Scan(&workspaceGroupID); err != nil {
+		t.Fatalf("create workspace rule group: %v", err)
+	}
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO rule_group (workspace_id, name, description, enabled, source_type, source_ref)
+		VALUES ($1, 'FRO66 Agent Rules', '', true, 'manual', '{}'::jsonb)
+		RETURNING id
+	`, testWorkspaceID).Scan(&agentGroupID); err != nil {
+		t.Fatalf("create agent rule group: %v", err)
+	}
+	t.Cleanup(func() {
+		testPool.Exec(ctx, `DELETE FROM rule_group WHERE id = ANY($1::uuid[])`, []string{workspaceGroupID, agentGroupID})
+	})
+	if _, err := testPool.Exec(ctx, `
+		INSERT INTO rule_group_rule (workspace_id, rule_group_id, name, description, content, sort_order, enabled)
+		VALUES ($1, $2, 'Workspace Language', 'workspace rule', 'Use Russian.', 0, true),
+		       ($1, $3, 'Agent Format', 'agent rule', 'Use bullets.', 0, true)
+	`, testWorkspaceID, workspaceGroupID, agentGroupID); err != nil {
+		t.Fatalf("create rule group rules: %v", err)
+	}
+	if _, err := testPool.Exec(ctx, `
+		INSERT INTO rule_group_binding (workspace_id, rule_group_id, enabled, sort_order)
+		VALUES ($1, $2, true, 0);
+		INSERT INTO rule_group_binding (workspace_id, rule_group_id, agent_id, enabled, sort_order)
+		VALUES ($1, $3, $4, true, 0)
+	`, testWorkspaceID, workspaceGroupID, agentGroupID, agentID); err != nil {
+		t.Fatalf("create rule group bindings: %v", err)
+	}
+
+	w := httptest.NewRecorder()
+	req := newDaemonTokenRequest("POST", "/api/daemon/runtimes/"+runtimeID+"/tasks/claim", nil, testWorkspaceID, "rule-groups-claim")
+	req = withURLParam(req, "runtimeId", runtimeID)
+	testHandler.ClaimTaskByRuntime(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ClaimTaskByRuntime: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var resp struct {
+		Task struct {
+			EffectiveRules []EffectiveRuleData `json:"effective_rules"`
+		} `json:"task"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode claim response: %v", err)
+	}
+	if len(resp.Task.EffectiveRules) != 2 {
+		t.Fatalf("effective_rules len = %d, want 2; body=%s", len(resp.Task.EffectiveRules), w.Body.String())
+	}
+	if got := resp.Task.EffectiveRules[0]; got.ScopeType != "workspace" || got.RuleGroupName != "FRO66 Workspace Rules" || got.Content != "Use Russian." {
+		t.Fatalf("workspace rule mismatch: %+v", got)
+	}
+	if got := resp.Task.EffectiveRules[1]; got.ScopeType != "agent" || got.RuleGroupName != "FRO66 Agent Rules" || got.Content != "Use bullets." {
+		t.Fatalf("agent rule mismatch: %+v", got)
+	}
+}
+
 func TestClaimTaskByRuntime_WorkspaceContextEmptyWhenUnset(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("database not available")

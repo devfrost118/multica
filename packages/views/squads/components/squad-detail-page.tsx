@@ -63,6 +63,7 @@ import { toast } from "sonner";
 import type { Squad, SquadMember, SquadMemberStatus, SquadMemberStatusValue, Agent, CreateAgentRequest, MemberWithUser } from "@multica/core/types";
 import { useT } from "../../i18n";
 import { matchesPinyin } from "../../editor/extensions/pinyin-match";
+import { RuleGroupsBindingSection } from "../../rule-groups/components/rule-groups-binding-section";
 
 export function SquadDetailPage() {
   const { t } = useT("squads");
@@ -872,6 +873,10 @@ function SquadDetailInspector({
             <span className="text-muted-foreground">{timeAgo(squad.updated_at)}</span>
           </InspectorRow>
         </div>
+      </div>
+
+      <div className="border-b px-5 py-4">
+        <RuleGroupsBindingSection scopeType="squad" scopeId={squad.id} />
       </div>
     </aside>
   );
