@@ -1415,6 +1415,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 
 	outcome = "claimed"
 	buildStart = time.Now()
+	var effectiveProjectID, effectiveSquadID pgtype.UUID
 
 	// Build response with fresh agent data (name + skills + custom_env + custom_args).
 	resp := taskToResponse(*task, runtimeWorkspaceID)
@@ -1546,6 +1547,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 		if issue, err := h.Queries.GetIssue(r.Context(), task.IssueID); err == nil {
 			resp.WorkspaceID = uuidToString(issue.WorkspaceID)
 			resp.ThreadName = issue.Title
+			effectiveProjectID = issue.ProjectID
 
 			// Squad-leader briefing injection: keyed off the task being a
 			// leader-task (is_leader_task) carrying a squad_id — NOT off the
@@ -1584,6 +1586,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			// so per-agent instructions stay authoritative; the squad briefing
 			// stacks on top as task-specific squad context.
 			if resp.Agent != nil && task.IsLeaderTask && task.SquadID.Valid {
+				effectiveSquadID = task.SquadID
 				if squad, err := h.Queries.GetSquadInWorkspace(r.Context(), db.GetSquadInWorkspaceParams{
 					ID:          task.SquadID,
 					WorkspaceID: issue.WorkspaceID,
@@ -2038,6 +2041,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 				projectUUID, err := util.ParseUUID(qc.ProjectID)
 				if err == nil {
 					resp.ProjectID = qc.ProjectID
+					effectiveProjectID = projectUUID
 					if proj, err := h.Queries.GetProject(r.Context(), projectUUID); err == nil {
 						resp.ProjectTitle = proj.Title
 						resp.ProjectDescription = proj.Description.String
@@ -2119,6 +2123,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 				wsUUID, wsErr := util.ParseUUID(qc.WorkspaceID)
 				squadUUID, sqErr := util.ParseUUID(qc.SquadID)
 				if wsErr == nil && sqErr == nil {
+					effectiveSquadID = squadUUID
 					if squad, err := h.Queries.GetSquadInWorkspace(r.Context(), db.GetSquadInWorkspaceParams{
 						ID:          squadUUID,
 						WorkspaceID: wsUUID,
@@ -2189,6 +2194,31 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			"workspace_id", resp.WorkspaceID,
 			"error", err,
 		)
+	}
+
+	// Rule Groups runtime snapshot (FRO-66): resolve enabled markdown rules at
+	// claim time using scope precedence workspace -> project -> squad -> agent.
+	// The daemon renders this immutable snapshot into the agent brief rather
+	// than re-querying mutable rule state while the task is running.
+	if resp.Agent != nil {
+		rules, err := h.Queries.ListEffectiveRules(r.Context(), db.ListEffectiveRulesParams{
+			WorkspaceID: parseUUID(resp.WorkspaceID),
+			ProjectID:   effectiveProjectID,
+			SquadID:     effectiveSquadID,
+			AgentID:     task.AgentID,
+		})
+		if err != nil {
+			slog.Warn("task claim: failed to load effective rule groups",
+				"task_id", uuidToString(task.ID),
+				"workspace_id", resp.WorkspaceID,
+				"agent_id", uuidToString(task.AgentID),
+				"project_id", uuidToString(effectiveProjectID),
+				"squad_id", uuidToString(effectiveSquadID),
+				"error", err,
+			)
+		} else if len(rules) > 0 {
+			resp.EffectiveRules = effectiveRulesToResponse(rules)
+		}
 	}
 
 	// Mint a task-scoped `mat_` token bound to (agent, task, workspace,
@@ -2332,6 +2362,35 @@ func (h *Handler) ResolveTaskSkillBundles(w http.ResponseWriter, r *http.Request
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"bundles": resolved})
+}
+
+func effectiveRulesToResponse(rows []db.ListEffectiveRulesRow) []EffectiveRuleData {
+	out := make([]EffectiveRuleData, 0, len(rows))
+	for _, row := range rows {
+		hints := json.RawMessage(row.RuleRuntimeHints)
+		if len(hints) == 0 {
+			hints = nil
+		}
+		fileName := ""
+		if row.RuleFileName.Valid {
+			fileName = row.RuleFileName.String
+		}
+		out = append(out, EffectiveRuleData{
+			ScopeType:      row.ScopeType,
+			RuleGroupID:    uuidToString(row.RuleGroupID),
+			RuleGroupName:  row.RuleGroupName,
+			RuleID:         uuidToString(row.RuleID),
+			RuleName:       row.RuleName,
+			Description:    row.RuleDescription,
+			Content:        row.RuleContent,
+			FileName:       fileName,
+			RuntimeHints:   hints,
+			RuleSortOrder:  row.RuleSortOrder,
+			BindingID:      uuidToString(row.BindingID),
+			BindingSortKey: row.BindingSortOrder,
+		})
+	}
+	return out
 }
 
 // trailingUserMessages returns the run of user messages after the last

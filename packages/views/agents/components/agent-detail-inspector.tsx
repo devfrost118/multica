@@ -45,6 +45,7 @@ import { ThinkingPropRow } from "./inspector/thinking-prop-row";
 import { AccessPicker } from "./inspector/access-picker";
 import { LarkAgentBindButton } from "../../settings/components/lark-tab";
 import { SlackAgentBindButton } from "../../settings/components/slack-tab";
+import { RuleGroupsBindingSection } from "../../rule-groups/components/rule-groups-binding-section";
 
 interface InspectorProps {
   agent: Agent;
@@ -254,6 +255,10 @@ export function AgentDetailInspector({
           </div>
         </div>
       )}
+
+      <div className="border-t px-5 py-4">
+        <RuleGroupsBindingSection scopeType="agent" scopeId={agent.id} />
+      </div>
     </aside>
   );
 }
