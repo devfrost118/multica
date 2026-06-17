@@ -103,7 +103,10 @@
     "./i18n/react": "./i18n/react.ts",
     "./i18n/browser": "./i18n/browser.ts",
     "./skills": "./skills/index.ts",
-    "./skills/frontmatter": "./skills/frontmatter.ts"
+    "./skills/frontmatter": "./skills/frontmatter.ts",
+    "./rule-groups": "./rule-groups/index.ts",
+    "./rule-groups/queries": "./rule-groups/queries.ts",
+    "./rule-groups/mutations": "./rule-groups/mutations.ts"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "catalog:",

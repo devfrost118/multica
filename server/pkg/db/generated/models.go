@@ -549,6 +549,50 @@ type ProjectResource struct {
 	CreatedBy    pgtype.UUID        `json:"created_by"`
 }
 
+type RuleGroup struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Enabled     bool               `json:"enabled"`
+	SourceType  string             `json:"source_type"`
+	SourceRef   []byte             `json:"source_ref"`
+	Version     pgtype.Text        `json:"version"`
+	CreatedBy   pgtype.UUID        `json:"created_by"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type RuleGroupBinding struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	RuleGroupID pgtype.UUID        `json:"rule_group_id"`
+	ProjectID   pgtype.UUID        `json:"project_id"`
+	SquadID     pgtype.UUID        `json:"squad_id"`
+	AgentID     pgtype.UUID        `json:"agent_id"`
+	Enabled     bool               `json:"enabled"`
+	SortOrder   int32              `json:"sort_order"`
+	CreatedBy   pgtype.UUID        `json:"created_by"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type RuleGroupRule struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	RuleGroupID  pgtype.UUID        `json:"rule_group_id"`
+	Name         string             `json:"name"`
+	Description  string             `json:"description"`
+	Content      string             `json:"content"`
+	SortOrder    int32              `json:"sort_order"`
+	Enabled      bool               `json:"enabled"`
+	FileName     pgtype.Text        `json:"file_name"`
+	Tags         []string           `json:"tags"`
+	RuntimeHints []byte             `json:"runtime_hints"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Skill struct {
 	ID          pgtype.UUID        `json:"id"`
 	WorkspaceID pgtype.UUID        `json:"workspace_id"`
@@ -592,6 +636,31 @@ type SquadMember struct {
 	MemberID   pgtype.UUID        `json:"member_id"`
 	Role       string             `json:"role"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
+type SysCronExecution struct {
+	ID           pgtype.UUID        `json:"id"`
+	JobName      string             `json:"job_name"`
+	ScopeKind    string             `json:"scope_kind"`
+	ScopeID      string             `json:"scope_id"`
+	PlanTime     pgtype.Timestamptz `json:"plan_time"`
+	Status       string             `json:"status"`
+	Attempt      int32              `json:"attempt"`
+	MaxAttempts  int32              `json:"max_attempts"`
+	NextRetryAt  pgtype.Timestamptz `json:"next_retry_at"`
+	RunnerID     pgtype.Text        `json:"runner_id"`
+	LeaseToken   pgtype.UUID        `json:"lease_token"`
+	HeartbeatAt  pgtype.Timestamptz `json:"heartbeat_at"`
+	StaleAfter   pgtype.Timestamptz `json:"stale_after"`
+	StartedAt    pgtype.Timestamptz `json:"started_at"`
+	FinishedAt   pgtype.Timestamptz `json:"finished_at"`
+	DurationMs   pgtype.Int4        `json:"duration_ms"`
+	RowsAffected pgtype.Int8        `json:"rows_affected"`
+	Result       []byte             `json:"result"`
+	ErrorCode    pgtype.Text        `json:"error_code"`
+	ErrorMsg     pgtype.Text        `json:"error_msg"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type TaskMessage struct {

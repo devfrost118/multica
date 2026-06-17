@@ -12,6 +12,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/analytics"
 	"github.com/multica-ai/multica/server/internal/logger"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
+	builtinrulegroups "github.com/multica-ai/multica/server/internal/service/builtin_rule_groups"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 	"github.com/multica-ai/multica/server/pkg/protocol"
 )
@@ -228,6 +229,14 @@ func (h *Handler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wsID := uuidToString(ws.ID)
+
+	// Seed the platform's builtin rule groups (1C starter set) into the new
+	// workspace. Best-effort and idempotent: a failure here must not fail
+	// workspace creation, and the startup backfill re-runs the same seed for
+	// any workspace that missed it.
+	if err := builtinrulegroups.EnsureBuiltinRuleGroups(r.Context(), h.Queries, ws.ID); err != nil {
+		slog.Warn("failed to seed builtin rule groups for new workspace", "workspace_id", wsID, "error", err)
+	}
 
 	// "Is this the user's first workspace?" is derived in PostHog by looking
 	// at whether they have a prior workspace_created event, not stamped at

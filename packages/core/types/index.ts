@@ -161,3 +161,21 @@ export type {
   BillingCheckoutSessionStatus,
   CreateBillingPortalSessionResponse,
 } from "./billing";
+export type {
+  RuleGroup,
+  RuleGroupScopeType,
+  RuleGroupSummary,
+  RuleGroupRule,
+  RuleGroupWithRules,
+  RuleGroupBinding,
+  EffectiveRuleLayerGroup,
+  EffectiveRuleLayer,
+  EffectiveRule,
+  EffectiveRulesResponse,
+  CreateRuleGroupRequest,
+  UpdateRuleGroupRequest,
+  CreateRuleGroupRuleRequest,
+  UpdateRuleGroupRuleRequest,
+  CreateRuleGroupBindingRequest,
+  UpdateRuleGroupBindingRequest,
+} from "./rule-group";

@@ -855,6 +855,36 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 				})
 			})
 
+			// Rule Groups — workspace-scoped collections of markdown rules that
+			// can be bound to a workspace, project, squad, or agent. Reads are
+			// open to any workspace member; mutations are gated to owner/admin
+			// human actors inside the handlers (a running agent must not be able
+			// to rewrite the rules that govern it).
+			r.Route("/api/rule-groups", func(r chi.Router) {
+				r.Get("/", h.ListRuleGroups)
+				r.Post("/", h.CreateRuleGroup)
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", h.GetRuleGroup)
+					r.Put("/", h.UpdateRuleGroup)
+					r.Delete("/", h.DeleteRuleGroup)
+					r.Get("/rules", h.ListRuleGroupRules)
+					r.Post("/rules", h.CreateRuleGroupRule)
+					r.Put("/rules/{ruleId}", h.UpdateRuleGroupRule)
+					r.Delete("/rules/{ruleId}", h.DeleteRuleGroupRule)
+				})
+			})
+
+			// Rule Group bindings — assign a rule group to a scope target.
+			r.Route("/api/rule-group-bindings", func(r chi.Router) {
+				r.Get("/", h.ListRuleGroupBindings)
+				r.Post("/", h.CreateRuleGroupBinding)
+				r.Put("/{id}", h.UpdateRuleGroupBinding)
+				r.Delete("/{id}", h.DeleteRuleGroupBinding)
+			})
+
+			// Effective rules for a (project, squad, agent) combination.
+			r.Get("/api/rules/effective", h.GetEffectiveRules)
+
 			// Dashboard — workspace-wide token + run-time rollups for the
 			// "/{slug}/dashboard" page. Optional ?project_id filter scopes
 			// the rollup to a single project.

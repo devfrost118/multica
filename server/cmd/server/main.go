@@ -21,6 +21,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/scheduler"
 	"github.com/multica-ai/multica/server/internal/service"
+	builtinrulegroups "github.com/multica-ai/multica/server/internal/service/builtin_rule_groups"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 	"github.com/redis/go-redis/v9"
 )
@@ -250,6 +251,17 @@ func main() {
 	defer analyticsClient.Close()
 
 	queries := db.New(pool)
+
+	// Backfill the platform's builtin rule groups into every existing
+	// workspace. Idempotent and best-effort: run in the background so a slow
+	// or partially failing seed never blocks server startup. New workspaces
+	// get seeded inline at creation time (see CreateWorkspace).
+	go func() {
+		if err := builtinrulegroups.BackfillAll(context.Background(), queries); err != nil {
+			slog.Warn("builtin rule groups backfill encountered errors", "error", err)
+		}
+	}()
+
 	hub.SetAuthorizer(newScopeAuthorizer(queries))
 	// Order matters: subscriber listeners must register BEFORE notification listeners.
 	// The notification listener queries the subscriber table to determine recipients,
