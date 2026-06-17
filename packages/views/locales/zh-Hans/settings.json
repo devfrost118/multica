@@ -390,6 +390,13 @@
     "rule_count": "{{count}} 条规则",
     "binding_count": "{{count}} 个绑定",
     "manage_rules": "管理规则",
+    "page": {
+      "title": "规则",
+      "groups_label": "规则组",
+      "search_placeholder": "搜索规则组…",
+      "select_group": "选择一个规则组以查看其规则。",
+      "no_results": "没有与搜索匹配的规则组。"
+    },
     "toast_created": "规则组已创建",
     "toast_create_failed": "创建规则组失败",
     "toast_updated": "规则组已更新",
