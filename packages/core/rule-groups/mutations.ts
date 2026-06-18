@@ -72,6 +72,9 @@ export function useUpdateRuleGroupRule(groupId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ruleGroupKeys.rules(wsId, groupId) });
       qc.invalidateQueries({ queryKey: ruleGroupKeys.detail(wsId, groupId) });
+      // A structural rule edit adopts a builtin group to manual server-side;
+      // refresh the list so the source_type-driven "built-in" badge updates.
+      qc.invalidateQueries({ queryKey: ruleGroupKeys.list(wsId) });
     },
   });
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -286,18 +287,24 @@ func (h *Handler) authorizeRuleGroupMutation(w http.ResponseWriter, r *http.Requ
 // ruleGroupSourceBuiltin is the source_type of platform-seeded rule groups.
 const ruleGroupSourceBuiltin = "builtin"
 
-// rejectBuiltinMutation blocks structural changes to a builtin rule group.
-// Builtin groups are seeded from the embedded catalog and managed by the
-// platform, so their identity and content must not drift via the API: rename,
-// delete, and add/remove/edit of their rules are rejected. Only enable/disable
-// (group and rule) and bindings stay mutable; content changes go through
-// re-seeding the catalog. Returns true (after writing a 403) when blocked.
-func rejectBuiltinMutation(w http.ResponseWriter, g db.RuleGroup, action string) bool {
-	if g.SourceType == ruleGroupSourceBuiltin {
-		writeError(w, http.StatusForbidden, "builtin rule groups are managed by the platform; "+action+" is not allowed")
-		return true
+// adoptIfBuiltin converts a builtin (platform-seeded) group into a user-owned
+// ("manual") group the first time it is structurally edited — renamed, or its
+// rules created / edited / deleted. "Builtin" is only an origin marker, not a
+// permission gate: users may edit any rule in any group. The adopt step is what
+// makes the edit durable: the startup seeder (builtinrulegroups.BackfillAll)
+// only refreshes source_type='builtin' rows and skips manual ones, so once a
+// group is adopted its content survives the next backfill. Pure enable/disable
+// toggles intentionally do NOT adopt — the seeder never touches `enabled`, so a
+// toggled group safely keeps its builtin identity (and badge). Idempotent and a
+// no-op for groups that are already manual.
+func (h *Handler) adoptIfBuiltin(ctx context.Context, group db.RuleGroup) error {
+	if group.SourceType != ruleGroupSourceBuiltin {
+		return nil
 	}
-	return false
+	return h.Queries.AdoptRuleGroup(ctx, db.AdoptRuleGroupParams{
+		ID:          group.ID,
+		WorkspaceID: group.WorkspaceID,
+	})
 }
 
 // validateScopeTarget checks that a scope target id (project/squad/agent)
@@ -427,9 +434,14 @@ func (h *Handler) UpdateRuleGroup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if group.SourceType == ruleGroupSourceBuiltin && (req.Name != nil || req.Description != nil || req.Version != nil) {
-		writeError(w, http.StatusForbidden, "builtin rule groups are managed by the platform; only enable/disable is editable")
-		return
+	// A structural edit (rename / description / version) adopts a builtin group
+	// as manual so the change survives the next catalog backfill. A pure
+	// enable/disable toggle leaves the group builtin.
+	if req.Name != nil || req.Description != nil || req.Version != nil {
+		if err := h.adoptIfBuiltin(r.Context(), group); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update rule group")
+			return
+		}
 	}
 	params := db.UpdateRuleGroupParams{ID: group.ID, WorkspaceID: group.WorkspaceID}
 	if req.Name != nil {
@@ -462,9 +474,6 @@ func (h *Handler) DeleteRuleGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, ok := h.authorizeRuleGroupMutation(w, r, uuidToString(group.WorkspaceID)); !ok {
-		return
-	}
-	if rejectBuiltinMutation(w, group, "delete") {
 		return
 	}
 	if err := h.Queries.DeleteRuleGroup(r.Context(), db.DeleteRuleGroupParams{
@@ -504,9 +513,6 @@ func (h *Handler) CreateRuleGroupRule(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.authorizeRuleGroupMutation(w, r, uuidToString(group.WorkspaceID)); !ok {
 		return
 	}
-	if rejectBuiltinMutation(w, group, "adding rules") {
-		return
-	}
 	var req CreateRuleGroupRuleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -518,6 +524,13 @@ func (h *Handler) CreateRuleGroupRule(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Content == "" {
 		writeError(w, http.StatusBadRequest, "content is required")
+		return
+	}
+	// Adding a rule is a structural edit: adopt a builtin group as manual (only
+	// once the request is valid) so the new rule is not dropped by the next
+	// catalog backfill.
+	if err := h.adoptIfBuiltin(r.Context(), group); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to create rule")
 		return
 	}
 	params := db.CreateRuleGroupRuleParams{
@@ -574,11 +587,15 @@ func (h *Handler) UpdateRuleGroupRule(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if group.SourceType == ruleGroupSourceBuiltin &&
-		(req.Name != nil || req.Description != nil || req.Content != nil || req.SortOrder != nil ||
-			req.FileName != nil || req.Tags != nil || req.RuntimeHints != nil) {
-		writeError(w, http.StatusForbidden, "builtin rule groups are managed by the platform; only enable/disable is editable")
-		return
+	// Editing a rule's content/metadata is a structural edit: adopt a builtin
+	// group as manual so the edit survives the next catalog backfill. A pure
+	// enable/disable toggle leaves the group builtin.
+	if req.Name != nil || req.Description != nil || req.Content != nil || req.SortOrder != nil ||
+		req.FileName != nil || req.Tags != nil || req.RuntimeHints != nil {
+		if err := h.adoptIfBuiltin(r.Context(), group); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update rule")
+			return
+		}
 	}
 	params := db.UpdateRuleGroupRuleParams{ID: ruleUUID, RuleGroupID: group.ID}
 	if req.Name != nil {
@@ -629,9 +646,6 @@ func (h *Handler) DeleteRuleGroupRule(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.authorizeRuleGroupMutation(w, r, uuidToString(group.WorkspaceID)); !ok {
 		return
 	}
-	if rejectBuiltinMutation(w, group, "deleting rules") {
-		return
-	}
 	ruleUUID, ok := parseUUIDOrBadRequest(w, chi.URLParam(r, "ruleId"), "rule id")
 	if !ok {
 		return
@@ -642,6 +656,13 @@ func (h *Handler) DeleteRuleGroupRule(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		writeError(w, http.StatusNotFound, "rule not found")
+		return
+	}
+	// Deleting a rule is a structural edit: adopt a builtin group as manual (only
+	// once the target rule is resolved) so the rule is not re-created by the next
+	// catalog backfill.
+	if err := h.adoptIfBuiltin(r.Context(), group); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete rule")
 		return
 	}
 	if err := h.Queries.DeleteRuleGroupRule(r.Context(), db.DeleteRuleGroupRuleParams{
