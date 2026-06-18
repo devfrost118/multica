@@ -40,6 +40,14 @@ UPDATE rule_group SET
 WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
+-- name: AdoptRuleGroup :exec
+-- Convert a builtin (platform-seeded) group into a user-owned ("manual") group
+-- on its first structural edit, so the startup seeder — which only refreshes
+-- source_type='builtin' rows and skips manual ones — stops overwriting the
+-- user's changes. Idempotent: a no-op for groups that are already manual.
+UPDATE rule_group SET source_type = 'manual', updated_at = now()
+WHERE id = $1 AND workspace_id = $2 AND source_type = 'builtin';
+
 -- name: DeleteRuleGroup :exec
 -- workspace_id is a SQL-layer tenant guard; cascades to rules and bindings.
 DELETE FROM rule_group WHERE id = $1 AND workspace_id = $2;
