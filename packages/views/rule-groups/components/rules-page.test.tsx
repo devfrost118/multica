@@ -139,16 +139,27 @@ describe("RulesPage", () => {
     expect(screen.getByText("completion.md")).toBeTruthy();
   });
 
-  it("marks builtin groups read-only: shows the hint and hides the Add rule action", () => {
+  it("keeps the built-in badge but exposes rule editing for builtin groups", () => {
     groupsRef.current = [group({ id: "b1", name: "Multica Core", source_type: "builtin" })];
+    detailRef.current = {
+      rules: [
+        {
+          id: "r1",
+          name: "Always run tests",
+          content: "Run the suite before claiming done.",
+          enabled: true,
+          file_name: "completion.md",
+        },
+      ],
+    };
     render(<RulesPage />, { wrapper: Wrapper });
+    // The built-in badge stays as a neutral origin indicator...
     expect(screen.getAllByText("Built-in").length).toBeGreaterThanOrEqual(1);
-    expect(
-      screen.getByText(
-        "Built-in groups are managed by the platform. You can enable or disable them, but not edit their content.",
-      ),
-    ).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Add rule/ })).toBeNull();
+    // ...but "built-in" no longer means read-only: the hint is gone and the
+    // group's rules can be created/edited.
+    expect(screen.queryByText(/managed by the platform/i)).toBeNull();
+    expect(screen.getByText("Always run tests")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Add rule/ })).toBeTruthy();
   });
 
   it("hides management controls and shows a hint for non-admins", () => {
