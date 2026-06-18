@@ -6,10 +6,22 @@
     "new_skill": "New skill",
     "search_placeholder": "Search skills…",
     "scopes": {
-      "all": { "label": "All", "description": "All skills in this workspace" },
-      "used": { "label": "In use", "description": "Skills assigned to at least one agent" },
-      "unused": { "label": "Unused", "description": "Skills not assigned to any agent" },
-      "mine": { "label": "Created by me", "description": "Skills you created" }
+      "all": {
+        "label": "All",
+        "description": "All skills in this workspace"
+      },
+      "used": {
+        "label": "In use",
+        "description": "Skills assigned to at least one agent"
+      },
+      "unused": {
+        "label": "Unused",
+        "description": "Skills not assigned to any agent"
+      },
+      "mine": {
+        "label": "Created by me",
+        "description": "Skills you created"
+      }
     },
     "empty": {
       "title": "No skills yet",
@@ -303,6 +315,7 @@
     "bulk_summary_created": "Created",
     "bulk_summary_updated": "Updated",
     "bulk_summary_conflicts": "Conflicts",
+    "bulk_summary_imported": "Imported",
     "bulk_summary_skipped": "Skipped",
     "bulk_summary_failed": "Failed",
     "conflict_single_title": "A skill with this name already exists",

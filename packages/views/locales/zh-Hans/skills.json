@@ -307,6 +307,7 @@
     "bulk_summary_created": "已创建",
     "bulk_summary_updated": "已更新",
     "bulk_summary_conflicts": "冲突",
+    "bulk_summary_imported": "已导入",
     "bulk_summary_skipped": "已跳过",
     "bulk_summary_failed": "失败",
     "conflict_single_title": "工作区里已存在同名 skill",
