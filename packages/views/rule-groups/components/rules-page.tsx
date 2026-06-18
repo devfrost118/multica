@@ -426,7 +426,9 @@ function GroupDetail({
 }) {
   const { t } = useT("settings");
   const isBuiltin = group ? isBuiltinGroup(group) : false;
-  const readOnly = !canManage || isBuiltin;
+  // "Built-in" is only an origin marker — it must not gate editing. Editing is
+  // gated solely by the workspace role, identical to a manual group.
+  const readOnly = !canManage;
 
   const { data: detail, isLoading } = useQuery({
     ...ruleGroupDetailOptions(wsId, group?.id ?? ""),
@@ -523,7 +525,7 @@ function GroupDetail({
                 aria-label={group.name}
               />
             )}
-            {canManage && !isBuiltin && (
+            {canManage && (
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -546,11 +548,6 @@ function GroupDetail({
             )}
           </div>
         </div>
-        {isBuiltin && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            {t(($) => $.rule_groups.builtin_readonly_hint)}
-          </p>
-        )}
       </div>
 
       {/* Rules list / inline editor */}

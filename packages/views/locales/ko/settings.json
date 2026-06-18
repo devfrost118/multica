@@ -681,7 +681,6 @@
     "description_label": "설명",
     "description_placeholder": "이 규칙은 무엇을 강제하나요?",
     "enabled_label": "활성화됨",
-    "builtin_readonly_hint": "기본 제공 그룹은 플랫폼에서 관리합니다. 활성화/비활성화는 가능하지만 내용은 편집할 수 없습니다.",
     "create_dialog_title": "규칙 그룹 만들기",
     "edit_dialog_title": "규칙 그룹 편집",
     "save": "저장",

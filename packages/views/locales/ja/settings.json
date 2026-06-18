@@ -680,7 +680,6 @@
     "description_label": "説明",
     "description_placeholder": "これらのルールは何を強制しますか？",
     "enabled_label": "有効",
-    "builtin_readonly_hint": "ビルトイングループはプラットフォームが管理します。有効・無効の切り替えはできますが、内容は編集できません。",
     "create_dialog_title": "ルールグループを作成",
     "edit_dialog_title": "ルールグループを編集",
     "save": "保存",
