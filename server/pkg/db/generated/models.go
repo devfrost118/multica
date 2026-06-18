@@ -596,6 +596,7 @@ type RuntimeProfile struct {
 	Enabled        bool               `json:"enabled"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
 
 type RuleGroup struct {
 	ID          pgtype.UUID        `json:"id"`
