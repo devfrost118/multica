@@ -275,6 +275,9 @@
     "bulk_complete_hint": "Импорт завершён.",
     "bulk_cancelled_hint": "Импорт отменён.",
     "bulk_done_button": "Готово",
+    "bulk_summary_created": "Создано",
+    "bulk_summary_updated": "Обновлено",
+    "bulk_summary_conflicts": "Конфликты",
     "bulk_summary_imported": "Импортировано",
     "bulk_summary_skipped": "Пропущено",
     "bulk_summary_failed": "С ошибкой"
