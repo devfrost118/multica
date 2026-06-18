@@ -6,10 +6,22 @@
     "new_skill": "新規スキル",
     "search_placeholder": "スキルを検索…",
     "scopes": {
-      "all": { "label": "すべて", "description": "このワークスペースのすべてのスキル" },
-      "used": { "label": "使用中", "description": "1 つ以上のエージェントに割り当てられたスキル" },
-      "unused": { "label": "未使用", "description": "どのエージェントにも割り当てられていないスキル" },
-      "mine": { "label": "自分が作成", "description": "あなたが作成したスキル" }
+      "all": {
+        "label": "すべて",
+        "description": "このワークスペースのすべてのスキル"
+      },
+      "used": {
+        "label": "使用中",
+        "description": "1 つ以上のエージェントに割り当てられたスキル"
+      },
+      "unused": {
+        "label": "未使用",
+        "description": "どのエージェントにも割り当てられていないスキル"
+      },
+      "mine": {
+        "label": "自分が作成",
+        "description": "あなたが作成したスキル"
+      }
     },
     "empty": {
       "title": "まだスキルがありません",
@@ -272,6 +284,7 @@
     "bulk_summary_created": "作成済み",
     "bulk_summary_updated": "更新済み",
     "bulk_summary_conflicts": "競合",
+    "bulk_summary_imported": "インポート済み",
     "bulk_summary_skipped": "スキップ",
     "bulk_summary_failed": "失敗",
     "conflict_single_title": "同じ名前のスキルがすでに存在します",
