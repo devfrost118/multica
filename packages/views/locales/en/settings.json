@@ -487,7 +487,6 @@
     "description_label": "Description",
     "description_placeholder": "What do these rules enforce?",
     "enabled_label": "Enabled",
-    "builtin_readonly_hint": "Built-in groups are managed by the platform. You can enable or disable them, but not edit their content.",
     "create_dialog_title": "Create rule group",
     "edit_dialog_title": "Edit rule group",
     "save": "Save",

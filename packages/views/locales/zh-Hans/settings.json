@@ -487,7 +487,6 @@
     "description_label": "描述",
     "description_placeholder": "这些规则要求什么？",
     "enabled_label": "已启用",
-    "builtin_readonly_hint": "内置规则组由平台管理。你可以启用或禁用它们，但无法编辑其内容。",
     "create_dialog_title": "创建规则组",
     "edit_dialog_title": "编辑规则组",
     "save": "保存",
