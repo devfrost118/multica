@@ -390,6 +390,13 @@
     "rule_count": "규칙 {{count}}개",
     "binding_count": "연결 {{count}}개",
     "manage_rules": "규칙 관리",
+    "page": {
+      "title": "규칙",
+      "groups_label": "규칙 그룹",
+      "search_placeholder": "규칙 그룹 검색…",
+      "select_group": "규칙을 보려면 규칙 그룹을 선택하세요.",
+      "no_results": "검색과 일치하는 규칙 그룹이 없습니다."
+    },
     "toast_created": "규칙 그룹이 생성되었습니다",
     "toast_create_failed": "규칙 그룹 생성에 실패했습니다",
     "toast_updated": "규칙 그룹이 업데이트되었습니다",
