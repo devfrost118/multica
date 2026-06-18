@@ -434,7 +434,7 @@
       "attach": "ルールグループを割り当て",
       "attach_dialog_title": "ルールグループを割り当て",
       "none_available": "すべてのルールグループが既に割り当て済みです。",
-      "no_groups": "ルールグループがまだありません。ワークスペース設定で作成してください。",
+      "no_groups": "ルールグループがまだありません。「ルール」ページで作成してください。",
       "detach_tooltip": "解除",
       "detach_dialog_title": "ルールグループを解除",
       "detach_dialog_description": "この{{scope}}から「{{name}}」を解除しますか？グループ自体は削除されません。",
@@ -453,6 +453,13 @@
       "layer_project": "プロジェクト",
       "layer_squad": "スクワッド",
       "layer_agent": "エージェント"
+    },
+    "page": {
+      "title": "ルール",
+      "groups_label": "ルールグループ",
+      "search_placeholder": "ルールグループを検索…",
+      "select_group": "ルールを表示するルールグループを選択してください。",
+      "no_results": "検索に一致するルールグループはありません。"
     }
   }
 }

@@ -435,7 +435,7 @@
       "attach": "Attach rule group",
       "attach_dialog_title": "Attach rule group",
       "none_available": "All rule groups are already attached.",
-      "no_groups": "No rule groups exist yet. Create one in workspace settings.",
+      "no_groups": "No rule groups exist yet. Create one on the Rules page.",
       "detach_tooltip": "Detach",
       "detach_dialog_title": "Detach rule group",
       "detach_dialog_description": "Detach \"{{name}}\" from this {{scope}}? The group itself is not deleted.",
@@ -454,6 +454,13 @@
       "layer_project": "Project",
       "layer_squad": "Squad",
       "layer_agent": "Agent"
+    },
+    "page": {
+      "title": "Rules",
+      "groups_label": "Rule groups",
+      "search_placeholder": "Search rule groups…",
+      "select_group": "Select a rule group to see its rules.",
+      "no_results": "No rule groups match your search."
     }
   }
 }

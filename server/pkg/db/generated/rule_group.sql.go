@@ -11,6 +11,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const adoptRuleGroup = `-- name: AdoptRuleGroup :exec
+UPDATE rule_group SET source_type = 'manual', updated_at = now()
+WHERE id = $1 AND workspace_id = $2 AND source_type = 'builtin'
+`
+
+type AdoptRuleGroupParams struct {
+	ID          pgtype.UUID `json:"id"`
+	WorkspaceID pgtype.UUID `json:"workspace_id"`
+}
+
+// Convert a builtin (platform-seeded) group into a user-owned ("manual") group
+// on its first structural edit, so the startup seeder — which only refreshes
+// source_type='builtin' rows and skips manual ones — stops overwriting the
+// user's changes. Idempotent: a no-op for groups that are already manual.
+func (q *Queries) AdoptRuleGroup(ctx context.Context, arg AdoptRuleGroupParams) error {
+	_, err := q.db.Exec(ctx, adoptRuleGroup, arg.ID, arg.WorkspaceID)
+	return err
+}
+
 const createRuleGroup = `-- name: CreateRuleGroup :one
 INSERT INTO rule_group (
     workspace_id, name, description, enabled, source_type, source_ref, version, created_by
