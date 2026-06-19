@@ -54,7 +54,17 @@
     "active_count_one": "{{count}} фильтр",
     "active_count_few": "{{count}} фильтра",
     "active_count_many": "{{count}} фильтров",
-    "active_count_other": "{{count}} фильтров"
+    "active_count_other": "{{count}} фильтров",
+    "section_date": "Дата",
+    "date_field": "Поле",
+    "date_field_created": "Создан",
+    "date_field_updated": "Обновлен",
+    "date_today": "Сегодня",
+    "date_last_3_days": "За последние 3 дня",
+    "date_last_7_days": "За последние 7 дней",
+    "date_custom_range": "Произвольная дата или диапазон",
+    "date_apply": "Применить",
+    "date_clear": "Сбросить фильтр по дате"
   },
   "display": {
     "tooltip": "Настройки отображения",
@@ -306,8 +316,33 @@
       "bar_authors_more_many": "{{names}} и ещё {{count}}",
       "bar_authors_more_other": "{{names}} и ещё {{count}}",
       "resolve_failed": "Не удалось закрыть ветку",
-      "unresolve_failed": "Не удалось снова открыть ветку"
-    }
+      "unresolve_failed": "Не удалось снова открыть ветку",
+      "resolve_thread_action": "Разрешить ветку",
+      "unresolve_thread_action": "Снова открыть ветку",
+      "resolve_with_comment_action": "Разрешить ветку с комментарием",
+      "resolution_badge": "Разрешение",
+      "fold_one": "{{count}} комментарий от {{authors}}",
+      "fold_other": "{{count}} комментариев от {{authors}}"
+    },
+    "trigger_source_issue_assignee": "исполнитель",
+    "trigger_source_mention_agent": "@упоминание",
+    "trigger_source_mention_squad_leader": "отряд",
+    "trigger_source_unknown": "триггер",
+    "trigger_skipped_label": "Пропущено",
+    "trigger_wont_trigger": "Не запустится в этот раз",
+    "trigger_none_will_trigger": "Агенты не будут запущены",
+    "trigger_reason_mention_squad_leader": "Возглавляет squad, упомянутый здесь.",
+    "trigger_reason_unknown": "Запустится с этого комментария.",
+    "trigger_will_start": "Запустится при отправке",
+    "trigger_will_start_count_one": "{{count}} агент запустится при отправке",
+    "trigger_will_start_count_other": "{{count}} агентов запустится при отправке",
+    "trigger_starts_now": "Запускается сразу.",
+    "trigger_starts_when_online": "Сейчас офлайн — запустится, когда появится в сети.",
+    "trigger_click_to_skip": "Нажмите, чтобы пропустить в этот раз.",
+    "trigger_click_to_manage": "Нажмите, чтобы выбрать, кто запустится в этот раз.",
+    "trigger_click_to_restore": "Не запустится в этот раз. Нажмите, чтобы восстановить.",
+    "trigger_preview_title": "Запустится при отправке",
+    "trigger_chip_aria": "{{name}} триггер: {{state}}"
   },
   "reply": {
     "placeholder": "Оставьте ответ...",
@@ -323,7 +358,9 @@
     "status_queued": "В очереди",
     "chip_label": "работает",
     "empty_hover": "Сейчас не работает ни один агент",
-    "filter_active_label": "Показаны только работающие агенты"
+    "filter_active_label": "Показаны только работающие агенты",
+    "hover_header_queued_one": "{{count}} агент в очереди",
+    "hover_header_queued_other": "{{count}} агентов в очереди"
   },
   "agent_live": {
     "is_working": "{{name}} работает",
