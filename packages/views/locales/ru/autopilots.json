@@ -8,13 +8,21 @@
       "agent": "Агент",
       "mode": "Режим",
       "status": "Статус",
-      "last_run": "Последний запуск"
+      "last_run": "Последний запуск",
+      "created_by": "Создатель",
+      "assignee": "Исполнитель",
+      "trigger": "Триггер",
+      "next_run": "Следующий запуск",
+      "created": "Создан"
     },
     "last_run_empty": "--",
     "empty": {
       "title": "Пока нет автопилотов",
       "hint": "Планируйте повторяющиеся tasks для ваших AI-агентов. Выберите шаблон или начните с нуля."
-    }
+    },
+    "scope_all": "Все",
+    "no_matches": "Нет подходящих автоматизаций",
+    "retry": "Повторить"
   },
   "status": {
     "active": "Активен",
@@ -88,7 +96,10 @@
       "cancel": "Отмена",
       "confirm": "Удалить",
       "deleting": "Удаление..."
-    }
+    },
+    "field_created_by": "Создатель",
+    "field_subscribers": "Подписчики",
+    "field_subscribers_none": "Нет"
   },
   "run_status": {
     "issue_created": "Задача создана",
@@ -289,7 +300,14 @@
       "thursday": "Четверг",
       "friday": "Пятница",
       "saturday": "Суббота"
-    }
+    },
+    "section_subscribers": "Подписчики",
+    "subscribers_hint": "Автоматически подписаны на каждую issue, созданную этим автопилотом",
+    "subscribers_empty": "Нет подписчиков — добавьте коллегу, чтобы уведомлять его о каждом запуске",
+    "subscribers_add": "Добавить подписчика",
+    "subscribers_search_placeholder": "Поиск участников по имени…",
+    "subscribers_no_results": "Нет подходящих участников",
+    "subscribers_remove_tooltip": "Удалить"
   },
   "trigger_config": {
     "frequencies": {
@@ -345,5 +363,39 @@
   },
   "timezone_picker": {
     "search_placeholder": "Поиск часового пояса..."
+  },
+  "toolbar": {
+    "result_count_title": "Подходящие автоматизации / все автоматизации",
+    "filter_label": "Фильтр",
+    "filter_active_count_one": "{{count}} фильтр",
+    "filter_active_count_other": "{{count}} фильтров",
+    "clear_filters": "Очистить фильтры",
+    "section_assignee": "Исполнитель",
+    "section_mode": "Режим",
+    "section_trigger": "Триггер",
+    "section_creator": "Создатель",
+    "display": "Отображение",
+    "sort_by": "Сортировать по",
+    "direction_asc": "По возрастанию",
+    "direction_desc": "По убыванию",
+    "section_columns": "Колонки"
+  },
+  "actions": {
+    "row_menu": "Действия с автоматизацией",
+    "pause": "Пауза",
+    "resume": "Возобновить",
+    "delete": "Удалить",
+    "selected_one": "{{count}} выбрано",
+    "selected_other": "{{count}} выбрано",
+    "clear_selection": "Очистить выбор",
+    "delete_dialog": {
+      "title": "Удалить автоматизацию?",
+      "description_one": "Это навсегда удалит \"{{name}}\" и историю запусков.",
+      "description_other": "Это навсегда удалит {{count}} автоматизаций и их историю запусков.",
+      "warning": "Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirm": "Удалить навсегда",
+      "deleting": "Удаление…"
+    }
   }
 }

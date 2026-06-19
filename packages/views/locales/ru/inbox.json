@@ -44,7 +44,8 @@
     "agent_completed": "Агент завершил работу",
     "reaction_added": "Реакция",
     "quick_create_done": "Создано агентом",
-    "quick_create_failed": "Не удалось создать агентом"
+    "quick_create_failed": "Не удалось создать агентом",
+    "issue_subscribed": "Подписан"
   },
   "labels": {
     "set_status_to": "Установить статус",
