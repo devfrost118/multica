@@ -3,7 +3,17 @@
     "title": "Отряды",
     "new_button": "Новый отряд",
     "empty_no_squads": "Пока нет отрядов. Создайте первый, чтобы начать.",
-    "empty_no_match": "Нет отрядов, подходящих под фильтры."
+    "empty_no_match": "Нет отрядов, подходящих под фильтры.",
+    "table": {
+      "name": "Отряд",
+      "leader": "Лидер",
+      "members": "Участники",
+      "creator": "Создатель",
+      "created": "Создан"
+    },
+    "no_matches": "Нет подходящих squad",
+    "row_menu": "Действия со squad",
+    "archive_action": "Архивировать"
   },
   "inspector": {
     "details_section": "Сведения",
@@ -14,7 +24,8 @@
     "description": "«{{name}}» будет архивирован. Задачи, назначенные этому отряду, будут переданы его лидеру. Это действие необратимо — создайте новый отряд, если маршрутизация понадобится снова.",
     "cancel": "Отмена",
     "confirm": "В архив",
-    "archiving": "Архивирование…"
+    "archiving": "Архивирование…",
+    "success": "Squad заархивирован"
   },
   "name_editor": {
     "cancel": "Отмена"
@@ -57,7 +68,8 @@
     "status_unstable": "Нестабильно",
     "issue_status_blocked": "blocked",
     "active_issue_more": "и ещё {{count}}",
-    "last_active_label": "активность {{time}}"
+    "last_active_label": "активность {{time}}",
+    "status_archived": "В архиве"
   },
   "profile_card": {
     "unavailable": "Отряд недоступен",
@@ -77,5 +89,21 @@
     "description": "Инструкции отряда добавляются в промпт агента-лидера каждый раз, когда он работает над задачей, назначенной этому отряду. С их помощью можно дать лидеру общие для отряда указания, рабочие договорённости или контекст, которому он должен следовать в каждой task.",
     "unsaved_changes": "Несохранённые изменения",
     "save_button": "Сохранить"
+  },
+  "scope": {
+    "mine": "Мои",
+    "all": "Все"
+  },
+  "toolbar": {
+    "display": "Отображение",
+    "sort_by": "Сортировать по",
+    "direction_asc": "По возрастанию",
+    "direction_desc": "По убыванию",
+    "section_columns": "Колонки",
+    "result_count_title": "Подходящие squad / все squad",
+    "filter_label": "Фильтр",
+    "filter_active_count_one": "{{count}} фильтр",
+    "filter_active_count_other": "{{count}} фильтров",
+    "clear_filters": "Очистить фильтры"
   }
 }
