@@ -13,7 +13,8 @@
   },
   "scope": {
     "mine": "Мои",
-    "all": "Все"
+    "all": "Все",
+    "archived": "В архиве"
   },
   "sort": {
     "label_recent": "Недавняя активность",
@@ -25,7 +26,8 @@
     "all": "Все",
     "online": "Онлайн",
     "unstable": "Нестабильно",
-    "offline": "Офлайн"
+    "offline": "Офлайн",
+    "archived": "В архиве"
   },
   "workload": {
     "working": "В работе",
@@ -46,7 +48,9 @@
     "no_archived": "Пока нет архивных агентов.",
     "search_active": "Нет агентов по запросу «{{query}}».",
     "search_active_filtered": "Нет агентов по запросу «{{query}}» в этом фильтре.",
-    "no_filter_match": "Нет агентов, подходящих под этот фильтр."
+    "no_filter_match": "Нет агентов, подходящих под этот фильтр.",
+    "search_runtime_filtered": "Нет агентов на \"{{machine}}\", подходящих под \"{{query}}\".",
+    "runtime_filtered": "Нет агентов на \"{{machine}}\"."
   },
   "columns": {
     "agent": "Агент",
@@ -54,7 +58,11 @@
     "workload": "Загрузка",
     "runtime": "Среда выполнения",
     "activity_7d": "Активность (7 дн.)",
-    "runs": "Запуски"
+    "runs": "Запуски",
+    "last_active": "Последняя активность",
+    "model": "Модель",
+    "created": "Создан",
+    "owner": "Владелец"
   },
   "row": {
     "you": "Вы",
@@ -62,7 +70,9 @@
     "no_description": "Без описания",
     "fallback_runtime_cloud": "Облако",
     "fallback_runtime_local": "Локально",
-    "actions_aria": "Действия строки"
+    "actions_aria": "Действия строки",
+    "task_count_one": "{{count}} task",
+    "task_count_other": "{{count}} tasks"
   },
   "activity_tooltip": {
     "created_today": "Создан сегодня",
@@ -154,7 +164,8 @@
     "edit_description_title": "Изменить описание",
     "description_placeholder": "Что делает этот агент?",
     "save": "Сохранить",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "section_integrations": "Интеграции"
   },
   "skill_attach": {
     "trigger_aria": "Прикрепить навык рабочей области",
@@ -207,7 +218,9 @@
     "discard_dialog_title": "Отменить несохранённые изменения?",
     "discard_dialog_description": "На этой вкладке есть несохранённые изменения. Если уйти сейчас, они будут потеряны.",
     "discard_keep": "Продолжить редактирование",
-    "discard_confirm": "Отменить изменения"
+    "discard_confirm": "Отменить изменения",
+    "integrations": "Интеграции",
+    "runtime_config": "Маршрутизация"
   },
   "create_dialog": {
     "title_create": "Создать агента",
@@ -384,6 +397,30 @@
       "started_prefix": "Начато {{when}}",
       "dispatched_prefix": "Отправлено {{when}}",
       "queued_prefix": "В очереди с {{when}}"
+    },
+    "runtime_config": {
+      "intro": "Выберите, как среда выполнения OpenClaw обрабатывает ходы этого агента. Локальный режим запускает агента внутри процесса демона. Режим Gateway перенаправляет каждый ход на OpenClaw Gateway — полезно, когда хост демона является легковесным координатором, а агент должен работать на более мощной машине.",
+      "mode_label": "Режим маршрутизации",
+      "mode_local": "Локально",
+      "mode_gateway": "Gateway",
+      "mode_local_hint": "По умолчанию. Демон запускает `openclaw agent --local …` и цикл агента выполняется на этом хосте.",
+      "mode_gateway_hint": "Демон подключается к OpenClaw Gateway. Оставьте поля конечной точки пустыми, чтобы унаследовать их из `~/.openclaw/openclaw.json` хоста демона.",
+      "gateway_legend": "Конечная точка Gateway",
+      "host_label": "Хост",
+      "host_placeholder": "gw.internal",
+      "port_label": "Порт",
+      "port_invalid": "Порт должен быть положительным целым числом.",
+      "token_label": "Токен авторизации",
+      "token_placeholder": "Bearer-токен, выданный шлюзом",
+      "token_masked_placeholder": "Сохранено — отправьте новое значение для замены или оставьте пустым, чтобы сохранить текущее",
+      "tls_label": "Использовать TLS",
+      "tls_hint": "Подключаться по https:// вместо http://",
+      "saved_toast": "Настройки маршрутизации сохранены",
+      "save_failed_toast": "Не удалось сохранить настройки маршрутизации"
+    },
+    "integrations": {
+      "intro": "Подключите этого агента к внешним чат-платформам, чтобы люди могли работать с ним там, где им удобно.",
+      "members_note": "Только владельцы и администраторы рабочей области могут привязать Lark Bot к агенту. Посмотреть подключенных ботов можно в Настройки → Интеграции."
     }
   },
   "char_counter": {
@@ -448,5 +485,41 @@
     "runtime_offline": "Демон офлайн",
     "runtime_recovery": "Демон перезапущен",
     "manual": "Отменено пользователем"
+  },
+  "runtime_filter": {
+    "all": "Все среды выполнения",
+    "section_local": "Локально",
+    "section_remote": "Удаленно",
+    "section_cloud": "Облако",
+    "agent_count_one": "{{count}} агент",
+    "agent_count_other": "{{count}} агентов",
+    "empty": "Пока нет машин"
+  },
+  "last_active": {
+    "today": "Сегодня",
+    "days_ago_one": "{{count}} д назад",
+    "days_ago_other": "{{count}} д назад",
+    "none": "Нет активности (30 д)"
+  },
+  "toolbar": {
+    "result_count_title": "Подходящие агенты / агенты в области",
+    "filter_label": "Фильтр",
+    "filter_active_count_one": "{{count}} фильтр",
+    "filter_active_count_other": "{{count}} фильтров",
+    "clear_filters": "Очистить фильтры",
+    "section_availability": "Доступность",
+    "section_runtime": "Среда выполнения",
+    "display": "Отображение",
+    "sort_by": "Сортировать по",
+    "direction_asc": "По возрастанию",
+    "direction_desc": "По убыванию",
+    "section_columns": "Колонки",
+    "section_owner": "Владелец",
+    "section_model": "Модель"
+  },
+  "actions": {
+    "selected_one": "{{count}} выбрано",
+    "selected_other": "{{count}} выбрано",
+    "clear_selection": "Очистить выбор"
   }
 }

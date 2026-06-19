@@ -7,7 +7,17 @@
     "view_compact": "Компактно",
     "view_comfortable": "Свободно",
     "search_placeholder": "Поиск проектов...",
-    "no_search_results": "Ничего не найдено по запросу"
+    "no_search_results": "Ничего не найдено по запросу",
+    "view_table": "Таблица",
+    "view_cards": "Карточки",
+    "row_menu": "Действия с проектом",
+    "pin": "Закрепить на боковой панели",
+    "unpin": "Открепить",
+    "delete": "Удалить",
+    "no_matches": "Нет подходящих проектов",
+    "selected_one": "{{count}} выбрано",
+    "selected_other": "{{count}} выбрано",
+    "clear_selection": "Очистить выбор"
   },
   "table": {
     "name": "Название",
@@ -15,7 +25,8 @@
     "status": "Статус",
     "progress": "Прогресс",
     "lead": "Руководитель",
-    "created": "Создан"
+    "created": "Создан",
+    "issues": "Issues"
   },
   "status": {
     "planned": "Запланирован",
@@ -116,5 +127,21 @@
   },
   "chip": {
     "fallback_label": "Проект"
+  },
+  "toolbar": {
+    "result_count_title": "Подходящие проекты / все проекты",
+    "filter_label": "Фильтр",
+    "filter_active_count_one": "{{count}} фильтр",
+    "filter_active_count_other": "{{count}} фильтров",
+    "clear_filters": "Очистить фильтры",
+    "section_status": "Статус",
+    "section_priority": "Приоритет",
+    "section_lead": "Руководитель",
+    "display": "Отображение",
+    "sort_by": "Сортировать по",
+    "direction_asc": "По возрастанию",
+    "direction_desc": "По убыванию",
+    "section_columns": "Колонки",
+    "view": "Вид"
   }
 }

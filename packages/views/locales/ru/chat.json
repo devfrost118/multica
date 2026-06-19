@@ -13,7 +13,9 @@
     "placeholder_named": "Скажите {{name}}, что нужно сделать…",
     "placeholder_default": "Скажите, что нужно сделать…",
     "send_tooltip": "Отправить",
-    "stop_tooltip": "Остановить"
+    "stop_tooltip": "Остановить",
+    "send_failed_toast": "Не удалось отправить сообщение",
+    "attachment_bind_failed_toast": "Сообщение отправлено, но файлы не были прикреплены. Пожалуйста, попробуйте еще раз через минуту."
   },
   "message_list": {
     "show_details": "Показать подробности",
@@ -32,7 +34,8 @@
     "process_steps_other": "{{count}} шагов",
     "copy_action": "Копировать",
     "copied_toast": "Скопировано",
-    "copy_failed_toast": "Не удалось скопировать"
+    "copy_failed_toast": "Не удалось скопировать",
+    "loading_older": "Загрузка старых сообщений…"
   },
   "session_history": {
     "untitled": "Без названия",
@@ -51,6 +54,21 @@
       "cancel": "Отмена",
       "confirm": "Удалить",
       "confirming": "Удаление..."
+    },
+    "row_stop_aria": "Остановить текущий запуск",
+    "stop_action": "Остановить",
+    "row_subtitle": {
+      "working": "В работе",
+      "completed": "Завершено",
+      "new_reply": "Новый ответ"
+    },
+    "stop_dialog": {
+      "title": "Остановить этот запуск?",
+      "description_with_title": "Это отменит текущую task агента в \"{{title}}\". Частичный результат останется в чате.",
+      "description_default": "Это отменит текущую task агента. Частичный результат останется в чате.",
+      "cancel": "Продолжить выполнение",
+      "confirm": "Остановить запуск",
+      "confirming": "Остановка..."
     }
   },
   "window": {
@@ -71,7 +89,9 @@
     "archived_group_one": "{{count}} архивный чат",
     "archived_group_few": "{{count}} архивных чата",
     "archived_group_many": "{{count}} архивных чатов",
-    "archived_group_other": "{{count}} архивных чатов"
+    "archived_group_other": "{{count}} архивных чатов",
+    "history_group": "История чата",
+    "agent_filter_placeholder": "Поиск агентов..."
   },
   "empty_state": {
     "first_time_title": "Общайтесь со своими агентами",
