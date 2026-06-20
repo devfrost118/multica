@@ -222,6 +222,25 @@ type ProjectResourceData struct {
 	Label        string          `json:"label,omitempty"`
 }
 
+// EffectiveRuleData is a snapshot of one enabled rule resolved for a claimed
+// task. The claim endpoint orders rows by scope precedence
+// (workspace -> project -> squad -> agent) and within-scope sort keys so the
+// daemon can render deterministic markdown without re-querying server state.
+type EffectiveRuleData struct {
+	ScopeType      string          `json:"scope_type"`
+	RuleGroupID    string          `json:"rule_group_id"`
+	RuleGroupName  string          `json:"rule_group_name"`
+	RuleID         string          `json:"rule_id"`
+	RuleName       string          `json:"rule_name"`
+	Description    string          `json:"description,omitempty"`
+	Content        string          `json:"content"`
+	FileName       string          `json:"file_name,omitempty"`
+	RuntimeHints   json.RawMessage `json:"runtime_hints,omitempty"`
+	RuleSortOrder  int32           `json:"rule_sort_order"`
+	BindingID      string          `json:"binding_id"`
+	BindingSortKey int32           `json:"binding_sort_order"`
+}
+
 type AgentTaskResponse struct {
 	ID          string `json:"id"`
 	AgentID     string `json:"agent_id"`
@@ -251,6 +270,7 @@ type AgentTaskResponse struct {
 	ProjectID        string                `json:"project_id,omitempty"`        // issue's project, when present
 	ProjectTitle     string                `json:"project_title,omitempty"`     // for surfacing in agent context
 	ProjectResources []ProjectResourceData `json:"project_resources,omitempty"` // resources attached to the project
+	EffectiveRules   []EffectiveRuleData   `json:"effective_rules,omitempty"`   // rule-group rules resolved at claim time for runtime context injection
 	CreatedAt        string                `json:"created_at"`
 	PriorSessionID   string                `json:"prior_session_id,omitempty"` // session ID from a previous task on same issue
 	PriorWorkDir     string                `json:"prior_work_dir,omitempty"`   // work_dir from a previous task on same issue

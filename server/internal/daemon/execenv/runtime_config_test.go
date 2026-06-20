@@ -439,6 +439,46 @@ func TestWorkspaceContextRenderedAcrossTaskKinds(t *testing.T) {
 	}
 }
 
+func TestRuleGroupsRenderedBeforeAvailableCommands(t *testing.T) {
+	t.Parallel()
+	out := buildMetaSkillContent("claude", TaskContextForEnv{
+		IssueID: "11111111-2222-3333-4444-555555555555",
+		EffectiveRules: []EffectiveRuleForEnv{
+			{
+				ScopeType:     "workspace",
+				RuleGroupName: "General",
+				RuleName:      "Language",
+				Description:   "Comment language policy",
+				Content:       "Always answer in Russian.\n",
+			},
+			{
+				ScopeType:     "agent",
+				RuleGroupName: "Reviewer",
+				RuleName:      "Review Style",
+				Content:       "Prefer actionable bullets.",
+			},
+		},
+	})
+
+	for _, want := range []string{
+		"## Rule Groups",
+		"### [workspace] General / Language",
+		"Comment language policy",
+		"Always answer in Russian.",
+		"### [agent] Reviewer / Review Style",
+		"Prefer actionable bullets.",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("brief missing %q:\n%s", want, out)
+		}
+	}
+	rulesIdx := strings.Index(out, "## Rule Groups")
+	cmdsIdx := strings.Index(out, "## Available Commands")
+	if rulesIdx == -1 || cmdsIdx == -1 || rulesIdx > cmdsIdx {
+		t.Fatalf("Rule Groups must render before Available Commands (rules=%d, commands=%d)", rulesIdx, cmdsIdx)
+	}
+}
+
 func TestWorkspaceContextHeadingSkippedWhenEmpty(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
