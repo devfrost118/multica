@@ -6,10 +6,16 @@ import type { ApiClient } from "../api/client";
 import type { Issue, ListIssuesParams, ListIssuesResponse } from "../types";
 import {
   CHILDREN_BY_PARENTS_CHUNK_SIZE,
+  HOT_ISSUE_QUERY_DEFAULTS,
   PROJECT_GANTT_MAX_ISSUES,
   PROJECT_GANTT_PAGE_LIMIT,
   childrenByParentsOptions,
+  childIssuesOptions,
+  issueDetailOptions,
   issueKeys,
+  issueListOptions,
+  issueTimelineOptions,
+  myIssueListOptions,
   projectGanttIssuesOptions,
 } from "./queries";
 
@@ -52,6 +58,23 @@ function installFakeChildrenApi(
 ) {
   setApiInstance({ listChildrenByParents } as unknown as ApiClient);
 }
+
+describe("hot issue query freshness", () => {
+  it("opts issue route data out of the app-wide infinite freshness default", () => {
+    const hotOptions = [
+      issueListOptions(WS_ID),
+      myIssueListOptions(WS_ID, "assigned", { assignee_id: "user-1" }),
+      issueDetailOptions(WS_ID, "issue-1"),
+      childIssuesOptions(WS_ID, "issue-1"),
+      issueTimelineOptions("issue-1"),
+      projectGanttIssuesOptions(WS_ID, PROJECT_ID),
+    ];
+
+    for (const options of hotOptions) {
+      expect(options).toMatchObject(HOT_ISSUE_QUERY_DEFAULTS);
+    }
+  });
+});
 
 describe("projectGanttIssuesOptions", () => {
   let qc: QueryClient;

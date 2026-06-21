@@ -11,6 +11,12 @@ export function inboxListOptions(wsId: string) {
   return queryOptions({
     queryKey: inboxKeys.list(wsId),
     queryFn: () => api.listInbox(),
+    // Inbox is another realtime-first surface. If a WS event is missed, route
+    // entry/focus must still reconcile with the server instead of showing stale
+    // notifications until a hard refresh.
+    staleTime: 0,
+    refetchOnMount: "always" as const,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -24,6 +30,9 @@ export function useInboxUnreadCount(wsId: string | null | undefined): number {
     queryKey: inboxKeys.list(wsId ?? ""),
     queryFn: () => api.listInbox(),
     enabled: !!wsId,
+    staleTime: 0,
+    refetchOnMount: "always" as const,
+    refetchOnWindowFocus: true,
     select: (items: InboxItem[]) =>
       deduplicateInboxItems(items).filter((i) => !i.read).length,
   });

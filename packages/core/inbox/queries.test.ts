@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { InboxItem } from "../types";
-import { deduplicateInboxItems } from "./queries";
+import { deduplicateInboxItems, inboxListOptions } from "./queries";
 
 function item(overrides: Partial<InboxItem>): InboxItem {
   return {
@@ -23,6 +23,16 @@ function item(overrides: Partial<InboxItem>): InboxItem {
     ...overrides,
   };
 }
+
+describe("inboxListOptions", () => {
+  it("refetches on route entry and focus as a fallback for missed WS events", () => {
+    expect(inboxListOptions("workspace-1")).toMatchObject({
+      staleTime: 0,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: true,
+    });
+  });
+});
 
 describe("deduplicateInboxItems", () => {
   it("keeps the newest issue row while preserving an older comment anchor", () => {

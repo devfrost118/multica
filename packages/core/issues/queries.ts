@@ -118,6 +118,21 @@ export type AssigneeGroupedIssuesFilter = Omit<
 /** Page size per status column. */
 export const ISSUE_PAGE_SIZE = 50;
 
+/**
+ * Realtime WS events are the primary freshness mechanism, but issue surfaces
+ * are user-facing coordination views: if WS is blocked by a proxy, auth cookie
+ * expiry, a missed workspace switch, or the user opens a cached route after an
+ * agent wrote data elsewhere, showing the old task/comment state is worse than
+ * paying one HTTP refetch. Override the app-wide `staleTime: Infinity` for
+ * these hot issue reads so route entry and tab focus reconcile with the server
+ * instead of waiting for F5.
+ */
+export const HOT_ISSUE_QUERY_DEFAULTS = {
+  staleTime: 0,
+  refetchOnMount: "always" as const,
+  refetchOnWindowFocus: true,
+};
+
 /** Statuses the issues/my-issues pages paginate. Cancelled is intentionally excluded — it has never been surfaced in the list/board views. */
 export const PAGINATED_STATUSES: readonly IssueStatus[] = BOARD_STATUSES;
 
@@ -258,6 +273,7 @@ export function issueListOptions(wsId: string, sort?: IssueSortParam) {
     queryFn: () => fetchFirstPages({}, sort),
     select: flattenIssueBuckets,
     placeholderData: keepPreviousData,
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -277,6 +293,7 @@ export function issueAssigneeGroupsOptions(
         ...filter,
       }),
     placeholderData: keepPreviousData,
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -303,6 +320,7 @@ export function myIssueListOptions(
         : fetchFirstPages(filter, sort),
     select: flattenIssueBuckets,
     placeholderData: keepPreviousData,
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -356,6 +374,7 @@ export function projectGanttIssuesOptions(wsId: string, projectId: string) {
   return queryOptions({
     queryKey: issueKeys.projectGantt(wsId, projectId),
     queryFn: () => fetchProjectGanttIssues(projectId),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -381,6 +400,7 @@ export function myIssueAssigneeGroupsOptions(
             ...filter,
           }),
     placeholderData: keepPreviousData,
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -388,6 +408,7 @@ export function issueDetailOptions(wsId: string, id: string) {
   return queryOptions({
     queryKey: issueKeys.detail(wsId, id),
     queryFn: () => api.getIssue(id),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -409,6 +430,7 @@ export function childIssuesOptions(wsId: string, id: string) {
   return queryOptions({
     queryKey: issueKeys.children(wsId, id),
     queryFn: () => api.listChildIssues(id).then((r) => r.issues),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -491,6 +513,7 @@ export function issueTimelineOptions(issueId: string) {
   return queryOptions({
     queryKey: issueKeys.timeline(issueId),
     queryFn: () => api.listTimeline(issueId),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
