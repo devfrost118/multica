@@ -1,6 +1,11 @@
 # Dependencies
+# Docker's ignore matching is not identical to gitignore on every sender path.
+# Keep both forms so nested workspace node_modules are never traversed/sent,
+# especially Windows/WSL pnpm symlinks/junctions that Docker Desktop may fail to open.
 node_modules
+**/node_modules
 .pnpm-store
+**/.pnpm-store
 
 # Build outputs
 .next
