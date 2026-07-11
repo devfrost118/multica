@@ -10,13 +10,15 @@
     "usage": "Использование",
     "runtimes": "Среды выполнения",
     "skills": "Навыки",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "chat": "Чат"
   },
   "help": {
     "trigger": "Помощь",
     "docs": "Документация",
     "changelog": "История изменений",
-    "feedback": "Обратная связь"
+    "feedback": "Обратная связь",
+    "discord": "Discord"
   },
   "workspace_loader": {
     "loading_workspace": "Загрузка рабочей области…",
@@ -36,6 +38,11 @@
     "pinned_label": "Закреплено",
     "workspace_group": "Рабочая область",
     "configure_group": "Настройка",
-    "unread_overflow": "99+"
+    "unread_overflow": "99+",
+    "discord_card": {
+      "title": "Присоединяйтесь к нашему Discord",
+      "description": "Общайтесь с командой и другими разработчиками.",
+      "dismiss": "Скрыть"
+    }
   }
 }

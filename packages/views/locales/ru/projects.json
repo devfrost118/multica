@@ -75,7 +75,8 @@
     "no_issues_yet": "Пока нет задач",
     "toast_link_copied": "Ссылка скопирована",
     "toast_project_deleted": "Проект удалён",
-    "toast_move_issue_failed": "Не удалось переместить задачу"
+    "toast_move_issue_failed": "Не удалось переместить задачу",
+    "description_hint": "Передаётся агентам как контекст для каждой задачи в этом проекте."
   },
   "resources": {
     "section_header": "Ресурсы",
