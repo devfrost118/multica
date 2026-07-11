@@ -15,13 +15,15 @@
     "send_tooltip": "Отправить",
     "stop_tooltip": "Остановить",
     "send_failed_toast": "Не удалось отправить сообщение",
-    "attachment_bind_failed_toast": "Сообщение отправлено, но файлы не были прикреплены. Пожалуйста, попробуйте еще раз через минуту."
+    "attachment_bind_failed_toast": "Сообщение отправлено, но файлы не были прикреплены. Пожалуйста, попробуйте еще раз через минуту.",
+    "placeholder_archived_agent": "Этот агент архивирован",
+    "add_tooltip": "Добавить",
+    "upload_file": "Изображение или файлы"
   },
   "message_list": {
     "show_details": "Показать подробности",
     "replied_in": "Ответ за {{elapsed}}",
     "failed_after": "Ошибка через {{elapsed}}",
-    "task_failed_fallback": "Task не выполнен",
     "tools_one": "{{count}} инструмент",
     "tools_few": "{{count}} инструмента",
     "tools_many": "{{count}} инструментов",
@@ -35,7 +37,18 @@
     "copy_action": "Копировать",
     "copied_toast": "Скопировано",
     "copy_failed_toast": "Не удалось скопировать",
-    "loading_older": "Загрузка старых сообщений…"
+    "loading_older": "Загрузка старых сообщений…",
+    "finished_in": "Завершено за {{elapsed}}",
+    "no_response": "Агент завершил ход без текстового ответа.",
+    "failure": {
+      "agent_error": "Агент столкнулся с ошибкой и не смог дописать ответ. Попробуйте ещё раз.",
+      "timeout": "Агент работал слишком долго и остановился, не закончив. Попробуйте ещё раз или разбейте запрос на более мелкие шаги.",
+      "codex_semantic_inactivity": "Агент перестал отвечать и остановился, не закончив. Попробуйте ещё раз.",
+      "runtime_offline": "Агент сейчас офлайн и не смог ответить. Попробуйте ещё раз, когда он снова будет в сети.",
+      "runtime_recovery": "Агент перезапустился, не успев закончить. Попробуйте ещё раз.",
+      "manual": "Этот ответ был отменён.",
+      "fallback": "Что-то пошло не так, и агент не смог дописать ответ. Попробуйте ещё раз."
+    }
   },
   "session_history": {
     "untitled": "Без названия",
@@ -85,11 +98,6 @@
     "my_agents": "Мои агенты",
     "others": "Прочие",
     "no_agents": "Нет агентов",
-    "active_group": "Активные",
-    "archived_group_one": "{{count}} архивный чат",
-    "archived_group_few": "{{count}} архивных чата",
-    "archived_group_many": "{{count}} архивных чатов",
-    "archived_group_other": "{{count}} архивных чатов",
     "history_group": "История чата",
     "agent_filter_placeholder": "Поиск агентов..."
   },
@@ -101,23 +109,13 @@
     "first_time_actions": "Попросите сводку, спланируйте день или передайте небольшую task.",
     "returning_title_named": "Привет, я {{name}}",
     "returning_title_default": "Добро пожаловать в Multica",
-    "returning_subtitle": "Попробуйте спросить"
+    "returning_subtitle": "Попробуйте спросить",
+    "chat_with_named": "Чат с {{name}}"
   },
   "starter_prompts": {
     "list_open": "Покажи мои открытые tasks по приоритету",
     "summarize_today": "Подведи итог тому, что я сделал сегодня",
     "plan_next": "Спланируй, чем заняться дальше"
-  },
-  "context_anchor": {
-    "tooltip_disabled": "На этой странице нечем поделиться с Multica",
-    "tooltip_off": "Сообщить Multica, что вы просматриваете",
-    "tooltip_on_issue": "Multica знает, что вы смотрите {{label}} · Нажмите, чтобы отключить",
-    "tooltip_on_project": "Multica знает, что вы смотрите проект «{{label}}» · Нажмите, чтобы отключить",
-    "card_tooltip_issue_with_subtitle": "Multica знает, что вы смотрите {{label}} — {{subtitle}}",
-    "card_tooltip_issue": "Multica знает, что вы смотрите {{label}}",
-    "card_tooltip_project": "Multica знает, что вы смотрите проект «{{label}}»",
-    "aria_stop": "Перестать делиться текущей страницей",
-    "aria_start": "Поделиться текущей страницей с Multica"
   },
   "no_agent_banner": "Чтобы начать общение, нужен агент.",
   "offline_banner": {
@@ -143,5 +141,35 @@
       "searching_web": "Ищет в интернете",
       "fallback": "Работает"
     }
+  },
+  "page": {
+    "title": "Чат",
+    "select_prompt": "Выберите беседу или начните новую по +"
+  },
+  "archived_agent_banner": "{{name}} архивирован — эта беседа только для чтения.",
+  "list": {
+    "typing": "Печатает…",
+    "failed": "Не удалось отправить",
+    "you_prefix": "Вы: ",
+    "no_messages": "Сообщений пока нет",
+    "no_response_preview": "Без текстового ответа",
+    "quick_agents": "Частые агенты",
+    "add": "Добавить",
+    "add_agent": "Добавить частого агента",
+    "unpin_agent": "Убрать из частых",
+    "waiting": "Ожидание ответа",
+    "pin": "Закрепить",
+    "unpin": "Открепить",
+    "pinned": "Закреплено",
+    "archive": "Архивировать",
+    "unarchive": "Разархивировать",
+    "archived_title": "Архив"
+  },
+  "header": {
+    "view_profile": "Профиль агента",
+    "rename": "Переименовать чат",
+    "archive": "Архивировать чат",
+    "unarchive": "Разархивировать чат",
+    "delete": "Удалить чат"
   }
 }

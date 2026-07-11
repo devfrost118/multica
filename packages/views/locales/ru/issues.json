@@ -90,7 +90,8 @@
     "card_due_date": "Срок",
     "card_project": "Проект",
     "card_labels": "Метки",
-    "card_child_progress": "Прогресс подзадач"
+    "card_child_progress": "Прогресс подзадач",
+    "show_sub_issues": "Показывать подзадачи"
   },
   "view": {
     "tooltip_board": "Вид доски",
@@ -228,14 +229,21 @@
     "pin_tooltip": "Закрепить на боковой панели",
     "unpin_tooltip": "Открепить с боковой панели",
     "sidebar_tooltip": "Боковая панель",
-    "cmdf_toast_title": "Поиск по странице охватывает только видимое",
-    "cmdf_toast_description": "Лента виртуализирована — ⌘F не видит комментарии за пределами экрана. Полноценный поиск в приложении скоро появится.",
     "update_failed": "Не удалось обновить задачу",
     "link_copied": "Ссылка скопирована",
     "link_copy_failed": "Не удалось скопировать ссылку",
     "workdir_path_copied": "Путь рабочего каталога скопирован",
     "workdir_path_copy_failed": "Не удалось скопировать путь рабочего каталога",
-    "workdir_path_unavailable": "Локального рабочего каталога пока нет — задача не запускалась локальным агентом"
+    "workdir_path_unavailable": "Локального рабочего каталога пока нет — задача не запускалась локальным агентом",
+    "prop_stage": "Этап",
+    "find": {
+      "placeholder": "Найти в задаче...",
+      "count": "{{current}}/{{total}}",
+      "no_matches": "Совпадений нет",
+      "previous": "Предыдущее совпадение",
+      "next": "Следующее совпадение",
+      "close": "Закрыть поиск"
+    }
   },
   "timeline": {
     "loading": "Загрузка..."
@@ -301,10 +309,7 @@
     "reply_count_other": "{{count}} ответов",
     "leave_comment_placeholder": "Оставьте комментарий...",
     "send_tooltip": "Отправить",
-    "expand_tooltip": "Развернуть",
-    "collapse_tooltip": "Свернуть",
     "resolve": {
-      "resolve_action": "Закрыть ветку",
       "unresolve_action": "Снова открыть ветку",
       "collapse": "Свернуть",
       "bar_one": "{{count}} закрытый комментарий от {{authors}}",
@@ -345,9 +350,7 @@
     "trigger_chip_aria": "{{name}} триггер: {{state}}"
   },
   "reply": {
-    "placeholder": "Оставьте ответ...",
-    "expand_tooltip": "Развернуть",
-    "collapse_tooltip": "Свернуть"
+    "placeholder": "Оставьте ответ..."
   },
   "agent_activity": {
     "hover_header_one": "{{count}} агент работает",
@@ -360,7 +363,11 @@
     "empty_hover": "Сейчас не работает ни один агент",
     "filter_active_label": "Показаны только работающие агенты",
     "hover_header_queued_one": "{{count}} агент в очереди",
-    "hover_header_queued_other": "{{count}} агентов в очереди"
+    "hover_header_queued_other": "{{count}} агентов в очереди",
+    "hover_header_tasks_one": "{{count}} задача выполняется",
+    "hover_header_tasks_few": "{{count}} задачи выполняются",
+    "hover_header_tasks_many": "{{count}} задач выполняются",
+    "hover_header_tasks_other": "{{count}} задачи выполняются"
   },
   "agent_live": {
     "is_working": "{{name}} работает",
@@ -401,7 +408,12 @@
     "status_running": "В работе",
     "status_completed": "Завершено",
     "status_failed": "С ошибкой",
-    "status_cancelled": "Отменено"
+    "status_cancelled": "Отменено",
+    "trigger_handoff_prefix": "Передача: ",
+    "included_comments_one": "Включает {{count}} комментарий",
+    "included_comments_few": "Включает {{count}} комментария",
+    "included_comments_many": "Включает {{count}} комментариев",
+    "included_comments_other": "Включает {{count}} комментария"
   },
   "terminate_dialog": {
     "title": "Остановить эту task?",
@@ -460,11 +472,13 @@
     "unpin_from_sidebar": "Открепить с боковой панели",
     "copy_link": "Копировать ссылку",
     "copy_workdir_path": "Копировать путь локального рабочего каталога",
-    "more": "Ещё",
     "create_sub_issue": "Создать подзадачу",
     "set_parent_issue": "Назначить родительскую задачу...",
     "add_sub_issue": "Добавить подзадачу...",
-    "delete_issue": "Удалить задачу"
+    "delete_issue": "Удалить задачу",
+    "relations": "Связи",
+    "remove_parent_issue": "Убрать родительскую задачу",
+    "remove_parent_issue_success": "Родительская задача убрана"
   },
   "pickers": {
     "filter_options_aria": "Опции фильтра",
@@ -522,9 +536,10 @@
     "row_backlog_label": "Бэклог",
     "row_backlog_hint": "оставляет агента на паузе",
     "row_todo_label": "К выполнению",
-    "row_todo_hint": "запускает агента",
-    "dont_show_again": "Больше не показывать",
-    "keep_in_backlog": "Оставить в бэклоге",
-    "move_to_todo": "Переместить в «К выполнению»"
+    "row_todo_hint": "запускает агента"
+  },
+  "stage": {
+    "none": "Без этапа",
+    "value": "Этап {{n}}"
   }
 }

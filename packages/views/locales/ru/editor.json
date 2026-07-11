@@ -25,7 +25,8 @@
       "created": "Создано {{identifier}}",
       "create_failed": "Не удалось создать подзадачу"
     },
-    "highlight": "Выделение"
+    "highlight": "Выделение",
+    "task_list": "Список задач"
   },
   "image": {
     "view": "Открыть изображение",

@@ -51,7 +51,6 @@
     "used_by": "Используется",
     "source": "Источник · Добавил",
     "updated": "Обновлён",
-    "no_description": "Без описания",
     "lock_tooltip": "Только для чтения — редактировать может только автор или администратор",
     "unused": "— не используется",
     "by_creator": "от {{name}}",
@@ -335,7 +334,9 @@
     "add_confirm": "Добавить ({{num}})",
     "adding": "Добавление...",
     "added_multi_toast_one": "Добавлено {{count}} агенту",
-    "added_multi_toast_other": "Добавлено {{count}} агентам"
+    "added_multi_toast_other": "Добавлено {{count}} агентам",
+    "search_placeholder": "Поиск агентов…",
+    "no_agents_match": "Нет агентов по вашему запросу."
   },
   "toolbar": {
     "result_count_title": "Подходящие skills / все skills",

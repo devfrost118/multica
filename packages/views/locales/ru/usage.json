@@ -46,7 +46,9 @@
     "header_cost": "Стоимость",
     "header_time": "Время",
     "header_tasks": "Tasks",
-    "no_data": "Нет активности агентов за этот период."
+    "no_data": "Нет активности агентов за этот период.",
+    "caption_with_deleted": "{{count}} агентов · удалено: {{deleted}}",
+    "deleted_agents": "Удалённые агенты"
   },
   "empty": {
     "title": "Пока нет активности",
