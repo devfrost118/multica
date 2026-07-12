@@ -6,10 +6,22 @@
     "new_skill": "新規スキル",
     "search_placeholder": "スキルを検索…",
     "scopes": {
-      "all": { "label": "すべて", "description": "このワークスペースのすべてのスキル" },
-      "used": { "label": "使用中", "description": "1 つ以上のエージェントに割り当てられたスキル" },
-      "unused": { "label": "未使用", "description": "どのエージェントにも割り当てられていないスキル" },
-      "mine": { "label": "自分が作成", "description": "あなたが作成したスキル" }
+      "all": {
+        "label": "すべて",
+        "description": "このワークスペースのすべてのスキル"
+      },
+      "used": {
+        "label": "使用中",
+        "description": "1 つ以上のエージェントに割り当てられたスキル"
+      },
+      "unused": {
+        "label": "未使用",
+        "description": "どのエージェントにも割り当てられていないスキル"
+      },
+      "mine": {
+        "label": "自分が作成",
+        "description": "あなたが作成したスキル"
+      }
     },
     "empty": {
       "title": "まだスキルがありません",
@@ -198,6 +210,10 @@
       "runtime": {
         "title": "ランタイムからコピー",
         "desc": "ローカルランタイムをスキャンし、ディスク上のスキルの 1 つをこのワークスペースに昇格します。"
+      },
+      "bulk": {
+        "title": "セットをインポート",
+        "desc": "GitHub リポジトリまたはローカルフォルダから複数のスキルを一括インポートします。"
       }
     },
     "method_card": {
@@ -206,7 +222,9 @@
       "url_title": "URL からインポート",
       "url_desc": "ClawHub または Skills.sh の公開スキルを取得します。",
       "runtime_title": "ランタイムからコピー",
-      "runtime_desc": "ローカルランタイムにすでにインストールされているスキルを昇格します。"
+      "runtime_desc": "ローカルランタイムにすでにインストールされているスキルを昇格します。",
+      "bulk_title": "セットをインポート",
+      "bulk_desc": "複数のスキルを一括で — GitHub リポジトリまたはローカルフォルダから。"
     },
     "manual": {
       "name_label": "名前",
@@ -269,6 +287,7 @@
     "bulk_summary_created": "作成済み",
     "bulk_summary_updated": "更新済み",
     "bulk_summary_conflicts": "競合",
+    "bulk_summary_imported": "インポート済み",
     "bulk_summary_skipped": "スキップ",
     "bulk_summary_failed": "失敗",
     "conflict_single_title": "同じ名前のスキルがすでに存在します",
@@ -297,5 +316,25 @@
     "no_content": "*まだ内容がありません*",
     "markdown_placeholder": "Markdown の内容を記述...",
     "raw_placeholder": "ファイルの内容..."
+  },
+  "bulk_import": {
+    "source_label": "ソース",
+    "source_github": "GitHub リポジトリ",
+    "source_folder": "ローカルフォルダ",
+    "github_url_label": "リポジトリまたはフォルダの URL",
+    "github_url_placeholder": "github.com/owner/repo または .../tree/main/skills",
+    "discover": "検出",
+    "discovering": "検出中…",
+    "folder_pick": "フォルダを選択",
+    "folder_drop_hint": "またはここにフォルダをドロップ",
+    "folder_reading": "フォルダを読み込み中…",
+    "candidates_title": "見つかったスキル",
+    "already_exists": "すでに存在します",
+    "empty_no_skills": "ここには SKILL.md が見つかりませんでした。",
+    "empty_hint": "各スキルは SKILL.md を含むフォルダです。",
+    "capped_notice": "最初の {{count}} 件のスキルを表示しています。ほかにも見つかりました。",
+    "folder_too_large": "フォルダが大きすぎてブラウザで読み込めません。",
+    "discover_failed": "このソースを読み込めませんでした。",
+    "import_selected": "選択した {{count}} 件をインポート"
   }
 }
