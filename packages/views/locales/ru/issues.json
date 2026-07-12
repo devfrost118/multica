@@ -243,9 +243,7 @@
       "previous": "Предыдущее совпадение",
       "next": "Следующее совпадение",
       "close": "Закрыть поиск"
-    },
-    "cmdf_toast_title": "Поиск по странице охватывает только видимое",
-    "cmdf_toast_description": "Лента виртуализирована — ⌘F не видит комментарии за пределами экрана. Полноценный поиск в приложении скоро появится."
+    }
   },
   "timeline": {
     "loading": "Загрузка..."
@@ -329,8 +327,7 @@
       "resolve_with_comment_action": "Разрешить ветку с комментарием",
       "resolution_badge": "Разрешение",
       "fold_one": "{{count}} комментарий от {{authors}}",
-      "fold_other": "{{count}} комментариев от {{authors}}",
-      "resolve_action": "Закрыть ветку"
+      "fold_other": "{{count}} комментариев от {{authors}}"
     },
     "trigger_source_issue_assignee": "исполнитель",
     "trigger_source_mention_agent": "@упоминание",
@@ -350,14 +347,10 @@
     "trigger_click_to_manage": "Нажмите, чтобы выбрать, кто запустится в этот раз.",
     "trigger_click_to_restore": "Не запустится в этот раз. Нажмите, чтобы восстановить.",
     "trigger_preview_title": "Запустится при отправке",
-    "trigger_chip_aria": "{{name}} триггер: {{state}}",
-    "expand_tooltip": "Развернуть",
-    "collapse_tooltip": "Свернуть"
+    "trigger_chip_aria": "{{name}} триггер: {{state}}"
   },
   "reply": {
-    "placeholder": "Оставьте ответ...",
-    "expand_tooltip": "Развернуть",
-    "collapse_tooltip": "Свернуть"
+    "placeholder": "Оставьте ответ..."
   },
   "agent_activity": {
     "hover_header_one": "{{count}} агент работает",
@@ -485,8 +478,7 @@
     "delete_issue": "Удалить задачу",
     "relations": "Связи",
     "remove_parent_issue": "Убрать родительскую задачу",
-    "remove_parent_issue_success": "Родительская задача убрана",
-    "more": "Ещё"
+    "remove_parent_issue_success": "Родительская задача убрана"
   },
   "pickers": {
     "filter_options_aria": "Опции фильтра",
@@ -544,10 +536,7 @@
     "row_backlog_label": "Бэклог",
     "row_backlog_hint": "оставляет агента на паузе",
     "row_todo_label": "К выполнению",
-    "row_todo_hint": "запускает агента",
-    "dont_show_again": "Больше не показывать",
-    "keep_in_backlog": "Оставить в бэклоге",
-    "move_to_todo": "Переместить в «К выполнению»"
+    "row_todo_hint": "запускает агента"
   },
   "stage": {
     "none": "Без этапа",

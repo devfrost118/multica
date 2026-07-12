@@ -48,8 +48,7 @@
       "runtime_recovery": "Агент перезапустился, не успев закончить. Попробуйте ещё раз.",
       "manual": "Этот ответ был отменён.",
       "fallback": "Что-то пошло не так, и агент не смог дописать ответ. Попробуйте ещё раз."
-    },
-    "task_failed_fallback": "Task не выполнен"
+    }
   },
   "session_history": {
     "untitled": "Без названия",
@@ -100,12 +99,7 @@
     "others": "Прочие",
     "no_agents": "Нет агентов",
     "history_group": "История чата",
-    "agent_filter_placeholder": "Поиск агентов...",
-    "active_group": "Активные",
-    "archived_group_one": "{{count}} архивный чат",
-    "archived_group_few": "{{count}} архивных чата",
-    "archived_group_many": "{{count}} архивных чатов",
-    "archived_group_other": "{{count}} архивных чатов"
+    "agent_filter_placeholder": "Поиск агентов..."
   },
   "empty_state": {
     "first_time_title": "Общайтесь со своими агентами",
@@ -177,16 +171,5 @@
     "archive": "Архивировать чат",
     "unarchive": "Разархивировать чат",
     "delete": "Удалить чат"
-  },
-  "context_anchor": {
-    "tooltip_disabled": "На этой странице нечем поделиться с Multica",
-    "tooltip_off": "Сообщить Multica, что вы просматриваете",
-    "tooltip_on_issue": "Multica знает, что вы смотрите {{label}} · Нажмите, чтобы отключить",
-    "tooltip_on_project": "Multica знает, что вы смотрите проект «{{label}}» · Нажмите, чтобы отключить",
-    "card_tooltip_issue_with_subtitle": "Multica знает, что вы смотрите {{label}} — {{subtitle}}",
-    "card_tooltip_issue": "Multica знает, что вы смотрите {{label}}",
-    "card_tooltip_project": "Multica знает, что вы смотрите проект «{{label}}»",
-    "aria_stop": "Перестать делиться текущей страницей",
-    "aria_start": "Поделиться текущей страницей с Multica"
   }
 }
