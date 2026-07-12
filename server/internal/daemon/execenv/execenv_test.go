@@ -2555,6 +2555,25 @@ func TestEnsureCodexSandboxConfigDarwinFallsBack(t *testing.T) {
 	}
 }
 
+func TestEnsureCodexSandboxConfigWindowsFallsBack(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+
+	policy := codexSandboxPolicyFor("windows", "0.121.0")
+	if err := ensureCodexSandboxConfig(configPath, policy, "0.121.0", testLogger()); err != nil {
+		t.Fatalf("ensureCodexSandboxConfig failed: %v", err)
+	}
+
+	s, _ := os.ReadFile(configPath)
+	if !strings.Contains(string(s), `sandbox_mode = "danger-full-access"`) {
+		t.Errorf("expected danger-full-access fallback on Windows, got:\n%s", s)
+	}
+	if strings.Contains(string(s), "sandbox_workspace_write") {
+		t.Errorf("should not emit any workspace-write directives on Windows fallback, got:\n%s", s)
+	}
+}
+
 func TestEnsureCodexSandboxConfigIsIdempotent(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
@@ -2757,6 +2776,8 @@ func TestCodexSandboxPolicyFor(t *testing.T) {
 		{"linux unknown version", "linux", "", "workspace-write", true},
 		{"darwin old version", "darwin", "0.121.0", "danger-full-access", false},
 		{"darwin unknown version", "darwin", "", "danger-full-access", false},
+		{"windows any version", "windows", "0.121.0", "danger-full-access", false},
+		{"windows unknown version", "windows", "", "danger-full-access", false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

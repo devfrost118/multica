@@ -24,6 +24,15 @@ import (
 // fix is released), the normal `workspace-write` + `network_access = true`
 // combo is preferred because it keeps the filesystem sandbox intact.
 //
+// On Windows, Codex's `workspace-write` sandbox is broken differently: the
+// app-server session starts, but every command it spawns (PowerShell /
+// exec_command) dies during process initialization with exit code 0xC0000142
+// (STATUS_DLL_INIT_FAILED), while the same command works in a plain shell
+// outside Codex. `codex app-server` rejects the `--sandbox` CLI flag, so the
+// per-task config.toml fallback to `danger-full-access` is the only lever —
+// the same fallback mechanism as macOS. There is no known fixed Codex release
+// for Windows; if one ships, gate the fallback on the version like darwin.
+//
 // CodexDarwinNetworkAccessFixedVersion is the earliest Codex CLI version in
 // which `network_access = true` is honored under Seatbelt on macOS. Bump this
 // constant when the upstream fix ships. Empty string means "no known fixed
@@ -54,8 +63,10 @@ type codexSandboxPolicy struct {
 // codexSandboxPolicyFor picks the right policy for the given platform and
 // detected Codex CLI version.
 //
-//   - Non-darwin: always workspace-write with network access (Landlock is not
-//     affected by the macOS Seatbelt bug).
+//   - windows: always danger-full-access — workspace-write spawns die with
+//     STATUS_DLL_INIT_FAILED (see Background above); no known fixed release.
+//   - Other non-darwin: always workspace-write with network access (Landlock
+//     is not affected by the macOS Seatbelt bug).
 //   - darwin with a version at or above CodexDarwinNetworkAccessFixedVersion:
 //     workspace-write with network access (upstream bug fixed).
 //   - darwin otherwise (including when the version is unknown): fall back to
@@ -63,6 +74,13 @@ type codexSandboxPolicy struct {
 func codexSandboxPolicyFor(goos, detectedVersion string) codexSandboxPolicy {
 	if goos == "" {
 		goos = runtime.GOOS
+	}
+	if goos == "windows" {
+		return codexSandboxPolicy{
+			Mode:          "danger-full-access",
+			NetworkAccess: false,
+			Reason:        "codex on Windows: workspace-write spawns fail with STATUS_DLL_INIT_FAILED (0xC0000142)",
+		}
 	}
 	if goos != "darwin" {
 		return codexSandboxPolicy{
