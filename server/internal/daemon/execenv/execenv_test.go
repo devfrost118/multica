@@ -2755,6 +2755,7 @@ func TestCodexSandboxPolicyFor(t *testing.T) {
 	}{
 		{"linux any version", "linux", "0.100.0", "workspace-write", true},
 		{"linux unknown version", "linux", "", "workspace-write", true},
+		{"windows always uses unrestricted sandbox", "windows", "0.121.0", "danger-full-access", false},
 		{"darwin old version", "darwin", "0.121.0", "danger-full-access", false},
 		{"darwin unknown version", "darwin", "", "danger-full-access", false},
 	}
