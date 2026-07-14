@@ -99,11 +99,6 @@ import type {
   IssueLabelsResponse,
   LabelResourceType,
   ResourceLabelsResponse,
-  Label,
-  CreateLabelRequest,
-  UpdateLabelRequest,
-  ListLabelsResponse,
-  IssueLabelsResponse,
   PinnedItem,
   CreatePinRequest,
   PinnedItemType,
@@ -2222,33 +2217,6 @@ export class ApiClient {
     });
   }
 
-  // Labels
-  async listLabels(): Promise<ListLabelsResponse> {
-    return this.fetch(`/api/labels`);
-  }
-
-  async getLabel(id: string): Promise<Label> {
-    return this.fetch(`/api/labels/${id}`);
-  }
-
-  async createLabel(data: CreateLabelRequest): Promise<Label> {
-    return this.fetch(`/api/labels`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateLabel(id: string, data: UpdateLabelRequest): Promise<Label> {
-    return this.fetch(`/api/labels/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteLabel(id: string): Promise<void> {
-    await this.fetch(`/api/labels/${id}`, { method: "DELETE" });
-  }
-
   // Custom issue properties
   async listProperties(includeArchived = false): Promise<ListPropertiesResponse> {
     const suffix = includeArchived ? "?include_archived=true" : "";
@@ -2307,23 +2275,6 @@ export class ApiClient {
     });
     return parseWithFallback(raw, IssuePropertiesResponseSchema, EMPTY_ISSUE_PROPERTIES_RESPONSE, {
       endpoint: "DELETE /api/issues/{id}/properties/{propertyId}",
-    });
-  }
-
-  async listLabelsForIssue(issueId: string): Promise<IssueLabelsResponse> {
-    return this.fetch(`/api/issues/${issueId}/labels`);
-  }
-
-  async attachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    return this.fetch(`/api/issues/${issueId}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ label_id: labelId }),
-    });
-  }
-
-  async detachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    return this.fetch(`/api/issues/${issueId}/labels/${labelId}`, {
-      method: "DELETE",
     });
   }
 
