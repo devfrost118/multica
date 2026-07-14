@@ -297,7 +297,10 @@
     "conflict_footer": "{{count}} конфликтующих решений ожидают.",
     "conflict_apply_button": "Применить решения",
     "conflict_missing_resolution": "Выберите, как разрешить этот конфликт.",
-    "conflict_name_still_exists": "Это имя уже существует. Выберите другое имя или пропустите."
+    "conflict_name_still_exists": "Это имя уже существует. Выберите другое имя или пропустите.",
+    "search_placeholder": "Поиск локальных навыков",
+    "no_search_results_title": "Нет подходящих локальных навыков",
+    "no_search_results_hint": "Нет локальных навыков по запросу «{{query}}»."
   },
   "file_tree": {
     "no_files": "Нет файлов"

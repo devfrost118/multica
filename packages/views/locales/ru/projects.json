@@ -76,7 +76,10 @@
     "toast_link_copied": "Ссылка скопирована",
     "toast_project_deleted": "Проект удалён",
     "toast_move_issue_failed": "Не удалось переместить задачу",
-    "description_hint": "Передаётся агентам как контекст для каждой задачи в этом проекте."
+    "description_hint": "Передаётся агентам как контекст для каждой задачи в этом проекте.",
+    "prop_start_date": "Дата начала",
+    "prop_due_date": "Срок",
+    "clear_date": "Очистить дату"
   },
   "resources": {
     "section_header": "Ресурсы",
