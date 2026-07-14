@@ -21,6 +21,7 @@
       "hint": "Used for dashboards, charts, and any 'today' label shown to you. It's a personal preference that applies across all your workspaces.",
       "sync_failed": "Failed to save your timezone preference."
     },
+    "general_title": "General",
     "sticky_comment_bar": {
       "title": "Sticky comment bar",
       "hint": "Keep the comment bar pinned to the bottom while scrolling an issue page."
@@ -258,7 +259,8 @@
     "toast_avatar_updated": "Avatar updated",
     "toast_avatar_failed": "Failed to upload avatar",
     "toast_profile_updated": "Profile updated",
-    "toast_profile_failed": "Failed to update profile"
+    "toast_profile_failed": "Failed to update profile",
+    "avatar_label": "Avatar"
   },
   "notifications": {
     "title": "Inbox Notifications",
@@ -333,8 +335,17 @@
       "title": "Token created",
       "description": "Copy your personal access token now. You won't be able to see it again.",
       "copy_tooltip": "Copy token",
-      "done": "Done"
-    }
+      "done": "Done",
+      "warning_prefix": "Your new personal access token has been created. For security reasons, it is ",
+      "warning_emphasis": "displayed only once",
+      "warning_suffix": " — store it securely and never share it. A lost token cannot be recovered; revoke it and create a new one instead.",
+      "confirm_stored": "I have securely stored this token.",
+      "cli_hint": "Sign in to the CLI with:",
+      "copy_command_tooltip": "Copy command"
+    },
+    "security_note": "A token grants full access to your account — treat it like a password.",
+    "empty": "No API tokens yet. Create one above to get started.",
+    "load_failed": "Could not load your API tokens. Reload the page to try again."
   },
   "workspace": {
     "section_general": "General",
@@ -373,7 +384,8 @@
     "deleting": "Deleting...",
     "toast_delete_failed": "Failed to delete workspace",
     "confirm_cancel": "Cancel",
-    "confirm_action": "Confirm"
+    "confirm_action": "Confirm",
+    "logo_label": "Workspace logo"
   },
   "delete_workspace_dialog": {
     "title": "Delete workspace",
@@ -596,7 +608,11 @@
     "delete_aria": "Delete repository",
     "manage_hint": "Only admins and owners can manage repositories.",
     "toast_saved": "Repositories saved",
-    "toast_save_failed": "Failed to save repositories"
+    "toast_save_failed": "Failed to save repositories",
+    "delete_confirm_title": "Delete repository?",
+    "delete_confirm_description": "This repository will be removed from the workspace immediately.",
+    "delete_confirm_cancel": "Cancel",
+    "delete_confirm_action": "Delete repository"
   },
   "desktop": {
     "tabs": {
@@ -741,6 +757,169 @@
       "layer_project": "Project",
       "layer_squad": "Squad",
       "layer_agent": "Agent"
+    }
+  },
+  "auto_save": {
+    "saving": "Saving…",
+    "saved": "Saved",
+    "failed": "Couldn't save",
+    "toast_saved": "Changes saved"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Customize product actions on this device. Click a shortcut, then press the new key combination.",
+    "search_placeholder": "Search actions...",
+    "reset_all": "Restore defaults",
+    "reset_confirm": {
+      "title": "Restore all shortcut defaults?",
+      "description": "This will remove every custom shortcut and restore the defaults on this device.",
+      "cancel": "Cancel",
+      "confirm": "Restore all defaults"
+    },
+    "reset": "Reset",
+    "disable": "Disable",
+    "reset_action": "Reset {{action}}",
+    "disable_action": "Disable {{action}} shortcut",
+    "record_aria": "Change shortcut for {{action}}",
+    "recording": "Press keys",
+    "record_hint": "Esc cancels · Delete clears",
+    "unassigned": "Unassigned",
+    "no_results": "No matching shortcut actions.",
+    "conflict_error": "Already used by {{action}}.",
+    "reserved_error": "Reserved by the browser or desktop window.",
+    "send_error": "Send can only use Enter or Mod+Enter.",
+    "unsafe_error": "This key would interfere with typing or basic keyboard navigation.",
+    "send_enter_hint": "Shift+Enter inserts a paragraph, continues a list, or adds a code-block newline.",
+    "categories": {
+      "general": "General",
+      "navigation": "Navigation"
+    },
+    "actions": {
+      "openSearch": {
+        "label": "Open search",
+        "description": "Search and run commands from anywhere."
+      },
+      "createIssue": {
+        "label": "Create issue",
+        "description": "Open your preferred issue creation flow."
+      },
+      "toggleSidebar": {
+        "label": "Toggle sidebar",
+        "description": "Show or hide the main sidebar."
+      },
+      "findInIssue": {
+        "label": "Find in issue",
+        "description": "Search within the open issue detail."
+      },
+      "send": {
+        "label": "Send",
+        "description": "Send chat messages, comments, replies, feedback, and prompts."
+      },
+      "goInbox": {
+        "label": "Go to Inbox",
+        "description": "Open the workspace inbox."
+      },
+      "goChat": {
+        "label": "Go to Chat",
+        "description": "Open workspace chat."
+      },
+      "goMyIssues": {
+        "label": "Go to My Issues",
+        "description": "Open issues assigned to you."
+      },
+      "goIssues": {
+        "label": "Go to Issues",
+        "description": "Open the issue list."
+      },
+      "goProjects": {
+        "label": "Go to Projects",
+        "description": "Open the project list."
+      },
+      "goAutopilots": {
+        "label": "Go to Autopilot",
+        "description": "Open workspace automations."
+      },
+      "goAgents": {
+        "label": "Go to Agents",
+        "description": "Open the agent list."
+      },
+      "goSquads": {
+        "label": "Go to Squads",
+        "description": "Open the squad list."
+      },
+      "goUsage": {
+        "label": "Go to Usage",
+        "description": "Open usage analytics."
+      },
+      "goRuntimes": {
+        "label": "Go to Runtimes",
+        "description": "Open runtime configuration."
+      },
+      "goSkills": {
+        "label": "Go to Skills",
+        "description": "Open the skill library."
+      },
+      "goSettings": {
+        "label": "Go to Settings",
+        "description": "Open workspace settings."
+      }
+    },
+    "fixed": {
+      "title": "Fixed system shortcuts",
+      "description": "Window and accessibility shortcuts stay fixed so they remain reliable. Zoom and tab controls apply to the desktop app.",
+      "close_tab": "Close active tab",
+      "zoom_in": "Zoom in",
+      "zoom_out": "Zoom out",
+      "reset_zoom": "Reset zoom",
+      "close_dialog": "Close dialog or menu"
+    }
+  },
+  "labels": {
+    "title": "Labels",
+    "description": "Manage the separate label catalogs used to organize issues, agents, and skills in this workspace.",
+    "scopes": {
+      "issue": "Issues",
+      "agent": "Agents",
+      "skill": "Skills"
+    },
+    "search_placeholder": "Filter by name or description...",
+    "new_label": "New label",
+    "columns": {
+      "name": "Name",
+      "description": "Description",
+      "usage": "Used by",
+      "updated": "Updated"
+    },
+    "usage_count": "{{count}} used",
+    "loading": "Loading labels...",
+    "empty": "No {{scope}} labels yet",
+    "no_results": "No matching labels",
+    "save_failed": "Couldn't save label",
+    "actions": {
+      "open": "Actions for {{name}}",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "editor": {
+      "create_title": "New label",
+      "edit_title": "Edit label",
+      "scope_hint": "This label belongs only to the {{scope}} catalog.",
+      "name": "Name",
+      "name_placeholder": "e.g. Bug",
+      "description": "Description",
+      "description_placeholder": "Describe when this label should be used",
+      "color": "Color",
+      "custom_color": "Choose a custom color",
+      "cancel": "Cancel",
+      "save": "Save label",
+      "saving": "Saving..."
+    },
+    "delete_dialog": {
+      "title": "Delete label?",
+      "description": "Delete \"{{name}}\"? It will be removed from {{count}} resources. This can't be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete label",
+      "failed": "Couldn't delete label"
     }
   }
 }

@@ -20,6 +20,11 @@
       "browser_suffix": " (браузер)",
       "hint": "Используется для дашбордов, графиков и любых меток «сегодня», которые вы видите. Это личная настройка, действующая во всех ваших рабочих областях.",
       "sync_failed": "Не удалось сохранить настройку часового пояса."
+    },
+    "general_title": "Общие",
+    "sticky_comment_bar": {
+      "title": "Закреплённая панель комментариев",
+      "hint": "Держать панель комментариев закреплённой внизу при прокрутке страницы задачи."
     }
   },
   "page": {
@@ -37,7 +42,10 @@
       "integrations": "Интеграции",
       "labs": "Лаборатория",
       "members": "Участники",
-      "rule_groups": "Группы правил"
+      "rule_groups": "Группы правил",
+      "chat": "Чат",
+      "shortcuts": "Сочетания",
+      "labels": "Метки"
     }
   },
   "account": {
@@ -53,7 +61,8 @@
     "toast_avatar_updated": "Аватар обновлён",
     "toast_avatar_failed": "Не удалось загрузить аватар",
     "toast_profile_updated": "Профиль обновлён",
-    "toast_profile_failed": "Не удалось обновить профиль"
+    "toast_profile_failed": "Не удалось обновить профиль",
+    "avatar_label": "Аватар"
   },
   "notifications": {
     "title": "Уведомления во входящих",
@@ -86,6 +95,14 @@
       "description": "Управляйте нативными баннерами уведомлений ОС, которые показываются, когда Multica работает в фоне.",
       "label": "Показывать системные уведомления",
       "hint": "Показывать баннер вашей операционной системы для новых входящих, когда приложение не в фокусе."
+    },
+    "browser": {
+      "label": "Браузерные уведомления",
+      "hint": "Разрешить этому браузеру показывать баннеры уведомлений для новых элементов входящих.",
+      "enable": "Включить",
+      "granted": "Этот браузер может показывать баннеры уведомлений.",
+      "denied": "Заблокировано браузером. Включите уведомления для этого сайта в настройках браузера.",
+      "enabled_badge": "Включено"
     }
   },
   "tokens": {
@@ -120,8 +137,17 @@
       "title": "Токен создан",
       "description": "Скопируйте персональный токен доступа сейчас. Снова увидеть его не получится.",
       "copy_tooltip": "Копировать токен",
-      "done": "Готово"
-    }
+      "done": "Готово",
+      "warning_prefix": "Ваш новый персональный токен доступа создан. В целях безопасности он ",
+      "warning_emphasis": "отображается только один раз",
+      "warning_suffix": " — сохраните его надёжно и никому не передавайте. Потерянный токен восстановить нельзя; вместо этого отзовите его и создайте новый.",
+      "confirm_stored": "Я надёжно сохранил этот токен.",
+      "cli_hint": "Войдите в CLI с помощью:",
+      "copy_command_tooltip": "Скопировать команду"
+    },
+    "security_note": "Токен даёт полный доступ к вашей учётной записи — относитесь к нему как к паролю.",
+    "empty": "Пока нет API-токенов. Создайте токен выше, чтобы начать.",
+    "load_failed": "Не удалось загрузить ваши API-токены. Перезагрузите страницу, чтобы попробовать снова."
   },
   "workspace": {
     "section_general": "Общие",
@@ -156,7 +182,12 @@
     "deleting": "Удаление...",
     "toast_delete_failed": "Не удалось удалить рабочую область",
     "confirm_cancel": "Отмена",
-    "confirm_action": "Подтвердить"
+    "confirm_action": "Подтвердить",
+    "change_logo_aria": "Изменить логотип",
+    "click_logo_hint": "Нажмите на логотип, чтобы загрузить новое изображение",
+    "toast_logo_updated": "Логотип рабочей области обновлен",
+    "toast_logo_failed": "Не удалось загрузить логотип рабочей области",
+    "logo_label": "Логотип рабочей области"
   },
   "delete_workspace_dialog": {
     "title": "Удалить рабочую область",
@@ -237,7 +268,11 @@
     "delete_aria": "Удалить репозиторий",
     "manage_hint": "Управлять репозиториями могут только администраторы и владельцы.",
     "toast_saved": "Репозитории сохранены",
-    "toast_save_failed": "Не удалось сохранить репозитории"
+    "toast_save_failed": "Не удалось сохранить репозитории",
+    "delete_confirm_title": "Удалить репозиторий?",
+    "delete_confirm_description": "Этот репозиторий будет немедленно убран из рабочей области.",
+    "delete_confirm_cancel": "Отмена",
+    "delete_confirm_action": "Удалить репозиторий"
   },
   "desktop": {
     "tabs": {
@@ -379,6 +414,322 @@
       "layer_project": "Проект",
       "layer_squad": "Отряд",
       "layer_agent": "Агент"
+    }
+  },
+  "lark": {
+    "section_title": "Lark",
+    "page_description": "Подключите каждого агента Multica к Lark (飞书) PersonalAgent Bot. Участники могут писать боту в ЛС, тегать его в группах и вводить /issue, чтобы создать новую issue в Multica.",
+    "not_enabled_title": "Интеграция Lark не включена",
+    "not_enabled_description_prefix": "Установите",
+    "not_enabled_description_suffix": "на сервере для включения установки Lark Bot.",
+    "not_enabled_self_host_hint": "Для self-hosted: см. README проекта для подробностей.",
+    "preview_title": "Установка Lark Bot скоро появится",
+    "preview_description": "Ключ в покое установлен, но HTTP-клиент Lark не подключен в этой сборке. Точка входа для установки появится здесь, как только транспорт будет включен в следующем релизе.",
+    "connected_bots": "Подключенные боты",
+    "loading": "Загрузка…",
+    "empty_title": "Пока нет подключенных ботов",
+    "empty_description_prefix": "Откройте агента в этой рабочей области и нажмите",
+    "empty_description_cta": "Привязать к Lark",
+    "empty_description_suffix": "чтобы установить для него Бота.",
+    "revoked_badge": "отозван",
+    "region_feishu": "Feishu",
+    "region_lark": "Lark",
+    "installed_at_label": "Установлен {{when}}",
+    "disconnect": "Отключить",
+    "disconnecting": "Отключение…",
+    "disconnect_confirm_title": "Отключить этого бота Lark?",
+    "disconnect_confirm_description": "Бот перестанет получать сообщения Lark, и WebSocket-соединение будет разорвано. Строка установки сохраняется для аудита; вы сможете переустановить позже с того же Агента.",
+    "disconnect_confirm_cancel": "Отмена",
+    "toast_disconnected": "Бот Lark отключен",
+    "toast_disconnect_failed": "Ошибка отключения",
+    "bind_button": "Привязать к Lark",
+    "bind_button_title": "Привязать {{agent}} к Lark Bot",
+    "bind_button_feishu": "Привязать к Feishu",
+    "bind_button_lark": "Привязать к Lark",
+    "bind_button_feishu_title": "Привязать {{agent}} к Feishu (материковый) Bot",
+    "bind_button_lark_title": "Привязать {{agent}} к Lark (международный) Bot",
+    "agent_bot_connected_label": "Подключен к Lark",
+    "agent_bot_manage_link": "Управление в Lark",
+    "agent_bot_manage_tooltip": "Открыть страницу приложения Бота в Lark — управление правами, изменение имени, запрос дополнительных разрешений.",
+    "agent_bot_connected_label_feishu": "Подключен к Feishu",
+    "agent_bot_connected_label_lark": "Подключен к Lark",
+    "agent_bot_manage_link_feishu": "Управление в Feishu",
+    "agent_bot_manage_link_lark": "Управление в Lark",
+    "agent_bot_manage_tooltip_feishu": "Открыть страницу приложения Бота в Feishu — управление правами, изменение имени, запрос дополнительных разрешений.",
+    "agent_bot_manage_tooltip_lark": "Открыть страницу приложения Бота в Lark — управление правами, изменение имени, запрос дополнительных разрешений.",
+    "agent_bot_disconnect_tooltip": "Отвязать этого бота Lark от агента. Бот перестанет получать сообщения Lark.",
+    "install_dialog_title": "Привязать к Lark",
+    "install_dialog_description": "Откройте Lark на телефоне и отсканируйте код ниже, чтобы создать PersonalAgent Bot.",
+    "install_dialog_description_for_agent": "Откройте Lark на телефоне и отсканируйте код ниже, чтобы создать Бота для {{agent}}.",
+    "install_dialog_title_feishu": "Привязать к Feishu",
+    "install_dialog_title_lark": "Привязать к Lark",
+    "install_dialog_description_feishu": "Откройте Feishu на телефоне и отсканируйте код ниже, чтобы создать PersonalAgent Bot.",
+    "install_dialog_description_lark": "Откройте Lark на телефоне и отсканируйте код ниже, чтобы создать PersonalAgent Bot.",
+    "install_dialog_description_for_agent_feishu": "Откройте Feishu на телефоне и отсканируйте код ниже, чтобы создать Бота для {{agent}}.",
+    "install_dialog_description_for_agent_lark": "Откройте Lark на телефоне и отсканируйте код ниже, чтобы создать Бота для {{agent}}.",
+    "install_starting": "Подготовка QR-кода…",
+    "install_scan_hint": "Lark → Сканировать → авторизовать нового PersonalAgent.",
+    "install_open_link_fallback": "Или нажмите здесь, чтобы открыть в Lark",
+    "install_success": "Установка завершена — ваш Бот онлайн.",
+    "install_success_toast": "Lark Bot установлен",
+    "install_scan_hint_feishu": "Feishu → Сканировать → авторизовать нового PersonalAgent.",
+    "install_scan_hint_lark": "Lark → Сканировать → авторизовать нового PersonalAgent.",
+    "install_open_link_fallback_feishu": "Или нажмите здесь, чтобы открыть в Feishu",
+    "install_open_link_fallback_lark": "Или нажмите здесь, чтобы открыть в Lark",
+    "install_success_toast_feishu": "Feishu Bot установлен",
+    "install_success_toast_lark": "Lark Bot установлен",
+    "install_close": "Закрыть",
+    "install_retry": "Сканировать снова",
+    "install_poll_retry": "Сбой сети при проверке статуса установки — повторяем.",
+    "install_error_expired": "Срок действия QR истек до авторизации. Отсканируйте снова.",
+    "install_error_access_denied": "Установка отменена в Lark.",
+    "install_error_protocol": "Lark отказал в установке — попробуйте еще раз.",
+    "install_error_bot_info": "Авторизовано, но Multica не смогла получить идентификатор Бота. Попробуйте еще раз.",
+    "install_error_conflict": "Не удалось сохранить установку. Другой бот, возможно, уже привязан к этому агенту.",
+    "install_error_installer_bind": "Бот установлен, но не удалось привязать ваш идентификатор Lark. Попробуйте еще раз или обратитесь в поддержку.",
+    "install_error_session_lost": "Сессия установки истекла или была утеряна. Отсканируйте снова, чтобы начать заново.",
+    "install_error_forbidden": "У вас больше нет прав на установку Lark Bots в этой рабочей области. Попросите администратора для продолжения.",
+    "install_error_generic": "Ошибка установки. Попробуйте еще раз."
+  },
+  "chat": {
+    "floating_title": "Плавающее окно",
+    "floating_label": "Плавающее окно чата",
+    "floating_hint": "Показывать плавающую кнопку чата в углу каждой страницы. По умолчанию выключено — включите, чтобы вызывать чат откуда угодно; когда выключено, чат живёт только на этой вкладке."
+  },
+  "composio": {
+    "section_title": "Composio",
+    "page_description": "Подключите приложения Composio, с которыми могут работать ваши агенты. Здесь показываются только приложения с включённой конфигурацией авторизации в вашем проекте Composio.",
+    "not_enabled_title": "Интеграция Composio не включена",
+    "not_enabled_description_prefix": "Установите",
+    "not_enabled_description_suffix": "на сервере, чтобы включить подключения тулкитов Composio.",
+    "loading": "Загрузка тулкитов…",
+    "load_failed": "Не удалось загрузить тулкиты Composio.",
+    "empty_title": "Пока нет приложений для подключения",
+    "empty_description": "Ни у одного тулкита в вашем проекте Composio ещё нет включённой конфигурации авторизации. Включите её в панели Composio, чтобы тулкит появился здесь.",
+    "search_placeholder": "Поиск тулкитов…",
+    "connect": "Подключить",
+    "connecting": "Подключение…",
+    "connected": "Подключено",
+    "disconnect": "Отключить",
+    "disconnecting": "Отключение…",
+    "connect_failed": "Не удалось начать подключение. Попробуйте ещё раз.",
+    "disconnect_failed": "Не удалось отключить. Попробуйте ещё раз.",
+    "toast_disconnected": "Отключено",
+    "disconnect_confirm_title": "Отключить это приложение?",
+    "disconnect_confirm_description": "Подключённый аккаунт будет отозван на стороне Composio, и агенты потеряют доступ к этому тулкиту. Позже можно подключиться снова.",
+    "disconnect_confirm_cancel": "Отмена",
+    "connections_load_failed": "Не удалось загрузить существующие подключения, поэтому статус подключения может быть неполным.",
+    "toast_connected": "Подключено",
+    "toast_connect_failed": "Не удалось завершить подключение. Попробуйте ещё раз.",
+    "last_used": "Последнее использование {{when}}",
+    "last_used_never": "Не использовалось",
+    "expired": "Токен истёк",
+    "reconnect": "Переподключить"
+  },
+  "slack": {
+    "section_title": "Slack",
+    "page_description": "Подключите каждого агента Multica к его собственному боту Slack. Участники могут писать боту в ЛС, упоминать его в каналах и вводить /issue, чтобы создать новую issue в Multica.",
+    "not_enabled_title": "Интеграция Slack не включена",
+    "not_enabled_description_prefix": "Установите",
+    "not_enabled_description_suffix": "на сервере для включения установки ботов Slack.",
+    "not_enabled_self_host_hint": "Для self-host: подробности в README проекта.",
+    "preview_title": "Установка Slack скоро появится",
+    "preview_description": "Ключ шифрования задан, но OAuth-учётные данные хостируемого приложения Slack в этом развёртывании не настроены. Кнопка «Подключить» появится здесь, как только они будут заданы.",
+    "connected_bots": "Подключенные боты",
+    "loading": "Загрузка…",
+    "empty_title": "Пока нет подключённых ботов",
+    "empty_description_prefix": "Откройте агента в этой рабочей области и нажмите",
+    "empty_description_cta": "Подключить Slack",
+    "empty_description_suffix": "чтобы установить для него бота.",
+    "revoked_badge": "отозван",
+    "installed_at_label": "Установлен {{when}}",
+    "disconnect": "Отключить",
+    "disconnecting": "Отключение…",
+    "disconnect_confirm_title": "Отключить этого бота Slack?",
+    "disconnect_confirm_description": "Бот перестанет получать сообщения Slack для этой рабочей области. Запись об установке сохраняется для аудита; позже можно переустановить из того же агента.",
+    "disconnect_confirm_cancel": "Отмена",
+    "toast_disconnected": "Бот Slack отключён",
+    "toast_disconnect_failed": "Не удалось отключить",
+    "bind_button": "Подключить Slack",
+    "bind_button_title": "Подключить {{agent}} к боту Slack",
+    "connecting": "Открываем Slack…",
+    "connect_failed_toast": "Не удалось начать установку Slack",
+    "agent_bot_connected_label": "Подключен к Slack",
+    "agent_bot_disconnect_tooltip": "Отвязать этого бота Slack от агента. Бот перестанет получать сообщения Slack.",
+    "agent_bot_manage_link": "Открыть в Slack",
+    "agent_bot_manage_tooltip": "Открыть Slack-воркспейс этого бота.",
+    "byo_dialog_title": "Подключить бота Slack",
+    "byo_video_cta": "Посмотреть видео по настройке",
+    "byo_docs_link": "Пошагово: подключение агента Multica к Slack",
+    "byo_bot_token_label": "Токен бота (xoxb-)",
+    "byo_app_token_label": "Токен уровня приложения (xapp-)",
+    "byo_submit": "Подключить",
+    "byo_submitting": "Подключение…",
+    "byo_cancel": "Отмена",
+    "byo_success_toast": "Бот Slack подключён",
+    "byo_failed_toast": "Не удалось подключить бота Slack"
+  },
+  "auto_save": {
+    "saving": "Сохранение…",
+    "saved": "Сохранено",
+    "failed": "Не удалось сохранить",
+    "toast_saved": "Изменения сохранены"
+  },
+  "shortcuts": {
+    "title": "Сочетания клавиш",
+    "description": "Настройте действия продукта на этом устройстве. Нажмите на сочетание, затем нажмите новую комбинацию клавиш.",
+    "search_placeholder": "Поиск действий...",
+    "reset_all": "Восстановить по умолчанию",
+    "reset_confirm": {
+      "title": "Восстановить все сочетания по умолчанию?",
+      "description": "Это удалит все свои сочетания и восстановит значения по умолчанию на этом устройстве.",
+      "cancel": "Отмена",
+      "confirm": "Восстановить всё по умолчанию"
+    },
+    "reset": "Сбросить",
+    "disable": "Отключить",
+    "reset_action": "Сбросить {{action}}",
+    "disable_action": "Отключить сочетание {{action}}",
+    "record_aria": "Изменить сочетание для {{action}}",
+    "recording": "Нажмите клавиши",
+    "record_hint": "Esc — отмена · Delete — очистить",
+    "unassigned": "Не назначено",
+    "no_results": "Нет подходящих действий.",
+    "conflict_error": "Уже используется в {{action}}.",
+    "reserved_error": "Зарезервировано браузером или окном приложения.",
+    "send_error": "Для отправки можно использовать только Enter или Mod+Enter.",
+    "unsafe_error": "Эта клавиша помешала бы вводу текста или базовой навигации с клавиатуры.",
+    "send_enter_hint": "Shift+Enter вставляет абзац, продолжает список или добавляет перенос строки в блоке кода.",
+    "categories": {
+      "general": "Общие",
+      "navigation": "Навигация"
+    },
+    "actions": {
+      "openSearch": {
+        "label": "Открыть поиск",
+        "description": "Поиск и запуск команд из любого места."
+      },
+      "createIssue": {
+        "label": "Создать задачу",
+        "description": "Открыть предпочитаемый способ создания задачи."
+      },
+      "toggleSidebar": {
+        "label": "Переключить боковую панель",
+        "description": "Показать или скрыть основную боковую панель."
+      },
+      "findInIssue": {
+        "label": "Найти в задаче",
+        "description": "Искать внутри открытой задачи."
+      },
+      "send": {
+        "label": "Отправить",
+        "description": "Отправка сообщений чата, комментариев, ответов, отзывов и промптов."
+      },
+      "goInbox": {
+        "label": "Перейти во входящие",
+        "description": "Открыть входящие рабочей области."
+      },
+      "goChat": {
+        "label": "Перейти в чат",
+        "description": "Открыть чат рабочей области."
+      },
+      "goMyIssues": {
+        "label": "Перейти к моим задачам",
+        "description": "Открыть задачи, назначенные вам."
+      },
+      "goIssues": {
+        "label": "Перейти к задачам",
+        "description": "Открыть список задач."
+      },
+      "goProjects": {
+        "label": "Перейти к проектам",
+        "description": "Открыть список проектов."
+      },
+      "goAutopilots": {
+        "label": "Перейти к автопилоту",
+        "description": "Открыть автоматизации рабочей области."
+      },
+      "goAgents": {
+        "label": "Перейти к агентам",
+        "description": "Открыть список агентов."
+      },
+      "goSquads": {
+        "label": "Перейти к отрядам",
+        "description": "Открыть список отрядов."
+      },
+      "goUsage": {
+        "label": "Перейти к использованию",
+        "description": "Открыть аналитику использования."
+      },
+      "goRuntimes": {
+        "label": "Перейти к средам выполнения",
+        "description": "Открыть настройку сред выполнения."
+      },
+      "goSkills": {
+        "label": "Перейти к навыкам",
+        "description": "Открыть библиотеку навыков."
+      },
+      "goSettings": {
+        "label": "Перейти к настройкам",
+        "description": "Открыть настройки рабочей области."
+      }
+    },
+    "fixed": {
+      "title": "Фиксированные системные сочетания",
+      "description": "Сочетания для окон и специальных возможностей остаются фиксированными, чтобы работать надёжно. Управление масштабом и вкладками относится к десктоп-приложению.",
+      "close_tab": "Закрыть активную вкладку",
+      "zoom_in": "Увеличить масштаб",
+      "zoom_out": "Уменьшить масштаб",
+      "reset_zoom": "Сбросить масштаб",
+      "close_dialog": "Закрыть диалог или меню"
+    }
+  },
+  "labels": {
+    "title": "Метки",
+    "description": "Управляйте отдельными каталогами меток для организации задач, агентов и навыков в этой рабочей области.",
+    "scopes": {
+      "issue": "Задачи",
+      "agent": "Агенты",
+      "skill": "Навыки"
+    },
+    "search_placeholder": "Фильтр по имени или описанию...",
+    "new_label": "Новая метка",
+    "columns": {
+      "name": "Имя",
+      "description": "Описание",
+      "usage": "Используется",
+      "updated": "Обновлено"
+    },
+    "usage_count": "используется: {{count}}",
+    "loading": "Загрузка меток...",
+    "empty": "Пока нет меток «{{scope}}»",
+    "no_results": "Нет подходящих меток",
+    "save_failed": "Не удалось сохранить метку",
+    "actions": {
+      "open": "Действия для {{name}}",
+      "edit": "Изменить",
+      "delete": "Удалить"
+    },
+    "editor": {
+      "create_title": "Новая метка",
+      "edit_title": "Изменить метку",
+      "scope_hint": "Эта метка относится только к каталогу «{{scope}}».",
+      "name": "Имя",
+      "name_placeholder": "например, Bug",
+      "description": "Описание",
+      "description_placeholder": "Опишите, когда следует использовать эту метку",
+      "color": "Цвет",
+      "custom_color": "Выбрать свой цвет",
+      "cancel": "Отмена",
+      "save": "Сохранить метку",
+      "saving": "Сохранение..."
+    },
+    "delete_dialog": {
+      "title": "Удалить метку?",
+      "description": "Удалить «{{name}}»? Она будет убрана из {{count}} ресурсов. Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirm": "Удалить метку",
+      "failed": "Не удалось удалить метку"
     }
   }
 }
