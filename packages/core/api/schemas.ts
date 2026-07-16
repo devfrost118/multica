@@ -37,6 +37,12 @@ import type {
   User,
   WebhookDelivery,
 } from "../types";
+import type {
+  ListProjectEnvironmentsResponse,
+  ProjectEnvironment,
+  ProjectEnvironmentReveal,
+} from "../types/project";
+
 import type { CloudRuntimeNode } from "../runtimes/cloud-runtime";
 import type { CreateFeedbackResponse } from "../feedback/types";
 
@@ -1360,6 +1366,69 @@ export const InboxItemListSchema = z.array(
 export const EMPTY_INBOX_ITEMS: InboxItem[] = [];
 
 // ---------------------------------------------------------------------------
+// Project environments (`/api/projects/:id/environments`). These records can
+// carry masked secrets in normal CRUD responses and plaintext secrets only in
+// the audited reveal response, so every consumer must pass through schemas
+// before the UI touches the payload. Unknown future fields stay available via
+// `.loose()`, while the allowlist and secret maps are explicitly typed.
+// ---------------------------------------------------------------------------
+
+export const ProjectEnvironmentSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  workspace_id: z.string(),
+  name: z.string(),
+  description: OptionalNullableStringSchema.default(null),
+  config: JsonObjectSchema.default({}),
+  secrets: StringRecordSchema.default({}),
+  allowed_runtime_ids: z.array(z.string()).default([]),
+  created_by: OptionalNullableStringSchema.default(null),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).loose();
+
+export const ProjectEnvironmentRevealSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  workspace_id: z.string(),
+  name: z.string(),
+  secrets: StringRecordSchema.default({}),
+}).loose();
+
+export const ListProjectEnvironmentsResponseSchema = z.object({
+  environments: z.array(ProjectEnvironmentSchema).default([]),
+  total: z.number().default(0),
+}).loose();
+
+export const EMPTY_PROJECT_ENVIRONMENT: ProjectEnvironment = {
+  id: "",
+  project_id: "",
+  workspace_id: "",
+  name: "",
+  description: null,
+  config: {},
+  secrets: {},
+  allowed_runtime_ids: [],
+  created_by: null,
+  created_at: "",
+  updated_at: "",
+};
+
+export const EMPTY_PROJECT_ENVIRONMENT_REVEAL: ProjectEnvironmentReveal = {
+  id: "",
+  project_id: "",
+  workspace_id: "",
+  name: "",
+  secrets: {},
+};
+
+export const EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE: ListProjectEnvironmentsResponse = {
+  environments: [],
+  total: 0,
+};
+
+// ---------------------------------------------------------------------------
+
 // Billing schemas (cloud-billing proxy surface)
 //
 // All billing JSON we receive comes from multica-cloud verbatim — we proxy

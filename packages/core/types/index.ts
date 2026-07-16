@@ -116,6 +116,10 @@ export type {
   CreateProjectResourceRequest,
   UpdateProjectResourceRequest,
   ListProjectResourcesResponse,
+  ProjectEnvironment,
+  ProjectEnvironmentReveal,
+  ProjectEnvironmentRequest,
+  ListProjectEnvironmentsResponse,
 } from "./project";
 export type { PinnedItem, PinnedItemType, CreatePinRequest, ReorderPinsRequest } from "./pin";
 export type {
