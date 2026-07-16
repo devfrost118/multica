@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -564,4 +566,58 @@ func (h *Handler) listProjectResourcesForProject(ctx context.Context, projectID 
 		return nil
 	}
 	return rows
+}
+
+func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID, runtimeID pgtype.UUID) []ProjectEnvironmentData {
+	if !projectID.Valid || !runtimeID.Valid {
+		return nil
+	}
+	rows, err := h.Queries.ListProjectEnvironmentsForRuntimeDelivery(ctx, runtimeID)
+	if err != nil {
+		slog.Warn("daemon claim: failed to load project environments",
+			"project_id", uuidToString(projectID),
+			"runtime_id", uuidToString(runtimeID),
+			"error", err,
+		)
+		return nil
+	}
+	if len(rows) == 0 {
+		return nil
+	}
+
+	out := make([]ProjectEnvironmentData, 0, len(rows))
+	for _, row := range rows {
+		if row.ProjectID != projectID {
+			continue
+		}
+		out = append(out, projectEnvironmentToClaimData(row))
+	}
+	return out
+}
+
+func projectEnvironmentToClaimData(env db.ProjectEnvironment) ProjectEnvironmentData {
+	var cfg struct {
+		Kind       string          `json:"kind"`
+		Connection json.RawMessage `json:"connection"`
+	}
+	if len(env.Config) > 0 {
+		if err := json.Unmarshal(env.Config, &cfg); err != nil {
+			slog.Warn("daemon claim: failed to decode project environment config",
+				"environment_id", uuidToString(env.ID),
+				"error", err,
+			)
+		}
+	}
+
+	connection := cfg.Connection
+	if len(bytes.TrimSpace(connection)) == 0 || bytes.Equal(bytes.TrimSpace(connection), []byte("null")) {
+		connection = json.RawMessage("{}")
+	}
+
+	return ProjectEnvironmentData{
+		Name:       env.Name,
+		Kind:       strings.TrimSpace(cfg.Kind),
+		Connection: connection,
+		Secrets:    unmarshalProjectEnvironmentSecrets(env),
+	}
 }

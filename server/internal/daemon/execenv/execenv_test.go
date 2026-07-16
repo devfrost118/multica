@@ -178,6 +178,13 @@ func TestPrepareWithProjectResources(t *testing.T) {
 				ResourceRef:  json.RawMessage(`{"url":"https://github.com/multica-ai/multica","ref":"release/v2","default_branch_hint":"main"}`),
 			},
 		},
+		ProjectEnvironments: []ProjectEnvironmentForEnv{
+			{
+				Name:       "staging",
+				Kind:       "postgres",
+				Connection: json.RawMessage(`{"host":"db.internal","database":"app"}`),
+			},
+		},
 	}
 	env, err := Prepare(PrepareParams{
 		WorkspacesRoot: workspacesRoot,
@@ -242,10 +249,28 @@ func TestPrepareWithProjectResources(t *testing.T) {
 		"checkout ref: `release/v2`",
 		"default branch hint: `main`",
 		".multica/project/resources.json",
+		"Technical environments available to this task",
+		"**staging** (postgres): `{\"host\":\"db.internal\",\"database\":\"app\"}`",
 	} {
 		if !strings.Contains(s, want) {
 			t.Errorf("CLAUDE.md missing %q", want)
 		}
+	}
+	if strings.Contains(s, "super-secret") || strings.Contains(s, "PASSWORD") {
+		t.Fatalf("CLAUDE.md leaked environment secret material:\n%s", s)
+	}
+
+	issueContext, err := os.ReadFile(filepath.Join(env.WorkDir, ".agent_context", "issue_context.md"))
+	if err != nil {
+		t.Fatalf("read issue_context.md: %v", err)
+	}
+	issueContextText := string(issueContext)
+	if !strings.Contains(issueContextText, "## Project Environments") ||
+		!strings.Contains(issueContextText, "**staging** (postgres): `{\"host\":\"db.internal\",\"database\":\"app\"}`") {
+		t.Fatalf("issue_context.md missing project environment descriptor:\n%s", issueContextText)
+	}
+	if strings.Contains(issueContextText, "super-secret") || strings.Contains(issueContextText, "PASSWORD") {
+		t.Fatalf("issue_context.md leaked environment secret material:\n%s", issueContextText)
 	}
 }
 

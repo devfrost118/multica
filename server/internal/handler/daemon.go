@@ -1772,6 +1772,7 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 					resp.ProjectTitle = proj.Title
 					resp.ProjectDescription = proj.Description.String
 				}
+				resp.ProjectEnvironments = h.listProjectEnvironmentsForClaim(r.Context(), issue.ProjectID, runtime.ID)
 				if rows := h.listProjectResourcesForProject(r.Context(), issue.ProjectID); len(rows) > 0 {
 					out := make([]ProjectResourceData, 0, len(rows))
 					for _, row := range rows {
@@ -2254,6 +2255,7 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 						resp.ProjectTitle = proj.Title
 						resp.ProjectDescription = proj.Description.String
 					}
+					resp.ProjectEnvironments = h.listProjectEnvironmentsForClaim(r.Context(), projectUUID, runtime.ID)
 					if rows := h.listProjectResourcesForProject(r.Context(), projectUUID); len(rows) > 0 {
 						out := make([]ProjectResourceData, 0, len(rows))
 						for _, row := range rows {
