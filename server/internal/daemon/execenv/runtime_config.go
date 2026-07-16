@@ -153,6 +153,22 @@ func formatProjectResource(r ProjectResourceForEnv) string {
 	}
 }
 
+func formatProjectEnvironment(env ProjectEnvironmentForEnv) string {
+	name := strings.TrimSpace(env.Name)
+	if name == "" {
+		name = "unnamed"
+	}
+	kind := strings.TrimSpace(env.Kind)
+	if kind == "" {
+		kind = "environment"
+	}
+	connection := strings.TrimSpace(string(env.Connection))
+	if connection == "" {
+		connection = "{}"
+	}
+	return fmt.Sprintf("**%s** (%s): `%s`", name, kind, connection)
+}
+
 // InjectRuntimeConfig writes the meta skill content into the runtime-specific
 // config file so the agent discovers its environment through its native mechanism.
 //

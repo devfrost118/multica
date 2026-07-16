@@ -2468,6 +2468,106 @@ func TestClaimTask_ProjectDescriptionInjected(t *testing.T) {
 	}
 }
 
+func TestClaimTask_ProjectEnvironmentsDeliveredOnlyToAllowlistedRuntime(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("database not available")
+	}
+
+	ctx := context.Background()
+	runtimeID := createClaimReclaimRuntime(t, ctx, "Project environment runtime")
+	agentID, issueID := createClaimReclaimAgentAndIssue(t, ctx, runtimeID, "Project environment agent")
+
+	var projectID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO project (workspace_id, title) VALUES ($1, $2) RETURNING id
+	`, testWorkspaceID, "Claim project environments").Scan(&projectID); err != nil {
+		t.Fatalf("create project: %v", err)
+	}
+	t.Cleanup(func() { testPool.Exec(context.Background(), `DELETE FROM project WHERE id = $1`, projectID) })
+	if _, err := testPool.Exec(ctx, `UPDATE issue SET project_id = $1 WHERE id = $2`, projectID, issueID); err != nil {
+		t.Fatalf("attach issue project: %v", err)
+	}
+
+	var allowedEnvID, blockedEnvID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO project_environment (project_id, workspace_id, name, config, secrets, created_by)
+		VALUES ($1, $2, 'staging', '{"kind":"postgres","connection":{"host":"db.internal","database":"app"}}'::jsonb, '{"PASSWORD":"super-secret"}'::jsonb, $3)
+		RETURNING id
+	`, projectID, testWorkspaceID, testUserID).Scan(&allowedEnvID); err != nil {
+		t.Fatalf("create allowed environment: %v", err)
+	}
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO project_environment (project_id, workspace_id, name, config, secrets, created_by)
+		VALUES ($1, $2, 'blocked', '{"kind":"redis","connection":{"url":"redis://cache"}}'::jsonb, '{"TOKEN":"blocked-secret"}'::jsonb, $3)
+		RETURNING id
+	`, projectID, testWorkspaceID, testUserID).Scan(&blockedEnvID); err != nil {
+		t.Fatalf("create blocked environment: %v", err)
+	}
+	if _, err := testPool.Exec(ctx, `
+		INSERT INTO project_environment_daemon (environment_id, runtime_id)
+		VALUES ($1, $2)
+	`, allowedEnvID, runtimeID); err != nil {
+		t.Fatalf("allowlist environment: %v", err)
+	}
+
+	var taskID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO agent_task_queue (agent_id, runtime_id, issue_id, status, priority)
+		VALUES ($1, $2, $3, 'queued', 0)
+		RETURNING id
+	`, agentID, runtimeID, issueID).Scan(&taskID); err != nil {
+		t.Fatalf("create task: %v", err)
+	}
+	t.Cleanup(func() { testPool.Exec(context.Background(), `DELETE FROM agent_task_queue WHERE id = $1`, taskID) })
+
+	w := httptest.NewRecorder()
+	req := newDaemonTokenRequest("POST", "/api/daemon/runtimes/"+runtimeID+"/claim", nil, testWorkspaceID, "test-claim-project-envs")
+	req = withURLParam(req, "runtimeId", runtimeID)
+	testHandler.ClaimTaskByRuntime(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ClaimTaskByRuntime: %d %s", w.Code, w.Body.String())
+	}
+
+	var resp struct {
+		Task *struct {
+			ProjectEnvironments []ProjectEnvironmentData `json:"project_environments"`
+			ProjectResources    []ProjectResourceData    `json:"project_resources"`
+		} `json:"task"`
+	}
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if resp.Task == nil {
+		t.Fatal("expected task in response")
+	}
+	if len(resp.Task.ProjectEnvironments) != 1 {
+		t.Fatalf("project_environments = %+v, want one allowlisted environment", resp.Task.ProjectEnvironments)
+	}
+	env := resp.Task.ProjectEnvironments[0]
+	if env.Name != "staging" || env.Kind != "postgres" {
+		t.Fatalf("environment identity = %+v, want staging/postgres", env)
+	}
+	var connection map[string]string
+	if err := json.Unmarshal(env.Connection, &connection); err != nil {
+		t.Fatalf("decode connection: %v", err)
+	}
+	if connection["host"] != "db.internal" || connection["database"] != "app" {
+		t.Fatalf("connection = %+v, want non-secret connection object", connection)
+	}
+	if env.Secrets["PASSWORD"] != "super-secret" {
+		t.Fatalf("plaintext secret was not delivered to daemon payload: %+v", env.Secrets)
+	}
+	body := w.Body.String()
+	if strings.Contains(body, "blocked-secret") || strings.Contains(body, blockedEnvID) {
+		t.Fatalf("non-allowlisted environment leaked into claim payload: %s", body)
+	}
+	for _, resource := range resp.Task.ProjectResources {
+		if strings.Contains(string(resource.ResourceRef), "super-secret") {
+			t.Fatalf("project_resources must not carry project environment secrets: %+v", resource)
+		}
+	}
+}
+
 // The quick-create path resolves its project from the task context JSONB
 // (not an issue row), so its project_description wiring is a separate branch
 // in the claim handler and needs its own boundary assertion.

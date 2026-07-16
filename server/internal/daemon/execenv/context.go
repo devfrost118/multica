@@ -691,6 +691,7 @@ func renderIssueContext(provider string, ctx TaskContextForEnv) string {
 		}
 		b.WriteString("\n")
 	}
+	writeIssueContextProjectEnvironments(&b, ctx)
 
 	return b.String()
 }
@@ -715,6 +716,7 @@ func renderQuickCreateContext(ctx TaskContextForEnv) string {
 		}
 		b.WriteString("\n")
 	}
+	writeIssueContextProjectEnvironments(&b, ctx)
 	return b.String()
 }
 
@@ -756,6 +758,18 @@ func renderAutopilotContext(ctx TaskContextForEnv) string {
 		}
 		b.WriteString("\n")
 	}
+	writeIssueContextProjectEnvironments(&b, ctx)
 
 	return b.String()
+}
+
+func writeIssueContextProjectEnvironments(b *strings.Builder, ctx TaskContextForEnv) {
+	if len(ctx.ProjectEnvironments) == 0 {
+		return
+	}
+	b.WriteString("## Project Environments\n\n")
+	for _, env := range ctx.ProjectEnvironments {
+		fmt.Fprintf(b, "- %s\n", formatProjectEnvironment(env))
+	}
+	b.WriteString("\nSecrets for these environments are available only as subprocess environment variables and are not written here.\n\n")
 }
