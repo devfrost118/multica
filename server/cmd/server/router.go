@@ -1115,6 +1115,11 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Post("/resources", h.CreateProjectResource)
 					r.Put("/resources/{resourceId}", h.UpdateProjectResource)
 					r.Delete("/resources/{resourceId}", h.DeleteProjectResource)
+					r.Get("/environments", h.ListProjectEnvironments)
+					r.Post("/environments", h.CreateProjectEnvironment)
+					r.Put("/environments/{envId}", h.UpdateProjectEnvironment)
+					r.Delete("/environments/{envId}", h.DeleteProjectEnvironment)
+					r.Get("/environments/{envId}/reveal", h.GetProjectEnvironmentReveal)
 				})
 			})
 
