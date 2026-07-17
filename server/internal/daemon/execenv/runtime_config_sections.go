@@ -258,7 +258,7 @@ func writeRepositories(b *strings.Builder, ctx TaskContextForEnv) {
 // writeProjectContext emits the Project Context section when the issue
 // belongs to a project.
 func writeProjectContext(b *strings.Builder, ctx TaskContextForEnv) {
-	if ctx.ProjectID == "" && len(ctx.ProjectResources) == 0 {
+	if ctx.ProjectID == "" && len(ctx.ProjectResources) == 0 && len(ctx.ProjectEnvironments) == 0 {
 		return
 	}
 	b.WriteString("## Project Context\n\n")
@@ -279,6 +279,13 @@ func writeProjectContext(b *strings.Builder, ctx TaskContextForEnv) {
 		b.WriteString("For `github_repo` resources, use `multica repo checkout <url>` to fetch the code. Add `--ref <branch-or-sha>` when a task or handoff names an exact revision.\n\n")
 	} else {
 		b.WriteString("This project has no resources attached yet.\n\n")
+	}
+	if len(ctx.ProjectEnvironments) > 0 {
+		b.WriteString("Technical environments available to this task:\n\n")
+		for _, env := range ctx.ProjectEnvironments {
+			fmt.Fprintf(b, "- %s\n", formatProjectEnvironment(env))
+		}
+		b.WriteString("\nEnvironment secrets are injected into the subprocess environment. They are not written into prompts, context files, or comments.\n\n")
 	}
 }
 

@@ -33,6 +33,15 @@ type ProjectResourceForEnv struct {
 	Label        string          // optional user-supplied label
 }
 
+// ProjectEnvironmentForEnv is the non-secret descriptor for a project
+// environment. Plaintext secrets are intentionally absent from execenv context;
+// the daemon injects them directly into the subprocess environment.
+type ProjectEnvironmentForEnv struct {
+	Name       string
+	Kind       string
+	Connection json.RawMessage
+}
+
 // PrepareParams holds all inputs needed to set up an execution environment.
 type PrepareParams struct {
 	WorkspacesRoot string // base path for all envs (e.g., ~/multica_workspaces)
@@ -101,13 +110,14 @@ type TaskContextForEnv struct {
 	AgentName               string
 	AgentInstructions       string // agent identity/persona instructions, injected into CLAUDE.md
 	AgentSkills             []SkillContextForEnv
-	Repos                   []RepoContextForEnv     // workspace repos available for checkout
-	ProjectID               string                  // issue's project, when present
-	ProjectTitle            string                  // human-readable project title
-	ProjectDescription      string                  // durable project-level context, rendered into the brief's Project Context section
-	ProjectResources        []ProjectResourceForEnv // resources attached to the project
-	ChatSessionID           string                  // non-empty for chat tasks
-	AutopilotRunID          string                  // non-empty for autopilot run_only tasks
+	Repos                   []RepoContextForEnv        // workspace repos available for checkout
+	ProjectID               string                     // issue's project, when present
+	ProjectTitle            string                     // human-readable project title
+	ProjectDescription      string                     // durable project-level context, rendered into the brief's Project Context section
+	ProjectResources        []ProjectResourceForEnv    // resources attached to the project
+	ProjectEnvironments     []ProjectEnvironmentForEnv // non-secret project environment descriptors
+	ChatSessionID           string                     // non-empty for chat tasks
+	AutopilotRunID          string                     // non-empty for autopilot run_only tasks
 	AutopilotID             string
 	AutopilotTitle          string
 	AutopilotDescription    string

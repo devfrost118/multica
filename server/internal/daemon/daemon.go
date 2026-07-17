@@ -3762,6 +3762,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		ProjectTitle:                     task.ProjectTitle,
 		ProjectDescription:               task.ProjectDescription,
 		ProjectResources:                 convertProjectResourcesForEnv(task.ProjectResources),
+		ProjectEnvironments:              convertProjectEnvironmentsForEnv(task.ProjectEnvironments),
 		ChatSessionID:                    task.ChatSessionID,
 		AutopilotRunID:                   task.AutopilotRunID,
 		AutopilotID:                      task.AutopilotID,
@@ -4095,6 +4096,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		agentCustomEnv = task.Agent.CustomEnv
 	}
 	layerCustomEnvAndHermesHome(agentEnv, agentCustomEnv, env.HermesHome, d.logger)
+	layerProjectEnvironmentSecrets(agentEnv, task.ProjectEnvironments, d.logger)
 	backend, err := agent.New(provider, agent.Config{
 		ExecutablePath: entry.Path,
 		Env:            agentEnv,
@@ -4894,6 +4896,25 @@ func convertProjectResourcesForEnv(resources []ProjectResourceData) []execenv.Pr
 	return result
 }
 
+func convertProjectEnvironmentsForEnv(envs []ProjectEnvironmentData) []execenv.ProjectEnvironmentForEnv {
+	if len(envs) == 0 {
+		return nil
+	}
+	result := make([]execenv.ProjectEnvironmentForEnv, len(envs))
+	for i, env := range envs {
+		connection := env.Connection
+		if len(connection) == 0 {
+			connection = json.RawMessage("{}")
+		}
+		result[i] = execenv.ProjectEnvironmentForEnv{
+			Name:       env.Name,
+			Kind:       env.Kind,
+			Connection: connection,
+		}
+	}
+	return result
+}
+
 // markActiveEnvRoot records that a task is currently using the given env root,
 // so the GC loop won't reclaim its artifacts mid-execution. Calls are
 // reference-counted so a reuse path marked twice (predicted + prior) only
@@ -5102,6 +5123,31 @@ func layerCustomEnvAndHermesHome(agentEnv, customEnv map[string]string, overlayH
 	if overlayHome != "" {
 		agentEnv["HERMES_HOME"] = overlayHome
 	}
+}
+
+func layerProjectEnvironmentSecrets(agentEnv map[string]string, projectEnvironments []ProjectEnvironmentData, logger *slog.Logger) {
+	for _, env := range projectEnvironments {
+		for key, value := range env.Secrets {
+			if isBlockedProjectEnvironmentSecretKey(key) {
+				if logger != nil {
+					logger.Warn("project_environment: blocked key skipped", "key", key, "environment", env.Name)
+				}
+				continue
+			}
+			agentEnv[key] = value
+		}
+	}
+}
+
+func isBlockedProjectEnvironmentSecretKey(key string) bool {
+	trimmed := strings.TrimSpace(key)
+	if trimmed == "" {
+		return true
+	}
+	if strings.EqualFold(trimmed, "HERMES_HOME") {
+		return true
+	}
+	return isBlockedEnvKey(trimmed)
 }
 
 func defaultArgsForProvider(cfg Config, provider string) []string {

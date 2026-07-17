@@ -3182,6 +3182,61 @@ func TestSanitizeAgentEnv(t *testing.T) {
 	}
 }
 
+func TestLayerProjectEnvironmentSecretsAppliesAllowedSecretsAndBlocksDaemonKeys(t *testing.T) {
+	t.Parallel()
+	agentEnv := map[string]string{
+		"MULTICA_TASK_ID": "task-1",
+		"EXISTING":        "keep",
+	}
+	envs := []ProjectEnvironmentData{
+		{
+			Name: "staging",
+			Kind: "postgres",
+			Secrets: map[string]string{
+				"PGPASSWORD":      "super-secret",
+				"MULTICA_TOKEN":   "must-not-override",
+				"multica_task_id": "also-blocked",
+				"HERMES_HOME":     "must-not-touch-overlay",
+				"":                "empty-key",
+			},
+		},
+	}
+
+	layerProjectEnvironmentSecrets(agentEnv, envs, nil)
+
+	if agentEnv["PGPASSWORD"] != "super-secret" {
+		t.Fatalf("project environment secret not layered into subprocess env: %+v", agentEnv)
+	}
+	if agentEnv["MULTICA_TASK_ID"] != "task-1" || agentEnv["MULTICA_TOKEN"] == "must-not-override" {
+		t.Fatalf("project environment secrets overrode daemon-protected keys: %+v", agentEnv)
+	}
+	if agentEnv["HERMES_HOME"] == "must-not-touch-overlay" || agentEnv[""] == "empty-key" {
+		t.Fatalf("project environment secrets layered invalid/runtime-owned keys: %+v", agentEnv)
+	}
+	if agentEnv["EXISTING"] != "keep" {
+		t.Fatalf("unrelated env changed: %+v", agentEnv)
+	}
+}
+
+func TestProjectEnvironmentDescriptorsExcludeSecretsFromPrompt(t *testing.T) {
+	t.Parallel()
+	task := Task{
+		ProjectEnvironments: []ProjectEnvironmentData{
+			{
+				Name:       "staging",
+				Kind:       "postgres",
+				Connection: json.RawMessage(`{"host":"db.internal"}`),
+				Secrets:    map[string]string{"PASSWORD": "super-secret"},
+			},
+		},
+	}
+
+	out := BuildPrompt(task, "codex")
+	if strings.Contains(out, "super-secret") || strings.Contains(out, "PASSWORD") {
+		t.Fatalf("prompt leaked project environment secrets:\n%s", out)
+	}
+}
+
 // TestHermesLaunchArgsAndEnvByScenario covers the profile chain end to end at
 // the decision level: the final launch args + the final HERMES_HOME the child
 // sees, for a skill-less vs. an overlay-active task that both set a profile.
