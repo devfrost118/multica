@@ -22,6 +22,7 @@ import (
 
 	"github.com/multica-ai/multica/server/internal/cli"
 	"github.com/multica-ai/multica/server/internal/daemon/execenv"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 	"github.com/multica-ai/multica/server/internal/daemon/repocache"
 	"github.com/multica-ai/multica/server/internal/selfexec"
 	"github.com/multica-ai/multica/server/pkg/agent"
@@ -160,6 +161,10 @@ type Daemon struct {
 	repoCache  repoCacheBackend
 	skillCache *SkillBundleCache
 	logger     *slog.Logger
+	// providerLimits is the daemon-owned background collector. It remains
+	// independent of task execution environments and forwards only sanitized
+	// snapshots through providerLimitsReporter.
+	providerLimits *providerlimits.Collector
 
 	mu           sync.Mutex
 	workspaces   map[string]*workspaceState
@@ -316,6 +321,15 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 	}
 	d.runner = taskRunnerFunc(d.runTask)
 	d.runUpdateFn = d.runUpdate
+	d.providerLimits = providerlimits.NewCollector(providerlimits.CollectorConfig{
+		Adapters: []providerlimits.Adapter{
+			providerlimits.NewUnavailableStub("antigravity"),
+		},
+		Reporter: providerLimitsReporter{client: d.client, runtimeIDs: d.allRuntimeIDs},
+		OnError: func(error) {
+			d.logger.Warn("provider limits collection report failed")
+		},
+	})
 	return d
 }
 
@@ -990,6 +1004,11 @@ func (d *Daemon) Run(ctx context.Context) error {
 	go d.gcLoop(ctx)
 	go d.autoUpdateLoop(ctx)
 	go d.tokenRenewalLoop(ctx)
+	go func() {
+		if err := d.providerLimits.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			d.logger.Warn("provider limits collector stopped", "error", err)
+		}
+	}()
 
 	// Preflight succeeded and the background loops are up: the daemon has
 	// registered its runtimes and can now claim and run tasks. Flip /health
@@ -997,7 +1016,7 @@ func (d *Daemon) Run(ctx context.Context) error {
 	// readiness wait blocks on, so success is reported only after startup
 	// actually completed, not merely because the health port came up.
 	d.ready.Store(true)
-	d.logger.Debug("background loops launched (workspace-sync, task-wakeup, heartbeat, gc, auto-update, token-renewal); health now reporting ready")
+	d.logger.Debug("background loops launched (workspace-sync, task-wakeup, heartbeat, gc, auto-update, token-renewal, provider-limits); health now reporting ready")
 	err = d.pollLoop(ctx, taskWakeups)
 	d.logger.Debug("daemon main loop returning", "error", err)
 	return err
