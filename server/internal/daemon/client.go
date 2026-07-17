@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
@@ -472,6 +473,19 @@ func (c *Client) ReportLocalSkillListResult(ctx context.Context, runtimeID, requ
 // ReportLocalSkillImportResult sends a runtime-local-skill bundle back to the server.
 func (c *Client) ReportLocalSkillImportResult(ctx context.Context, runtimeID, requestID string, result map[string]any) error {
 	return c.postJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/local-skills/import/%s/result", runtimeID, requestID), result, nil)
+}
+
+// ReportProviderLimits sends only normalized, sanitized provider-limit
+// snapshots for one daemon runtime. Provider-specific raw output and local
+// credentials must never reach this transport method.
+func (c *Client) ReportProviderLimits(ctx context.Context, runtimeID string, snapshots []providerlimits.AccountSnapshot) error {
+	sanitized := providerlimits.SanitizeSnapshots(snapshots, providerlimits.SanitizationCaps{})
+	if len(sanitized) == 0 {
+		return nil
+	}
+	return c.postJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/provider-limits", runtimeID), map[string]any{
+		"snapshots": sanitized,
+	}, nil)
 }
 
 // WorkspaceInfo holds minimal workspace metadata returned by the API.
