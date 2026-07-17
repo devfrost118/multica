@@ -730,6 +730,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		r.Use(middleware.DaemonAuth(queries, patCache, daemonTokenCache, cloudPATVerifier))
 
 		r.Post("/register", h.DaemonRegister)
+		r.Post("/runtimes/{runtimeId}/provider-limits", h.ReportProviderLimits)
 		r.Post("/deregister", h.DaemonDeregister)
 		r.Post("/heartbeat", h.DaemonHeartbeat)
 		r.Get("/ws", h.DaemonWebSocket)
@@ -769,11 +770,12 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		r.Post("/runtimes/{runtimeId}/recover-orphans", h.RecoverOrphanedTasks)
 		r.Post("/tasks/{taskId}/session", h.PinTaskSession)
 	})
-
 	// Protected API routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(queries, patCache, cloudPATVerifier))
 		r.Use(middleware.RefreshCloudFrontCookies(cfSigner))
+		r.Get("/api/provider-limits", h.GetProviderLimits)
+		r.Get("/api/provider-limits/history", h.GetProviderLimitHistory)
 
 		// --- User-scoped routes (no workspace context required) ---
 		r.Get("/api/me", h.GetMe)
