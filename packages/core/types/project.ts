@@ -115,3 +115,38 @@ export interface ListProjectResourcesResponse {
   resources: ProjectResource[];
   total: number;
 }
+
+export interface ProjectEnvironment {
+  id: string;
+  project_id: string;
+  workspace_id: string;
+  name: string;
+  description: string | null;
+  config: Record<string, unknown>;
+  secrets: Record<string, string>;
+  allowed_runtime_ids: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectEnvironmentReveal {
+  id: string;
+  project_id: string;
+  workspace_id: string;
+  name: string;
+  secrets: Record<string, string>;
+}
+
+export interface ProjectEnvironmentRequest {
+  name: string;
+  description?: string | null;
+  config?: Record<string, unknown>;
+  secrets?: Record<string, string>;
+  allowed_runtime_ids?: string[];
+}
+
+export interface ListProjectEnvironmentsResponse {
+  environments: ProjectEnvironment[];
+  total: number;
+}

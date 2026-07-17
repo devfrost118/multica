@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiClient, ApiError } from "./client";
+import { setSchemaLogger } from "./schema";
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  setSchemaLogger({ warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() });
 });
 
 describe("ApiClient label response schemas", () => {
@@ -41,6 +43,218 @@ describe("ApiClient label response schemas", () => {
     ).resolves.toEqual({ labels: [] });
 
     expect(fetchMock).toHaveBeenCalledTimes(10);
+  });
+});
+
+describe("ApiClient project environment response schemas", () => {
+  const environment = {
+    id: "env-1",
+    project_id: "project-1",
+    workspace_id: "workspace-1",
+    name: "Production",
+    description: "prod shell",
+    config: { shell: "pwsh" },
+    secrets: { TOKEN: "****" },
+    allowed_runtime_ids: ["runtime-1"],
+    created_by: "user-1",
+    created_at: "2026-07-16T10:00:00Z",
+    updated_at: "2026-07-16T10:01:00Z",
+  };
+
+  it("uses the expected HTTP contract for list, create, update, reveal, and delete", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ environments: [environment], total: 1 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(environment), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ...environment, name: "Staging" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          id: "env-1",
+          project_id: "project-1",
+          workspace_id: "workspace-1",
+          name: "Staging",
+          secrets: { TOKEN: "plain-token" },
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = new ApiClient("https://api.example.test");
+
+    await expect(client.listProjectEnvironments("project-1")).resolves.toEqual({
+      environments: [environment],
+      total: 1,
+    });
+    await expect(
+      client.createProjectEnvironment("project-1", {
+        name: "Production",
+        description: "prod shell",
+        config: { shell: "pwsh" },
+        secrets: { TOKEN: "plain-token" },
+        allowed_runtime_ids: ["runtime-1"],
+      }),
+    ).resolves.toEqual(environment);
+    await expect(
+      client.updateProjectEnvironment("project-1", "env-1", {
+        name: "Staging",
+        secrets: { TOKEN: "****" },
+      }),
+    ).resolves.toMatchObject({ id: "env-1", name: "Staging" });
+    await expect(client.revealProjectEnvironment("project-1", "env-1")).resolves.toEqual({
+      id: "env-1",
+      project_id: "project-1",
+      workspace_id: "workspace-1",
+      name: "Staging",
+      secrets: { TOKEN: "plain-token" },
+    });
+    await client.deleteProjectEnvironment("project-1", "env-1");
+
+    expect(fetchMock.mock.calls.map(([url, init]) => ({
+      url,
+      method: init?.method ?? "GET",
+      body: init?.body,
+    }))).toMatchObject([
+      {
+        url: "https://api.example.test/api/projects/project-1/environments",
+        method: "GET",
+      },
+      {
+        url: "https://api.example.test/api/projects/project-1/environments",
+        method: "POST",
+        body: JSON.stringify({
+          name: "Production",
+          description: "prod shell",
+          config: { shell: "pwsh" },
+          secrets: { TOKEN: "plain-token" },
+          allowed_runtime_ids: ["runtime-1"],
+        }),
+      },
+      {
+        url: "https://api.example.test/api/projects/project-1/environments/env-1",
+        method: "PUT",
+        body: JSON.stringify({ name: "Staging", secrets: { TOKEN: "****" } }),
+      },
+      {
+        url: "https://api.example.test/api/projects/project-1/environments/env-1/reveal",
+        method: "GET",
+      },
+      {
+        url: "https://api.example.test/api/projects/project-1/environments/env-1",
+        method: "DELETE",
+      },
+    ]);
+  });
+
+  it("falls back for malformed environment responses and defaults absent optional fields", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ environments: "not-an-array", total: "1" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          id: "env-2",
+          project_id: "project-1",
+          workspace_id: "workspace-1",
+          name: "Minimal",
+          config: {},
+          secrets: {},
+          created_at: "2026-07-16T10:00:00Z",
+          updated_at: "2026-07-16T10:01:00Z",
+        }), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: 42, secrets: { TOKEN: "****" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ secrets: "plain-token" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = new ApiClient("https://api.example.test");
+
+    await expect(client.listProjectEnvironments("project-1")).resolves.toEqual({
+      environments: [],
+      total: 0,
+    });
+    await expect(
+      client.createProjectEnvironment("project-1", { name: "Minimal" }),
+    ).resolves.toEqual({
+      id: "env-2",
+      project_id: "project-1",
+      workspace_id: "workspace-1",
+      name: "Minimal",
+      description: null,
+      config: {},
+      secrets: {},
+      allowed_runtime_ids: [],
+      created_by: null,
+      created_at: "2026-07-16T10:00:00Z",
+      updated_at: "2026-07-16T10:01:00Z",
+    });
+    await expect(
+      client.updateProjectEnvironment("project-1", "env-1", { name: "Bad" }),
+    ).resolves.toMatchObject({ id: "", secrets: {} });
+    await expect(client.revealProjectEnvironment("project-1", "env-1")).resolves.toEqual({
+      id: "",
+      project_id: "project-1",
+      workspace_id: "",
+      name: "",
+      secrets: {},
+    });
+  });
+
+  it("does not log plaintext reveal payloads through parse fallback warnings", async () => {
+    const warn = vi.fn();
+    setSchemaLogger({ warn, error: vi.fn(), info: vi.fn(), debug: vi.fn() });
+    const client = new ApiClient("https://api.example.test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ secrets: { TOKEN: "plain-token" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(client.revealProjectEnvironment("project-1", "env-1")).resolves.toEqual({
+      id: "",
+      project_id: "project-1",
+      workspace_id: "",
+      name: "",
+      secrets: {},
+    });
+
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("plain-token");
   });
 });
 
