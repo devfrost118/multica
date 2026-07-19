@@ -54,6 +54,36 @@
     "title": "No usage yet",
     "body": "Once agents start running tasks here, their token spend and run time will appear in this view."
   },
+  "provider_limits": {
+    "title": "Provider limits",
+    "subtitle": "Subscription quota windows reported by connected providers.",
+    "view_label": "Provider limits view",
+    "by_accounts": "By accounts",
+    "by_daemon": "By daemon",
+    "loading": "Loading provider limits…",
+    "empty": "No provider limits reported yet.",
+    "error": "Provider limits could not be loaded.",
+    "unknown": "Unknown",
+    "no_buckets": "No quota buckets are available.",
+    "remaining": "{{value}}% remaining",
+    "freshness": "Fresh for {{value}}",
+    "resets_at": "Resets {{value}}",
+    "checked_at": "Checked {{value}}",
+    "last_good": "Last good: {{value}}",
+    "reason": "Reason: {{value}}",
+    "thresholds": {
+      "title": "Alerts",
+      "warning": "Warning",
+      "critical": "Critical"
+    },
+    "status": {
+      "ok": "OK",
+      "stale": "Stale",
+      "partial": "Partial",
+      "unavailable": "Unavailable",
+      "error": "Error"
+    }
+  },
   "duration": {
     "less_than_minute": "<1m"
   }

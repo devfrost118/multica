@@ -54,6 +54,36 @@
     "title": "まだ使用量はありません",
     "body": "ここでエージェントがタスクを実行し始めると、トークンの消費と実行時間がこの画面に表示されます。"
   },
+  "provider_limits": {
+    "title": "プロバイダーの上限",
+    "subtitle": "接続済みプロバイダーから報告されたサブスクリプションのクォータ枠です。",
+    "view_label": "プロバイダー上限の表示",
+    "by_accounts": "アカウント別",
+    "by_daemon": "デーモン別",
+    "loading": "プロバイダーの上限を読み込んでいます…",
+    "empty": "プロバイダーの上限はまだ報告されていません。",
+    "error": "プロバイダーの上限を読み込めませんでした。",
+    "unknown": "不明",
+    "no_buckets": "利用可能なクォータ枠はありません。",
+    "remaining": "残り {{value}}%",
+    "freshness": "鮮度 {{value}}",
+    "resets_at": "リセット {{value}}",
+    "checked_at": "確認 {{value}}",
+    "last_good": "最後に正常: {{value}}",
+    "reason": "理由: {{value}}",
+    "thresholds": {
+      "title": "アラート",
+      "warning": "警告",
+      "critical": "重大"
+    },
+    "status": {
+      "ok": "正常",
+      "stale": "期限切れ",
+      "partial": "一部",
+      "unavailable": "利用不可",
+      "error": "エラー"
+    }
+  },
   "duration": {
     "less_than_minute": "1分未満"
   }

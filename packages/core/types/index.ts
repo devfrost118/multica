@@ -95,6 +95,13 @@ export type {
 } from "./chat";
 export type { StorageAdapter } from "./storage";
 export type {
+  ProviderLimitBucket,
+  ProviderLimitHistoryResponse,
+  ProviderLimitSnapshot,
+  ProviderLimitSource,
+  ProviderLimitsOverviewResponse,
+} from "./provider-limits";
+export type {
   Project,
   ProjectStatus,
   ProjectPriority,
