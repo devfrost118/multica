@@ -17,9 +17,13 @@ type providerLimitsReporter struct {
 }
 
 func (r providerLimitsReporter) Report(ctx context.Context, snapshots []providerlimits.AccountSnapshot) error {
+	return r.ReportRefresh(ctx, snapshots, nil)
+}
+
+func (r providerLimitsReporter) ReportRefresh(ctx context.Context, snapshots []providerlimits.AccountSnapshot, refreshIDs []string) error {
 	errorsByRuntime := make([]error, 0)
 	for _, runtimeID := range r.runtimeIDs() {
-		if err := r.client.ReportProviderLimits(ctx, runtimeID, snapshots); err != nil {
+		if err := r.client.ReportProviderLimits(ctx, runtimeID, snapshots, refreshIDs); err != nil {
 			errorsByRuntime = append(errorsByRuntime, err)
 		}
 	}

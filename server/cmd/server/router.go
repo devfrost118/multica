@@ -815,6 +815,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		r.Use(middleware.RefreshCloudFrontCookies(cfSigner))
 		r.Get("/api/provider-limits", h.GetProviderLimits)
 		r.Get("/api/provider-limits/history", h.GetProviderLimitHistory)
+		r.Post("/api/provider-limits/refresh", h.RequestProviderLimitsRefresh)
 
 		// --- User-scoped routes (no workspace context required) ---
 		r.Get("/api/me", h.GetMe)

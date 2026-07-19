@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -27,7 +28,66 @@ var (
 )
 
 type providerLimitsReportRequest struct {
-	Snapshots []providerLimitSnapshotInput `json:"snapshots"`
+	Snapshots  []providerLimitSnapshotInput `json:"snapshots"`
+	RefreshIDs []string                     `json:"refresh_ids,omitempty"`
+}
+
+// ProviderLimitRefreshStore retains one pending request per runtime. The
+// heartbeat only reads it; completion is piggybacked on the existing snapshot
+// ingest so manual refresh never creates another daemon transport.
+type ProviderLimitRefreshStore interface {
+	Enqueue(runtimeID string) providerLimitRefreshRequest
+	Pending(runtimeID string) *providerLimitRefreshRequest
+	Complete(runtimeID string, ids []string)
+}
+
+type providerLimitRefreshRequest struct {
+	ID string `json:"id"`
+}
+
+type inMemoryProviderLimitRefreshStore struct {
+	mu      sync.Mutex
+	pending map[string]providerLimitRefreshRequest
+}
+
+func NewInMemoryProviderLimitRefreshStore() *inMemoryProviderLimitRefreshStore {
+	return &inMemoryProviderLimitRefreshStore{pending: make(map[string]providerLimitRefreshRequest)}
+}
+
+func (s *inMemoryProviderLimitRefreshStore) Enqueue(runtimeID string) providerLimitRefreshRequest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if request, ok := s.pending[runtimeID]; ok {
+		return request
+	}
+	request := providerLimitRefreshRequest{ID: randomID()}
+	s.pending[runtimeID] = request
+	return request
+}
+
+func (s *inMemoryProviderLimitRefreshStore) Pending(runtimeID string) *providerLimitRefreshRequest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	request, ok := s.pending[runtimeID]
+	if !ok {
+		return nil
+	}
+	return &request
+}
+
+func (s *inMemoryProviderLimitRefreshStore) Complete(runtimeID string, ids []string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	request, ok := s.pending[runtimeID]
+	if !ok {
+		return
+	}
+	for _, id := range ids {
+		if id == request.ID {
+			delete(s.pending, runtimeID)
+			return
+		}
+	}
 }
 
 type providerLimitSnapshotInput struct {
@@ -110,8 +170,45 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to retain provider limits")
 		return
 	}
+	if h.ProviderLimitRefreshStore != nil && len(request.RefreshIDs) > 0 {
+		h.ProviderLimitRefreshStore.Complete(runtimeID, request.RefreshIDs)
+	}
 
 	writeJSON(w, http.StatusOK, map[string]int{"accepted": len(request.Snapshots)})
+}
+
+// RequestProviderLimitsRefresh queues a manual collection for one daemon
+// runtime. Repeated clicks reuse the same request until the collector's normal
+// snapshot ingest confirms it, making the action reconnect-safe and deduped.
+func (h *Handler) RequestProviderLimitsRefresh(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		RuntimeID string `json:"runtime_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil || request.RuntimeID == "" {
+		writeError(w, http.StatusBadRequest, "runtime_id is required")
+		return
+	}
+	runtimeUUID, ok := parseUUIDOrBadRequest(w, request.RuntimeID, "runtime_id")
+	if !ok {
+		return
+	}
+	runtime, err := h.Queries.GetAgentRuntime(r.Context(), runtimeUUID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "runtime not found")
+		return
+	}
+	if _, ok := h.requireWorkspaceMember(w, r, uuidToString(runtime.WorkspaceID), "runtime not found"); !ok {
+		return
+	}
+	if runtime.Status != "online" {
+		writeError(w, http.StatusServiceUnavailable, "runtime is offline")
+		return
+	}
+	if h.ProviderLimitRefreshStore == nil {
+		writeError(w, http.StatusServiceUnavailable, "provider limit refresh is unavailable")
+		return
+	}
+	writeJSON(w, http.StatusAccepted, h.ProviderLimitRefreshStore.Enqueue(request.RuntimeID))
 }
 
 type providerLimitSnapshotResponse struct {

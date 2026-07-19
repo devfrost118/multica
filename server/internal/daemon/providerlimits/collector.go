@@ -38,10 +38,11 @@ type CollectorConfig struct {
 }
 
 type providerState struct {
-	failures    int
-	nextAttempt time.Time
-	lastSuccess time.Time
-	inFlight    bool
+	failures      int
+	backoffUntil  time.Time
+	nextScheduled time.Time
+	lastSuccess   time.Time
+	inFlight      bool
 }
 
 // Collector runs adapters in isolation and forwards only sanitized snapshots.
@@ -109,6 +110,18 @@ func (c *Collector) Run(ctx context.Context) error {
 // batch. Provider errors become a generic error snapshot; their messages are
 // intentionally never copied into output or logs.
 func (c *Collector) CollectOnce(ctx context.Context) error {
+	return c.collect(ctx, false, nil)
+}
+
+// CollectRefresh performs one user-requested collection. It may bypass a
+// provider's normal success cadence, but it never bypasses an active failure
+// backoff: a 429 or transport failure must remain storm-safe even after
+// repeated clicks.
+func (c *Collector) CollectRefresh(ctx context.Context, refreshIDs ...string) error {
+	return c.collect(ctx, true, refreshIDs)
+}
+
+func (c *Collector) collect(ctx context.Context, manual bool, refreshIDs []string) error {
 	now := c.now().UTC()
 	collected := make([]AccountSnapshot, 0, len(c.adapters))
 	for _, adapter := range c.adapters {
@@ -121,7 +134,7 @@ func (c *Collector) CollectOnce(ctx context.Context) error {
 			collected = append(collected, failureSnapshot(provider, now))
 			continue
 		}
-		if !c.beginAttempt(provider, now) {
+		if !c.beginAttempt(provider, now, manual) {
 			continue
 		}
 		snapshots, err := c.collectAdapter(ctx, provider, capabilities, adapter)
@@ -143,7 +156,13 @@ func (c *Collector) CollectOnce(ctx context.Context) error {
 	if len(collected) == 0 || c.reporter == nil {
 		return nil
 	}
-	return c.reporter.Report(ctx, SanitizeSnapshots(collected, c.sanitizationCaps))
+	sanitized := SanitizeSnapshots(collected, c.sanitizationCaps)
+	if manual {
+		if reporter, ok := c.reporter.(RefreshReporter); ok {
+			return reporter.ReportRefresh(ctx, sanitized, append([]string(nil), refreshIDs...))
+		}
+	}
+	return c.reporter.Report(ctx, sanitized)
 }
 
 func (c *Collector) collectAdapter(ctx context.Context, provider string, capabilities Capabilities, adapter Adapter) ([]AccountSnapshot, error) {
@@ -194,11 +213,11 @@ func adapterMetadata(adapter Adapter) (provider string, capabilities Capabilitie
 	return provider, capabilities, nil
 }
 
-func (c *Collector) beginAttempt(provider string, now time.Time) bool {
+func (c *Collector) beginAttempt(provider string, now time.Time, manual bool) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	state := c.states[provider]
-	if state.inFlight || now.Before(state.nextAttempt) {
+	if state.inFlight || now.Before(state.backoffUntil) || (!manual && now.Before(state.nextScheduled)) {
 		return false
 	}
 	state.inFlight = true
@@ -219,7 +238,8 @@ func (c *Collector) recordSuccess(provider string, now time.Time, minimumInterva
 	state := c.states[provider]
 	state.failures = 0
 	state.lastSuccess = now
-	state.nextAttempt = now.Add(max(minimumInterval, 0))
+	state.backoffUntil = now
+	state.nextScheduled = now.Add(max(minimumInterval, 0))
 	c.states[provider] = state
 	c.mu.Unlock()
 }
@@ -229,7 +249,7 @@ func (c *Collector) recordFailure(provider string, now time.Time) {
 	defer c.mu.Unlock()
 	state := c.states[provider]
 	state.failures++
-	state.nextAttempt = now.Add(c.failureDelay(state.failures))
+	state.backoffUntil = now.Add(c.failureDelay(state.failures))
 	c.states[provider] = state
 }
 

@@ -448,11 +448,12 @@ func (c *Client) GetTaskStatus(ctx context.Context, taskID string) (string, erro
 // heartbeat paths share a single type and a single decoder shape. Aliases
 // (rather than wrappers) keep call sites unchanged.
 type (
-	HeartbeatResponse       = protocol.DaemonHeartbeatAckPayload
-	PendingUpdate           = protocol.DaemonHeartbeatPendingUpdate
-	PendingModelList        = protocol.DaemonHeartbeatPendingModelList
-	PendingLocalSkills      = protocol.DaemonHeartbeatPendingLocalSkills
-	PendingLocalSkillImport = protocol.DaemonHeartbeatPendingLocalSkillImport
+	HeartbeatResponse           = protocol.DaemonHeartbeatAckPayload
+	PendingUpdate               = protocol.DaemonHeartbeatPendingUpdate
+	PendingModelList            = protocol.DaemonHeartbeatPendingModelList
+	PendingLocalSkills          = protocol.DaemonHeartbeatPendingLocalSkills
+	PendingLocalSkillImport     = protocol.DaemonHeartbeatPendingLocalSkillImport
+	PendingProviderLimitRefresh = protocol.DaemonHeartbeatPendingProviderLimitRefresh
 )
 
 func (c *Client) SendHeartbeat(ctx context.Context, runtimeID string) (*HeartbeatResponse, error) {
@@ -489,14 +490,16 @@ func (c *Client) ReportLocalSkillImportResult(ctx context.Context, runtimeID, re
 // ReportProviderLimits sends only normalized, sanitized provider-limit
 // snapshots for one daemon runtime. Provider-specific raw output and local
 // credentials must never reach this transport method.
-func (c *Client) ReportProviderLimits(ctx context.Context, runtimeID string, snapshots []providerlimits.AccountSnapshot) error {
+func (c *Client) ReportProviderLimits(ctx context.Context, runtimeID string, snapshots []providerlimits.AccountSnapshot, refreshIDs []string) error {
 	sanitized := providerlimits.SanitizeSnapshots(snapshots, providerlimits.SanitizationCaps{})
 	if len(sanitized) == 0 {
 		return nil
 	}
-	return c.postJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/provider-limits", runtimeID), map[string]any{
-		"snapshots": sanitized,
-	}, nil)
+	payload := map[string]any{"snapshots": sanitized}
+	if len(refreshIDs) > 0 {
+		payload["refresh_ids"] = append([]string(nil), refreshIDs...)
+	}
+	return c.postJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/provider-limits", runtimeID), payload, nil)
 }
 
 // WorkspaceInfo holds minimal workspace metadata returned by the API.

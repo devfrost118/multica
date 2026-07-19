@@ -1478,6 +1478,13 @@ export class ApiClient {
     );
   }
 
+  async requestProviderLimitsRefresh(runtimeId: string): Promise<void> {
+    await this.fetch("/api/provider-limits/refresh", {
+      method: "POST",
+      body: JSON.stringify({ runtime_id: runtimeId }),
+    });
+  }
+
   async getDashboardUsageByAgent(
     params: { days?: number; project_id?: string | null; tz?: string },
   ): Promise<DashboardUsageByAgent[]> {

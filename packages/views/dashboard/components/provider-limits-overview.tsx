@@ -111,11 +111,13 @@ export function ProviderLimitsOverview({
   history = EMPTY_HISTORY,
   isLoading,
   isError,
+  onRefresh,
 }: {
   overview?: ProviderLimitsOverviewResponse;
   history?: ProviderLimitSnapshot[];
   isLoading: boolean;
   isError: boolean;
+  onRefresh?: (runtimeId: string) => Promise<void>;
 }) {
   const { t, i18n } = useT("usage");
   const [view, setView] = useState<ViewMode>("accounts");
@@ -133,6 +135,18 @@ export function ProviderLimitsOverview({
     ? overview.accounts.length > 0
     : overview.daemons.length > 0;
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const refreshRuntimeID = records.find((record) => record.runtime_id)?.runtime_id;
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!refreshRuntimeID || !onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh(refreshRuntimeID);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <section className="rounded-lg border bg-card" aria-labelledby="provider-limits-title">
@@ -164,6 +178,9 @@ export function ProviderLimitsOverview({
             {t(($) => $.provider_limits.by_daemon)}
           </button>
         </div>
+        <button type="button" className="rounded-md border px-2.5 py-1 text-xs font-medium disabled:opacity-50" disabled={!refreshRuntimeID || isRefreshing} onClick={() => void handleRefresh()}>
+          {isRefreshing ? "Refreshing…" : "Refresh"}
+        </button>
       </div>
 
       <div className="space-y-4 p-4">
