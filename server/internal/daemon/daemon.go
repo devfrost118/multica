@@ -2267,13 +2267,14 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 	if resp == nil {
 		return
 	}
-	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil {
+	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil || resp.PendingProviderLimitRefresh != nil {
 		d.logger.Debug("heartbeat: pending actions",
 			"runtime_id", runtimeID,
 			"update", resp.PendingUpdate != nil,
 			"model_list", resp.PendingModelList != nil,
 			"local_skills", resp.PendingLocalSkills != nil,
 			"local_skill_import", resp.PendingLocalSkillImport != nil,
+			"provider_limit_refresh", resp.PendingProviderLimitRefresh != nil,
 		)
 	}
 	if resp.PendingUpdate != nil {
@@ -2288,6 +2289,13 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 		if rt := d.findRuntime(runtimeID); rt != nil {
 			go d.handleLocalSkillList(ctx, *rt, resp.PendingLocalSkills.ID)
 		}
+	}
+	if resp.PendingProviderLimitRefresh != nil && d.providerLimits != nil {
+		go func(requestID string) {
+			if err := d.providerLimits.CollectRefresh(ctx, requestID); err != nil && !errors.Is(err, context.Canceled) {
+				d.logger.Warn("manual provider limits refresh failed")
+			}
+		}(resp.PendingProviderLimitRefresh.ID)
 	}
 	// Prefer the batch field (new backend); fall back to singular (old backend).
 	if len(resp.PendingLocalSkillImports) > 0 {

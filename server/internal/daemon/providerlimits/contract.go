@@ -109,3 +109,10 @@ type Adapter interface {
 type Reporter interface {
 	Report(context.Context, []AccountSnapshot) error
 }
+
+// RefreshReporter is implemented by transports that can attach manual-refresh
+// acknowledgements to the same snapshot report. Keeping it optional preserves
+// the plain Reporter contract for tests and dry-run collectors.
+type RefreshReporter interface {
+	ReportRefresh(context.Context, []AccountSnapshot, []string) error
+}

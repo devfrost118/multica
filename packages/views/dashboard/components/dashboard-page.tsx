@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { BarChart3, FolderKanban, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { api } from "@multica/core/api";
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
 import {
   CompactNumberFlow,
@@ -267,6 +268,13 @@ export function DashboardPage() {
   const providerLimitHistory = Array.isArray(providerLimitHistoryQuery.data?.snapshots)
     ? providerLimitHistoryQuery.data.snapshots
     : EMPTY_PROVIDER_LIMIT_HISTORY;
+  const refreshProviderLimits = async (runtimeId: string) => {
+    await api.requestProviderLimitsRefresh(runtimeId);
+    window.setTimeout(() => {
+      void providerLimitsQuery.refetch();
+      void providerLimitHistoryQuery.refetch();
+    }, 1500);
+  };
 
   // Daily-aggregation surfaces (cost/tokens/time/tasks KPIs and the Daily
   // trend chart) re-scope to the user-selected `days` even when we
@@ -437,6 +445,7 @@ export function DashboardPage() {
             history={providerLimitHistory}
             isLoading={providerLimitsQuery.isLoading}
             isError={providerLimitsQuery.isError}
+            onRefresh={refreshProviderLimits}
           />
 
           {isLoading ? (

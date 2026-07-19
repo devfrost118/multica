@@ -311,3 +311,48 @@ func TestCollector_HonorsAdapterMinimumIntervalAfterSuccess(t *testing.T) {
 		t.Fatalf("adapter attempts = %d, want 2", attempts)
 	}
 }
+
+func TestCollector_ManualRefreshBypassesSuccessIntervalButHonorsBackoff(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, time.July, 19, 19, 0, 0, 0, time.UTC)
+	attempts := 0
+	collector := NewCollector(CollectorConfig{
+		Adapters: []Adapter{adapterFunc{
+			provider: "claude",
+			caps:     Capabilities{MinimumInterval: 15 * time.Minute},
+			collect: func(context.Context) ([]AccountSnapshot, error) {
+				attempts++
+				if attempts == 3 {
+					return nil, errors.New("rate limited")
+				}
+				return []AccountSnapshot{testSnapshot("claude")}, nil
+			},
+		}},
+		Reporter: reporterFunc(func(context.Context, []AccountSnapshot) error { return nil }),
+		Now:      func() time.Time { return now },
+		Backoff:  BackoffConfig{Base: time.Minute, Max: time.Minute},
+	})
+
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("CollectOnce() error = %v", err)
+	}
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("limited CollectOnce() error = %v", err)
+	}
+	if err := collector.CollectRefresh(context.Background()); err != nil {
+		t.Fatalf("CollectRefresh() error = %v", err)
+	}
+	if attempts != 2 {
+		t.Fatalf("attempts after manual refresh = %d, want 2", attempts)
+	}
+	if err := collector.CollectRefresh(context.Background()); err != nil {
+		t.Fatalf("failing CollectRefresh() error = %v", err)
+	}
+	if err := collector.CollectRefresh(context.Background()); err != nil {
+		t.Fatalf("backed off CollectRefresh() error = %v", err)
+	}
+	if attempts != 3 {
+		t.Fatalf("attempts after backoff = %d, want 3", attempts)
+	}
+}

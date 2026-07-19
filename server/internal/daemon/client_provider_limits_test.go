@@ -47,7 +47,7 @@ func TestClient_ReportProviderLimitsPostsNormalizedBatchForRuntime(t *testing.T)
 		},
 	}
 
-	if err := client.ReportProviderLimits(context.Background(), "runtime-1", []providerlimits.AccountSnapshot{snapshot}); err != nil {
+	if err := client.ReportProviderLimits(context.Background(), "runtime-1", []providerlimits.AccountSnapshot{snapshot}, nil); err != nil {
 		t.Fatalf("ReportProviderLimits() error = %v", err)
 	}
 }
@@ -80,7 +80,7 @@ func TestClient_ReportProviderLimitsSanitizesBeforeWritingRequest(t *testing.T) 
 		ErrorNote: `raw C:\\Users\\Ada\\.claude\\.credentials.json sk-secret-token`,
 	}
 
-	if err := client.ReportProviderLimits(context.Background(), "runtime-1", []providerlimits.AccountSnapshot{snapshot}); err != nil {
+	if err := client.ReportProviderLimits(context.Background(), "runtime-1", []providerlimits.AccountSnapshot{snapshot}, nil); err != nil {
 		t.Fatalf("ReportProviderLimits() error = %v", err)
 	}
 }
