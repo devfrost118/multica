@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/multica-ai/multica/server/internal/logger"
+	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
@@ -128,7 +129,11 @@ func (h *Handler) CreateProjectEnvironment(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	secrets := normalizeSecretMap(req.Secrets)
-	secretBytes, err := json.Marshal(secrets)
+	if err := projectenvsecrets.ValidateSecretKeys(secrets); err != nil {
+		writeError(w, http.StatusBadRequest, "secrets.__sealed__ is reserved")
+		return
+	}
+	secretBytes, err := h.ProjectEnvironmentSecrets.Seal(secrets)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to encode project environment")
 		return
@@ -212,8 +217,18 @@ func (h *Handler) UpdateProjectEnvironment(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	mergedSecrets, audit := mergeAgentEnv(unmarshalProjectEnvironmentSecrets(existing), normalizeSecretMap(req.Secrets))
-	secretBytes, err := json.Marshal(mergedSecrets)
+	existingSecrets, err := h.projectEnvironmentSecrets(existing)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to decrypt project environment secrets")
+		return
+	}
+	requestSecrets := normalizeSecretMap(req.Secrets)
+	if err := projectenvsecrets.ValidateSecretKeys(requestSecrets); err != nil {
+		writeError(w, http.StatusBadRequest, "secrets.__sealed__ is reserved")
+		return
+	}
+	mergedSecrets, audit := mergeAgentEnv(existingSecrets, requestSecrets)
+	secretBytes, err := h.ProjectEnvironmentSecrets.Seal(mergedSecrets)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to encode project environment")
 		return
@@ -301,11 +316,16 @@ func (h *Handler) DeleteProjectEnvironment(w http.ResponseWriter, r *http.Reques
 		writeError(w, http.StatusInternalServerError, "failed to delete project environment")
 		return
 	}
+	secrets, err := h.projectEnvironmentSecrets(env)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to decrypt project environment secrets")
+		return
+	}
 	if !h.auditProjectEnvironmentMutation(w, r, qtx, project.WorkspaceID, member.UserID, projectEnvironmentActivityDeleted, map[string]any{
 		"environment_id": uuidToString(env.ID),
 		"project_id":     uuidToString(project.ID),
 		"name":           env.Name,
-		"secret_keys":    sortedKeys(unmarshalProjectEnvironmentSecrets(env)),
+		"secret_keys":    sortedKeys(secrets),
 	}) {
 		return
 	}
@@ -326,7 +346,11 @@ func (h *Handler) GetProjectEnvironmentReveal(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	secrets := unmarshalProjectEnvironmentSecrets(env)
+	secrets, err := h.projectEnvironmentSecrets(env)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to decrypt project environment secrets")
+		return
+	}
 	keys := sortedKeys(secrets)
 	details, _ := json.Marshal(map[string]any{
 		"environment_id": uuidToString(env.ID),
@@ -438,7 +462,11 @@ func (h *Handler) parseProjectEnvironmentRuntimeIDs(w http.ResponseWriter, r *ht
 }
 
 func (h *Handler) projectEnvironmentToResponse(ctx context.Context, env db.ProjectEnvironment) (ProjectEnvironmentResponse, error) {
-	secrets := maskedSecretMap(unmarshalProjectEnvironmentSecrets(env))
+	plainSecrets, err := h.projectEnvironmentSecrets(env)
+	if err != nil {
+		return ProjectEnvironmentResponse{}, err
+	}
+	secrets := maskedSecretMap(plainSecrets)
 	runtimeRows, err := h.Queries.ListProjectEnvironmentDaemons(ctx, env.ID)
 	if err != nil {
 		return ProjectEnvironmentResponse{}, err
@@ -476,19 +504,13 @@ func maskedSecretMap(secrets map[string]string) map[string]string {
 	return out
 }
 
-func unmarshalProjectEnvironmentSecrets(env db.ProjectEnvironment) map[string]string {
-	out := map[string]string{}
-	if len(env.Secrets) == 0 {
-		return out
+func (h *Handler) projectEnvironmentSecrets(env db.ProjectEnvironment) (map[string]string, error) {
+	secrets, err := h.ProjectEnvironmentSecrets.Open(env.Secrets)
+	if err != nil {
+		slog.Warn("failed to open project environment secrets", "environment_id", uuidToString(env.ID), "error", err)
+		return nil, err
 	}
-	if err := json.Unmarshal(env.Secrets, &out); err != nil {
-		slog.Warn("failed to unmarshal project environment secrets", "environment_id", uuidToString(env.ID), "error", err)
-		return map[string]string{}
-	}
-	if out == nil {
-		return map[string]string{}
-	}
-	return out
+	return secrets, nil
 }
 
 func (h *Handler) auditProjectEnvironmentMutation(w http.ResponseWriter, r *http.Request, qtx *db.Queries, workspaceID, actorID pgtype.UUID, action string, detailsMap map[string]any) bool {
