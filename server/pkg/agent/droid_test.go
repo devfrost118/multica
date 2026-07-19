@@ -40,6 +40,7 @@ printf '{"type":"completion","finalText":"ok"}\n'
 	}
 
 	return `@echo off
+chcp 65001 >nul
 :loop
 if "%~1"=="" goto done
 if "%~1"=="--append-system-prompt-file" (
