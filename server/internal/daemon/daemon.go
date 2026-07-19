@@ -3632,7 +3632,7 @@ func providerDisplayName(name string) string {
 
 func providerNeedsInlineSystemPrompt(provider string) bool {
 	switch provider {
-	case "openclaw", "kimi", "traecli", "droid":
+	case "openclaw", "kimi", "traecli":
 		return true
 	default:
 		return false
@@ -4582,8 +4582,8 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	//     as a belt-and-suspenders for older openclaw releases until that load
 	//     path stabilises in production; remove this once a release tracks the
 	//     workdir bootstrap reliably end-to-end.
-	//   - kimi and droid are wrapped through their own CLIs whose cwd handling
-	//     is opaque enough that we can't trust the file-based path either.
+	//   - kimi is wrapped through its own CLI whose cwd handling is opaque
+	//     enough that we can't trust the file-based path either.
 	// Pass the full runtime brief inline (CLI catalog + workflow steps + agent
 	// identity/persona + skills + project context) so the backend prepends the
 	// same payload that file-based runtimes pick up from disk. Without this,

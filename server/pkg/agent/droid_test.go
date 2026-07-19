@@ -1,7 +1,15 @@
 package agent
 
 import (
+	"context"
+	"errors"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewReturnsDroidBackend(t *testing.T) {
@@ -12,6 +20,131 @@ func TestNewReturnsDroidBackend(t *testing.T) {
 	}
 	if _, ok := b.(*droidBackend); !ok {
 		t.Fatalf("expected *droidBackend, got %T", b)
+	}
+}
+
+func fakeDroidScript() string {
+	if runtime.GOOS != "windows" {
+		return `#!/bin/sh
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "--append-system-prompt-file" ]; then
+    printf '%s\n' "$1" >> "$DROID_ARGS_FILE"
+    shift
+    cat "$1" > "$DROID_SYSTEM_PROMPT_FILE_CONTENT"
+  fi
+  printf '%s\n' "$1" >> "$DROID_ARGS_FILE"
+  shift
+done
+printf '{"type":"completion","finalText":"ok"}\n'
+`
+	}
+
+	return `@echo off
+:loop
+if "%~1"=="" goto done
+if "%~1"=="--append-system-prompt-file" (
+  >>"%DROID_ARGS_FILE%" echo %~1
+  type "%~2" > "%DROID_SYSTEM_PROMPT_FILE_CONTENT%"
+  >>"%DROID_ARGS_FILE%" echo %~2
+  shift
+  shift
+  goto loop
+)
+>>"%DROID_ARGS_FILE%" echo %~1
+shift
+goto loop
+:done
+echo {"type":"completion","finalText":"ok"}
+`
+}
+
+func TestDroidBackendPassesLargeSystemPromptThroughFile(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	argsFile := filepath.Join(tempDir, "argv.txt")
+	promptContentFile := filepath.Join(tempDir, "system-prompt.txt")
+	fakeName := "droid"
+	if runtime.GOOS == "windows" {
+		fakeName += ".cmd"
+	}
+	fakePath := filepath.Join(tempDir, fakeName)
+	writeTestExecutable(t, fakePath, []byte(fakeDroidScript()))
+
+	workDir := t.TempDir()
+	runtimeBrief := strings.Repeat("runtime brief ", 3_000)
+	if len(runtimeBrief) <= 32_767 {
+		t.Fatalf("runtime brief must exceed the Windows argv limit, got %d bytes", len(runtimeBrief))
+	}
+
+	backend, err := New("droid", Config{
+		ExecutablePath: fakePath,
+		Logger:         slog.Default(),
+		Env: map[string]string{
+			"DROID_ARGS_FILE":                  argsFile,
+			"DROID_SYSTEM_PROMPT_FILE_CONTENT": promptContentFile,
+		},
+	})
+	if err != nil {
+		t.Fatalf("new droid backend: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	session, err := backend.Execute(ctx, "inspect the repository", ExecOptions{
+		Cwd:          workDir,
+		SystemPrompt: runtimeBrief,
+		Timeout:      5 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	go func() {
+		for range session.Messages {
+		}
+	}()
+	if result := <-session.Result; result.Status != "completed" {
+		t.Fatalf("result status = %q, error = %q; want completed", result.Status, result.Error)
+	}
+
+	rawArgs, err := os.ReadFile(argsFile)
+	if err != nil {
+		t.Fatalf("read argv capture: %v", err)
+	}
+	args := splitNonEmptyLines(string(rawArgs))
+	for index, arg := range args {
+		args[index] = strings.TrimSpace(arg)
+	}
+	promptFlagIndex := argIndexOf(args, "--append-system-prompt-file")
+	if promptFlagIndex == -1 || promptFlagIndex == len(args)-1 {
+		t.Fatalf("expected --append-system-prompt-file <path> in argv, got %v", args)
+	}
+	promptPath := args[promptFlagIndex+1]
+	if filepath.Dir(promptPath) != workDir {
+		t.Errorf("system prompt file must be task-local: got %q, workdir %q", promptPath, workDir)
+	}
+	if filepath.Base(promptPath) == "AGENTS.md" || filepath.Base(promptPath) == "CLAUDE.md" {
+		t.Errorf("system prompt file must not overwrite managed config: got %q", promptPath)
+	}
+	for _, arg := range args {
+		if strings.Contains(arg, runtimeBrief) {
+			t.Errorf("runtime brief must not appear in argv: %q", arg)
+		}
+	}
+	if got := args[len(args)-1]; got != "inspect the repository" {
+		t.Errorf("final positional prompt = %q, want user prompt", got)
+	}
+
+	gotPrompt, err := os.ReadFile(promptContentFile)
+	if err != nil {
+		t.Fatalf("read captured system prompt: %v", err)
+	}
+	if string(gotPrompt) != runtimeBrief {
+		t.Errorf("system prompt file content differs from runtime brief")
+	}
+	if _, err := os.Stat(promptPath); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("temporary system prompt file should be removed after execution, stat err = %v", err)
 	}
 }
 

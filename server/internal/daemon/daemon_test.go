@@ -514,7 +514,10 @@ func TestProviderNeedsInlineSystemPrompt(t *testing.T) {
 		{provider: "kiro", want: false},
 		{provider: "kimi", want: true},
 		{provider: "traecli", want: true},
-		{provider: "droid", want: true},
+		// Droid loads the managed AGENTS.md from its task workdir natively.
+		// Inlining the same runtime brief duplicates the context and can make
+		// Windows process creation exceed the command-line limit.
+		{provider: "droid", want: false},
 		{provider: "codex", want: false},
 		{provider: "claude", want: false},
 	}

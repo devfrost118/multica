@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -17,12 +19,13 @@ import (
 // stream-json transport this backend depends on, --input-format and
 // --session-id / -s / --fork are owned by Multica via ExecOptions.
 var droidBlockedArgs = map[string]blockedArgMode{
-	"-o":              blockedWithValue,
-	"--output-format": blockedWithValue,
-	"--input-format":  blockedWithValue,
-	"-s":              blockedWithValue,
-	"--session-id":    blockedWithValue,
-	"--fork":          blockedWithValue,
+	"-o":                          blockedWithValue,
+	"--output-format":             blockedWithValue,
+	"--input-format":              blockedWithValue,
+	"-s":                          blockedWithValue,
+	"--session-id":                blockedWithValue,
+	"--fork":                      blockedWithValue,
+	"--append-system-prompt-file": blockedWithValue,
 }
 
 // droidBackend implements Backend by spawning `droid exec` with
@@ -104,14 +107,20 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	}
 	args = append(args, filterCustomArgs(opts.CustomArgs, droidBlockedArgs, b.cfg.Logger)...)
 
-	// Final positional: the prompt itself. droid exec takes prompt as
-	// a positional argument; SystemPrompt is folded in by daemon.go
-	// (providerNeedsInlineSystemPrompt is true for droid).
-	userText := prompt
+	var systemPromptFile string
 	if opts.SystemPrompt != "" {
-		userText = opts.SystemPrompt + "\n\n---\n\n" + prompt
+		var err error
+		systemPromptFile, err = writeDroidSystemPromptFile(opts.Cwd, opts.SystemPrompt)
+		if err != nil {
+			cancel()
+			return nil, err
+		}
+		args = append(args, "--append-system-prompt-file", systemPromptFile)
 	}
-	args = append(args, userText)
+	// Final positional: the user task only. The system prompt travels through
+	// droid's file flag so a large runtime brief never exceeds the Windows
+	// CreateProcess command-line limit.
+	args = append(args, prompt)
 
 	cmd := exec.CommandContext(runCtx, execPath, args...)
 	hideAgentWindow(cmd)
@@ -124,16 +133,19 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		cancel()
+		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 		return nil, fmt.Errorf("droid stdout pipe: %w", err)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		cancel()
+		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 		return nil, fmt.Errorf("droid stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
 		cancel()
+		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 		return nil, fmt.Errorf("start droid: %w", err)
 	}
 
@@ -152,9 +164,6 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		defer cancel()
 		defer close(msgCh)
 		defer close(resCh)
-		defer func() {
-			_ = cmd.Wait()
-		}()
 
 		startTime := time.Now()
 		var outputMu sync.Mutex
@@ -251,6 +260,8 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		}
 
 		<-stderrDone
+		_ = cmd.Wait()
+		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 
 		// If the context expired mid-stream, surface a precise reason
 		// even if droid happened to exit cleanly.
@@ -298,6 +309,37 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	}()
 
 	return &Session{Messages: msgCh, Result: resCh}, nil
+}
+
+func writeDroidSystemPromptFile(workDir, systemPrompt string) (string, error) {
+	if workDir == "" {
+		return "", fmt.Errorf("droid system prompt requires a task workdir")
+	}
+
+	file, err := os.CreateTemp(workDir, ".multica-droid-system-prompt-*")
+	if err != nil {
+		return "", fmt.Errorf("create droid system prompt file: %w", err)
+	}
+	path := file.Name()
+	if _, err := file.WriteString(systemPrompt); err != nil {
+		_ = file.Close()
+		_ = os.Remove(path)
+		return "", fmt.Errorf("write droid system prompt file: %w", err)
+	}
+	if err := file.Close(); err != nil {
+		_ = os.Remove(path)
+		return "", fmt.Errorf("close droid system prompt file: %w", err)
+	}
+	return path, nil
+}
+
+func removeDroidSystemPromptFile(logger *slog.Logger, path string) {
+	if path == "" {
+		return
+	}
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		logger.Warn("remove droid system prompt file", "path", path, "err", err)
+	}
 }
 
 // droidModelFromEvent pulls a "model" field out of a raw JSON line
