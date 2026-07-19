@@ -54,6 +54,36 @@
     "title": "暂无消耗数据",
     "body": "当智能体在这里开始执行任务后，它们的 token 消耗和运行时长将出现在此处。"
   },
+  "provider_limits": {
+    "title": "提供商限额",
+    "subtitle": "已连接提供商上报的订阅配额窗口。",
+    "view_label": "提供商限额视图",
+    "by_accounts": "按账号",
+    "by_daemon": "按守护进程",
+    "loading": "正在加载提供商限额…",
+    "empty": "尚未上报提供商限额。",
+    "error": "无法加载提供商限额。",
+    "unknown": "未知",
+    "no_buckets": "没有可用的配额 bucket。",
+    "remaining": "剩余 {{value}}%",
+    "freshness": "新鲜度 {{value}}",
+    "resets_at": "重置时间 {{value}}",
+    "checked_at": "检查时间 {{value}}",
+    "last_good": "上次正常：{{value}}",
+    "reason": "原因：{{value}}",
+    "thresholds": {
+      "title": "提醒",
+      "warning": "警告",
+      "critical": "严重"
+    },
+    "status": {
+      "ok": "正常",
+      "stale": "已过期",
+      "partial": "部分",
+      "unavailable": "不可用",
+      "error": "错误"
+    }
+  },
   "duration": {
     "less_than_minute": "<1分钟"
   }

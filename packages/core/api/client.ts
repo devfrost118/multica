@@ -145,6 +145,8 @@ import type {
   CreateBillingCheckoutSessionRequest,
   CreateBillingCheckoutSessionResponse,
   BillingCheckoutSessionStatus,
+  ProviderLimitHistoryResponse,
+  ProviderLimitsOverviewResponse,
   CreateBillingPortalSessionResponse,
 } from "../types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
@@ -259,6 +261,10 @@ import {
   EMPTY_LABEL,
   EMPTY_LIST_LABELS_RESPONSE,
   EMPTY_RESOURCE_LABELS_RESPONSE,
+  ProviderLimitHistoryResponseSchema,
+  ProviderLimitsOverviewResponseSchema,
+  EMPTY_PROVIDER_LIMIT_HISTORY,
+  EMPTY_PROVIDER_LIMITS_OVERVIEW,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -1449,6 +1455,26 @@ export class ApiClient {
       DashboardUsageDailyListSchema,
       [],
       { endpoint: "GET /api/dashboard/usage/daily" },
+    );
+  }
+
+  async getProviderLimits(): Promise<ProviderLimitsOverviewResponse> {
+    const raw = await this.fetch<unknown>("/api/provider-limits");
+    return parseWithFallback(
+      raw,
+      ProviderLimitsOverviewResponseSchema,
+      EMPTY_PROVIDER_LIMITS_OVERVIEW,
+      { endpoint: "GET /api/provider-limits" },
+    );
+  }
+
+  async getProviderLimitHistory(): Promise<ProviderLimitHistoryResponse> {
+    const raw = await this.fetch<unknown>("/api/provider-limits/history");
+    return parseWithFallback(
+      raw,
+      ProviderLimitHistoryResponseSchema,
+      EMPTY_PROVIDER_LIMIT_HISTORY,
+      { endpoint: "GET /api/provider-limits/history" },
     );
   }
 

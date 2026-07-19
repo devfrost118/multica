@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { renderWithI18n } from "../../test/i18n";
@@ -154,7 +156,7 @@ describe("DashboardPage — viewing timezone drives the query key", () => {
     expect(flows.map((flow) => flow.getAttribute("aria-label"))).toEqual(
       expect.arrayContaining(["$0.03", "3K", "12"]),
     );
-    expect(container).toHaveTextContent("3h 17m");
+    expect(container.textContent).toContain("3h 17m");
     expect(
       flows.every(
         (flow) =>

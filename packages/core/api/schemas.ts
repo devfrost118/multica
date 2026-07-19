@@ -30,6 +30,8 @@ import type {
   ListWebhookDeliveriesResponse,
   NotificationPreferenceResponse,
   ResourceLabelsResponse,
+  ProviderLimitHistoryResponse,
+  ProviderLimitsOverviewResponse,
   SearchIssuesResponse,
   SearchProjectsResponse,
   Squad,
@@ -65,6 +67,59 @@ export const EMPTY_LABEL: Label = {
   usage_count: 0,
   created_at: "",
   updated_at: "",
+};
+
+const ProviderLimitSourceSchema = z.object({
+  kind: z.string().default(""),
+  freshness_seconds: z.number().default(0),
+  confidence: z.string().default(""),
+}).loose();
+
+const ProviderLimitBucketSchema = z.object({
+  id: z.string().default(""),
+  label: z.string().default(""),
+  unit: z.string().default(""),
+  limit_value: z.number().nullable().optional().default(null),
+  used_value: z.number().nullable().optional().default(null),
+  remaining_value: z.number().nullable().optional().default(null),
+  resets_at: z.string().nullable().optional().default(null),
+  status: z.string().default("unavailable"),
+  note: z.string().default(""),
+}).loose();
+
+export const ProviderLimitSnapshotSchema = z.object({
+  runtime_id: z.string().default(""),
+  provider: z.string().default(""),
+  account_key: z.string().default(""),
+  account_label: z.string().default(""),
+  checked_at: z.string().default(""),
+  status: z.string().default("unavailable"),
+  source: ProviderLimitSourceSchema.default({
+    kind: "",
+    freshness_seconds: 0,
+    confidence: "",
+  }),
+  buckets: z.array(ProviderLimitBucketSchema).default([]),
+  error_note: z.string().default(""),
+  stale: z.boolean().default(false),
+}).loose();
+
+export const ProviderLimitsOverviewResponseSchema = z.object({
+  accounts: z.array(ProviderLimitSnapshotSchema).default([]),
+  daemons: z.array(ProviderLimitSnapshotSchema).default([]),
+}).loose();
+
+export const ProviderLimitHistoryResponseSchema = z.object({
+  snapshots: z.array(ProviderLimitSnapshotSchema).default([]),
+}).loose();
+
+export const EMPTY_PROVIDER_LIMITS_OVERVIEW: ProviderLimitsOverviewResponse = {
+  accounts: [],
+  daemons: [],
+};
+
+export const EMPTY_PROVIDER_LIMIT_HISTORY: ProviderLimitHistoryResponse = {
+  snapshots: [],
 };
 
 export const ListLabelsResponseSchema = z.object({
