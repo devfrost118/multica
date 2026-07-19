@@ -27,6 +27,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/integrations/slack"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
+	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/storage"
@@ -223,7 +224,11 @@ type Handler struct {
 	// Config); when unconfigured its Enabled() reports false and callers fall
 	// back silently.
 	LLM *llm.Client
-	cfg Config
+	// ProjectEnvironmentSecrets protects project_environment.secrets at rest.
+	// Its zero value is intentional legacy plaintext mode for installations
+	// that have not opted in by configuring MULTICA_PROJECT_ENV_SECRET_KEY.
+	ProjectEnvironmentSecrets projectenvsecrets.Codec
+	cfg                       Config
 }
 
 func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *events.Bus, emailService *service.EmailService, store storage.Storage, cfSigner *auth.CloudFrontSigner, analyticsClient analytics.Client, cfg Config, daemonHubs ...*daemonws.Hub) *Handler {

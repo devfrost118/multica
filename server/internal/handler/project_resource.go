@@ -568,9 +568,9 @@ func (h *Handler) listProjectResourcesForProject(ctx context.Context, projectID 
 	return rows
 }
 
-func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID, runtimeID pgtype.UUID) []ProjectEnvironmentData {
+func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID, runtimeID pgtype.UUID) ([]ProjectEnvironmentData, error) {
 	if !projectID.Valid || !runtimeID.Valid {
-		return nil
+		return nil, nil
 	}
 	rows, err := h.Queries.ListProjectEnvironmentsForRuntimeDelivery(ctx, runtimeID)
 	if err != nil {
@@ -579,10 +579,10 @@ func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID
 			"runtime_id", uuidToString(runtimeID),
 			"error", err,
 		)
-		return nil
+		return nil, err
 	}
 	if len(rows) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	out := make([]ProjectEnvironmentData, 0, len(rows))
@@ -590,12 +590,16 @@ func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID
 		if row.ProjectID != projectID {
 			continue
 		}
-		out = append(out, projectEnvironmentToClaimData(row))
+		item, err := h.projectEnvironmentToClaimData(row)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, item)
 	}
-	return out
+	return out, nil
 }
 
-func projectEnvironmentToClaimData(env db.ProjectEnvironment) ProjectEnvironmentData {
+func (h *Handler) projectEnvironmentToClaimData(env db.ProjectEnvironment) (ProjectEnvironmentData, error) {
 	var cfg struct {
 		Kind       string          `json:"kind"`
 		Connection json.RawMessage `json:"connection"`
@@ -614,10 +618,14 @@ func projectEnvironmentToClaimData(env db.ProjectEnvironment) ProjectEnvironment
 		connection = json.RawMessage("{}")
 	}
 
+	secrets, err := h.projectEnvironmentSecrets(env)
+	if err != nil {
+		return ProjectEnvironmentData{}, err
+	}
 	return ProjectEnvironmentData{
 		Name:       env.Name,
 		Kind:       strings.TrimSpace(cfg.Kind),
 		Connection: connection,
-		Secrets:    unmarshalProjectEnvironmentSecrets(env),
-	}
+		Secrets:    secrets,
+	}, nil
 }
