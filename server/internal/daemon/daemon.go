@@ -23,6 +23,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/cli"
 	"github.com/multica-ai/multica/server/internal/daemon/execenv"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/claude"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/codex"
 	"github.com/multica-ai/multica/server/internal/daemon/repocache"
 	"github.com/multica-ai/multica/server/internal/selfexec"
@@ -324,6 +325,7 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 	d.runUpdateFn = d.runUpdate
 	d.providerLimits = providerlimits.NewCollector(providerlimits.CollectorConfig{
 		Adapters: []providerlimits.Adapter{
+			claude.NewAdapter(claude.Config{}),
 			codex.NewAdapter(codex.Config{}),
 			providerlimits.NewUnavailableStub("antigravity"),
 		},

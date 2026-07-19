@@ -236,6 +236,43 @@ func TestCollector_AppliesPerProviderBackoffAfterFailure(t *testing.T) {
 	}
 }
 
+func TestCollector_RetainsSafeStaleSnapshotWhileBackingOffAdapterError(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC)
+	attempts := 0
+	stale := testSnapshot("claude")
+	stale.Status = StatusStale
+	stale.ErrorNote = "rate_limited"
+	stale.Buckets[0].Status = StatusStale
+	var reported []AccountSnapshot
+	collector := NewCollector(CollectorConfig{
+		Adapters: []Adapter{adapterFunc{provider: "claude", collect: func(context.Context) ([]AccountSnapshot, error) {
+			attempts++
+			return []AccountSnapshot{stale}, errors.New("rate limited")
+		}}},
+		Reporter: reporterFunc(func(_ context.Context, snapshots []AccountSnapshot) error {
+			reported = snapshots
+			return nil
+		}),
+		Now:     func() time.Time { return now },
+		Backoff: BackoffConfig{Base: time.Minute, Max: time.Minute},
+	})
+
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("first CollectOnce() error = %v", err)
+	}
+	if len(reported) != 1 || reported[0].Status != StatusStale || reported[0].ErrorNote != "rate_limited" {
+		t.Fatalf("reported snapshots = %#v", reported)
+	}
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("backed off CollectOnce() error = %v", err)
+	}
+	if attempts != 1 {
+		t.Fatalf("adapter attempts = %d, want 1 while backing off", attempts)
+	}
+}
+
 func TestCollector_HonorsAdapterMinimumIntervalAfterSuccess(t *testing.T) {
 	t.Parallel()
 
