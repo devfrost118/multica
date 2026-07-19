@@ -127,7 +127,14 @@ func (c *Collector) CollectOnce(ctx context.Context) error {
 		snapshots, err := c.collectAdapter(ctx, provider, capabilities, adapter)
 		if err != nil {
 			c.recordFailure(provider, now)
-			collected = append(collected, failureSnapshot(provider, now))
+			if len(snapshots) == 0 {
+				collected = append(collected, failureSnapshot(provider, now))
+			} else {
+				// An adapter may return a safe stale snapshot with an error (for
+				// example after an upstream 429). Preserve that last-good data
+				// while still applying collector backoff for the failed probe.
+				collected = append(collected, normalizeSnapshots(provider, snapshots, now)...)
+			}
 			continue
 		}
 		c.recordSuccess(provider, now, capabilities.MinimumInterval)
