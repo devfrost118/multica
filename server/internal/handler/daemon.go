@@ -1768,7 +1768,16 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 					resp.ProjectTitle = proj.Title
 					resp.ProjectDescription = proj.Description.String
 				}
-				resp.ProjectEnvironments = h.listProjectEnvironmentsForClaim(r.Context(), issue.ProjectID, runtime.ID)
+				projectEnvironments, err := h.listProjectEnvironmentsForClaim(r.Context(), issue.ProjectID, runtime.ID)
+				if err != nil {
+					slog.Error("daemon claim: refusing to deliver project environments", "project_id", uuidToString(issue.ProjectID), "runtime_id", uuidToString(runtime.ID), "error", err)
+					return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, &claimBuildFailure{
+						outcome: "error_project_environment_secrets",
+						status:  http.StatusInternalServerError,
+						message: "failed to load project environment secrets",
+					}
+				}
+				resp.ProjectEnvironments = projectEnvironments
 				if rows := h.listProjectResourcesForProject(r.Context(), issue.ProjectID); len(rows) > 0 {
 					out := make([]ProjectResourceData, 0, len(rows))
 					for _, row := range rows {
@@ -2206,7 +2215,16 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 						resp.ProjectTitle = proj.Title
 						resp.ProjectDescription = proj.Description.String
 					}
-					resp.ProjectEnvironments = h.listProjectEnvironmentsForClaim(r.Context(), projectUUID, runtime.ID)
+					projectEnvironments, err := h.listProjectEnvironmentsForClaim(r.Context(), projectUUID, runtime.ID)
+					if err != nil {
+						slog.Error("daemon claim: refusing to deliver project environments", "project_id", uuidToString(projectUUID), "runtime_id", uuidToString(runtime.ID), "error", err)
+						return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, &claimBuildFailure{
+							outcome: "error_project_environment_secrets",
+							status:  http.StatusInternalServerError,
+							message: "failed to load project environment secrets",
+						}
+					}
+					resp.ProjectEnvironments = projectEnvironments
 					if rows := h.listProjectResourcesForProject(r.Context(), projectUUID); len(rows) > 0 {
 						out := make([]ProjectResourceData, 0, len(rows))
 						for _, row := range rows {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -8,6 +9,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
+	"github.com/multica-ai/multica/server/internal/util/secretbox"
 )
 
 type projectEnvironmentTestResponse struct {
@@ -22,6 +26,46 @@ type projectEnvironmentTestResponse struct {
 	CreatedBy         *string           `json:"created_by"`
 	CreatedAt         string            `json:"created_at"`
 	UpdatedAt         string            `json:"updated_at"`
+}
+
+func TestProjectEnvironmentSealsStoredSecretsAndPreservesRevealContract(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("database not available")
+	}
+	box, err := secretbox.New(bytes.Repeat([]byte{3}, secretbox.KeySize))
+	if err != nil {
+		t.Fatalf("new secret box: %v", err)
+	}
+	previousCodec := testHandler.ProjectEnvironmentSecrets
+	testHandler.ProjectEnvironmentSecrets = projectenvsecrets.New(box)
+	t.Cleanup(func() { testHandler.ProjectEnvironmentSecrets = previousCodec })
+
+	project := createProjectEnvironmentTestProject(t, "Encrypted environment")
+	env := createProjectEnvironmentViaHandler(t, project.ID, "encrypted", map[string]string{"TOKEN": "top-secret"})
+
+	var stored string
+	if err := testPool.QueryRow(context.Background(), `SELECT secrets::text FROM project_environment WHERE id = $1`, env.ID).Scan(&stored); err != nil {
+		t.Fatalf("read stored secrets: %v", err)
+	}
+	if strings.Contains(stored, "top-secret") || !strings.Contains(stored, `"__sealed__"`) {
+		t.Fatalf("stored secrets must contain a sealed envelope without plaintext: %s", stored)
+	}
+
+	w := httptest.NewRecorder()
+	req := newProjectEnvironmentRequest(http.MethodGet, project.ID, env.ID, nil)
+	testHandler.GetProjectEnvironmentReveal(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("GetProjectEnvironmentReveal: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var revealed struct {
+		Secrets map[string]string `json:"secrets"`
+	}
+	if err := json.NewDecoder(w.Body).Decode(&revealed); err != nil {
+		t.Fatalf("decode reveal: %v", err)
+	}
+	if got := revealed.Secrets["TOKEN"]; got != "top-secret" {
+		t.Fatalf("revealed TOKEN = %q, want top-secret", got)
+	}
 }
 
 func TestProjectEnvironmentLifecycleMasksSecretsAndPreservesSentinel(t *testing.T) {
