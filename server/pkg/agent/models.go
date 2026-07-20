@@ -140,6 +140,8 @@ func ListModels(ctx context.Context, providerType, executablePath string) ([]Mod
 		return cachedDiscovery(providerType, func() ([]Model, error) {
 			return discoverQoderModels(ctx, executablePath)
 		})
+	case "droid":
+		return droidStaticModels(), nil
 	case "opencode":
 		return cachedDiscovery(discoveryCacheKey(providerType, executablePath), func() ([]Model, error) {
 			return discoverOpenCodeModels(ctx, executablePath)
@@ -838,6 +840,45 @@ func discoverKiroModels(ctx context.Context, executablePath string) ([]Model, er
 		clientName:   "multica-model-discovery",
 		tmpdirPrefix: "multica-kiro-discovery-",
 	})
+}
+
+// droidStaticModels returns the baked-in catalog of models Factory.ai's
+// droid CLI exposes via `droid exec --model <id>`. The list mirrors what
+// `droid exec --help` prints; refresh it when Factory ships new frontier
+// models. Discovery via ACP is not viable — droid does not speak ACP, and
+// its stream-json `system` init event only echoes the *selected* model,
+// not the catalog. A static list keeps the UI selector usable; users can
+// also type a model ID manually for newer entries.
+func droidStaticModels() []Model {
+	return []Model{
+		{ID: "claude-opus-4-7", Label: "Claude Opus 4.7", Provider: "anthropic", Default: true},
+		{ID: "claude-opus-4-7-fast", Label: "Claude Opus 4.7 Fast", Provider: "anthropic"},
+		{ID: "claude-opus-4-6", Label: "Claude Opus 4.6", Provider: "anthropic"},
+		{ID: "claude-opus-4-6-fast", Label: "Claude Opus 4.6 Fast", Provider: "anthropic"},
+		{ID: "claude-opus-4-5-20251101", Label: "Claude Opus 4.5", Provider: "anthropic"},
+		{ID: "claude-sonnet-4-6", Label: "Claude Sonnet 4.6", Provider: "anthropic"},
+		{ID: "claude-sonnet-4-5-20250929", Label: "Claude Sonnet 4.5", Provider: "anthropic"},
+		{ID: "claude-haiku-4-5-20251001", Label: "Claude Haiku 4.5", Provider: "anthropic"},
+		{ID: "gpt-5.5", Label: "GPT-5.5", Provider: "openai"},
+		{ID: "gpt-5.5-fast", Label: "GPT-5.5 Fast", Provider: "openai"},
+		{ID: "gpt-5.5-pro", Label: "GPT-5.5 Pro", Provider: "openai"},
+		{ID: "gpt-5.4", Label: "GPT-5.4", Provider: "openai"},
+		{ID: "gpt-5.4-fast", Label: "GPT-5.4 Fast", Provider: "openai"},
+		{ID: "gpt-5.4-mini", Label: "GPT-5.4 Mini", Provider: "openai"},
+		{ID: "gpt-5.3-codex", Label: "GPT-5.3 Codex", Provider: "openai"},
+		{ID: "gpt-5.3-codex-fast", Label: "GPT-5.3 Codex Fast", Provider: "openai"},
+		{ID: "gpt-5.2", Label: "GPT-5.2", Provider: "openai"},
+		{ID: "gpt-5.2-codex", Label: "GPT-5.2 Codex", Provider: "openai"},
+		{ID: "gemini-3.1-pro-preview", Label: "Gemini 3.1 Pro", Provider: "google"},
+		{ID: "gemini-3.5-flash", Label: "Gemini 3.5 Flash", Provider: "google"},
+		{ID: "gemini-3-flash-preview", Label: "Gemini 3 Flash", Provider: "google"},
+		{ID: "glm-5.1", Label: "Droid Core (GLM-5.1)", Provider: "factory"},
+		{ID: "kimi-k2.6", Label: "Droid Core (Kimi K2.6)", Provider: "factory"},
+		{ID: "kimi-k2.5", Label: "Droid Core (Kimi K2.5)", Provider: "factory"},
+		{ID: "deepseek-v4-pro", Label: "Droid Core (DeepSeek V4 Pro)", Provider: "factory"},
+		{ID: "minimax-m2.7", Label: "Droid Core (MiniMax M2.7)", Provider: "factory"},
+		{ID: "minimax-m2.5", Label: "Droid Core (MiniMax M2.5)", Provider: "factory"},
+	}
 }
 
 // discoverCopilotModels spins up `copilot --acp` and reads the
