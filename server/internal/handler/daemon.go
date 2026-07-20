@@ -987,6 +987,9 @@ func (h *Handler) DaemonHeartbeat(w http.ResponseWriter, r *http.Request) {
 	if ack.PendingLocalSkillImport != nil {
 		resp["pending_local_skill_import"] = ack.PendingLocalSkillImport
 	}
+	if ack.PendingProviderLimitRefresh != nil {
+		resp["pending_provider_limit_refresh"] = ack.PendingProviderLimitRefresh
+	}
 	if len(ack.PendingLocalSkillImports) > 0 {
 		resp["pending_local_skill_imports"] = ack.PendingLocalSkillImports
 	}
@@ -1103,6 +1106,11 @@ func (h *Handler) processHeartbeat(ctx context.Context, rt db.AgentRuntime, supp
 	ack := &protocol.DaemonHeartbeatAckPayload{
 		RuntimeID: runtimeID,
 		Status:    "ok",
+	}
+	if h.ProviderLimitRefreshStore != nil {
+		if pending := h.ProviderLimitRefreshStore.Pending(runtimeID); pending != nil {
+			ack.PendingProviderLimitRefresh = &protocol.DaemonHeartbeatPendingProviderLimitRefresh{ID: pending.ID}
+		}
 	}
 
 	probeUpdateCtx, cancelProbeUpdate := context.WithTimeout(ctx, heartbeatHasPendingTimeout)
