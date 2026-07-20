@@ -54,6 +54,51 @@
     "title": "No usage yet",
     "body": "Once agents start running tasks here, their token spend and run time will appear in this view."
   },
+  "provider_limits": {
+    "title": "Provider limits",
+    "subtitle": "Subscription quota windows reported by connected providers.",
+    "view_label": "Provider limits view",
+    "by_accounts": "By accounts",
+    "by_daemon": "By daemon",
+    "loading": "Loading provider limits…",
+    "empty": "No provider limits reported yet.",
+    "error": "Provider limits could not be loaded.",
+    "unknown": "Unknown",
+    "no_buckets": "No quota buckets are available.",
+    "used": "{{value}}% used",
+    "freshness": "Fresh for {{value}}",
+    "resets_at": "Resets {{value}}",
+    "checked_at": "Checked {{value}}",
+    "last_good": "Last good: {{value}}",
+    "reason": "Reason: {{value}}",
+    "thresholds": {
+      "title": "Alerts",
+      "warning": "Warning",
+      "critical": "Critical"
+    },
+    "status": {
+      "ok": "OK",
+      "stale": "Stale",
+      "partial": "Partial",
+      "unavailable": "Unavailable",
+      "error": "Error"
+    },
+    "detail": {
+      "trigger": "Details",
+      "no_history": "No history recorded yet for this bucket.",
+      "pace_title": "Pace & runway",
+      "estimated": "Estimated",
+      "pace_value": "~{{value}} consumed",
+      "runway_value": "~{{value}} left at this pace",
+      "runway_exhausted": "Already at or past the limit",
+      "unavailable": {
+        "insufficient_points": "Not enough comparable snapshots yet.",
+        "stale_data": "Latest snapshot is stale — refresh before trusting a projection.",
+        "not_decreasing": "Remaining isn't decreasing, so no depletion trend applies.",
+        "zero_elapsed_time": "Snapshots are too close together to estimate a rate."
+      }
+    }
+  },
   "duration": {
     "less_than_minute": "<1m"
   }

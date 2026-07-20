@@ -54,6 +54,51 @@
     "title": "まだ使用量はありません",
     "body": "ここでエージェントがタスクを実行し始めると、トークンの消費と実行時間がこの画面に表示されます。"
   },
+  "provider_limits": {
+    "title": "プロバイダーの上限",
+    "subtitle": "接続済みプロバイダーから報告されたサブスクリプションのクォータ枠です。",
+    "view_label": "プロバイダー上限の表示",
+    "by_accounts": "アカウント別",
+    "by_daemon": "デーモン別",
+    "loading": "プロバイダーの上限を読み込んでいます…",
+    "empty": "プロバイダーの上限はまだ報告されていません。",
+    "error": "プロバイダーの上限を読み込めませんでした。",
+    "unknown": "不明",
+    "no_buckets": "利用可能なクォータ枠はありません。",
+    "used": "使用 {{value}}%",
+    "freshness": "鮮度 {{value}}",
+    "resets_at": "リセット {{value}}",
+    "checked_at": "確認 {{value}}",
+    "last_good": "最後に正常: {{value}}",
+    "reason": "理由: {{value}}",
+    "thresholds": {
+      "title": "アラート",
+      "warning": "警告",
+      "critical": "重大"
+    },
+    "status": {
+      "ok": "正常",
+      "stale": "期限切れ",
+      "partial": "一部",
+      "unavailable": "利用不可",
+      "error": "エラー"
+    },
+    "detail": {
+      "trigger": "詳細",
+      "no_history": "このクォータ枠の履歴はまだありません。",
+      "pace_title": "消費ペースと残存見込み",
+      "estimated": "推定",
+      "pace_value": "約 {{value}} 消費",
+      "runway_value": "このペースで約 {{value}} 残存",
+      "runway_exhausted": "すでに上限に達しています",
+      "unavailable": {
+        "insufficient_points": "比較可能なスナップショットがまだ十分にありません。",
+        "stale_data": "最新のスナップショットが古いため、予測は信頼できません。更新してください。",
+        "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
+        "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
+      }
+    }
+  },
   "duration": {
     "less_than_minute": "1分未満"
   }

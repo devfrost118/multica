@@ -2,6 +2,26 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiClient, ApiError, CHAT_DRAFT_RESTORE_CAPABILITY } from "./client";
 import { setSchemaLogger } from "./schema";
 
+describe("provider limits API", () => {
+  it("falls back to empty provider limits when a server response is malformed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ accounts: "not-an-array", daemons: [] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const client = new ApiClient("https://api.example.test") as ApiClient & {
+      getProviderLimits: () => Promise<{ accounts: unknown[]; daemons: unknown[] }>;
+    };
+
+    await expect(client.getProviderLimits()).resolves.toEqual({ accounts: [], daemons: [] });
+  });
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });

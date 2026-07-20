@@ -54,6 +54,51 @@
     "title": "暂无消耗数据",
     "body": "当智能体在这里开始执行任务后，它们的 token 消耗和运行时长将出现在此处。"
   },
+  "provider_limits": {
+    "title": "提供商限额",
+    "subtitle": "已连接提供商上报的订阅配额窗口。",
+    "view_label": "提供商限额视图",
+    "by_accounts": "按账号",
+    "by_daemon": "按守护进程",
+    "loading": "正在加载提供商限额…",
+    "empty": "尚未上报提供商限额。",
+    "error": "无法加载提供商限额。",
+    "unknown": "未知",
+    "no_buckets": "没有可用的配额 bucket。",
+    "used": "已用 {{value}}%",
+    "freshness": "新鲜度 {{value}}",
+    "resets_at": "重置时间 {{value}}",
+    "checked_at": "检查时间 {{value}}",
+    "last_good": "上次正常：{{value}}",
+    "reason": "原因：{{value}}",
+    "thresholds": {
+      "title": "提醒",
+      "warning": "警告",
+      "critical": "严重"
+    },
+    "status": {
+      "ok": "正常",
+      "stale": "已过期",
+      "partial": "部分",
+      "unavailable": "不可用",
+      "error": "错误"
+    },
+    "detail": {
+      "trigger": "详情",
+      "no_history": "该配额 bucket 暂无历史记录。",
+      "pace_title": "消耗速度与预计可用时长",
+      "estimated": "预估",
+      "pace_value": "约消耗 {{value}}",
+      "runway_value": "按此速度约可用 {{value}}",
+      "runway_exhausted": "已达到或超过限额",
+      "unavailable": {
+        "insufficient_points": "可比较的 snapshot 数量还不够。",
+        "stale_data": "最新 snapshot 已过期，刷新后才能获得可信的预测。",
+        "not_decreasing": "剩余量并未下降，因此无法计算消耗趋势。",
+        "zero_elapsed_time": "snapshot 之间的时间间隔太短，无法估算消耗速度。"
+      }
+    }
+  },
   "duration": {
     "less_than_minute": "<1分钟"
   }

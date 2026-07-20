@@ -810,6 +810,25 @@ type ProjectResource struct {
 	CreatedBy    pgtype.UUID        `json:"created_by"`
 }
 
+type ProviderLimitSnapshot struct {
+	ID                     pgtype.UUID        `json:"id"`
+	WorkspaceID            pgtype.UUID        `json:"workspace_id"`
+	RuntimeID              pgtype.UUID        `json:"runtime_id"`
+	DaemonID               string             `json:"daemon_id"`
+	Provider               string             `json:"provider"`
+	AccountKey             string             `json:"account_key"`
+	AccountLabel           string             `json:"account_label"`
+	CheckedAt              pgtype.Timestamptz `json:"checked_at"`
+	Status                 string             `json:"status"`
+	SourceKind             string             `json:"source_kind"`
+	SourceConfidence       string             `json:"source_confidence"`
+	SourceFreshnessSeconds int64              `json:"source_freshness_seconds"`
+	Buckets                []byte             `json:"buckets"`
+	ErrorNote              string             `json:"error_note"`
+	ContentHash            string             `json:"content_hash"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+}
+
 type RuntimeProfile struct {
 	ID             pgtype.UUID        `json:"id"`
 	WorkspaceID    pgtype.UUID        `json:"workspace_id"`

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { BarChart3, FolderKanban, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { api } from "@multica/core/api";
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
 import {
   CompactNumberFlow,
@@ -27,6 +28,10 @@ import {
   dashboardAgentRunTimeOptions,
   dashboardRunTimeDailyOptions,
 } from "@multica/core/dashboard";
+import {
+  providerLimitHistoryOptions,
+  providerLimitOverviewOptions,
+} from "@multica/core/provider-limits";
 import { useCustomPricingStore } from "@multica/core/runtimes/custom-pricing-store";
 import { useViewingTimezone } from "../../common/use-viewing-timezone";
 import { PageHeader } from "../../layout/page-header";
@@ -65,6 +70,7 @@ import {
   mergeAgentDashboardRows,
   type AgentDashboardRow,
 } from "../utils";
+import { ProviderLimitsOverview } from "./provider-limits-overview";
 
 // Period selector — mirrors the runtime detail page so users see the same
 // option set across both dashboards. `dims` declares which dimensions each
@@ -108,6 +114,8 @@ const EMPTY_BY_AGENT: import("@multica/core/types").DashboardUsageByAgent[] = []
 const EMPTY_RUNTIME: import("@multica/core/types").DashboardAgentRunTime[] = [];
 const EMPTY_RUNTIME_DAILY: import("@multica/core/types").DashboardRunTimeDaily[] = [];
 const EMPTY_AGENTS: Agent[] = [];
+const EMPTY_PROVIDER_LIMITS: import("@multica/core/types").ProviderLimitsOverviewResponse = { accounts: [], daemons: [] };
+const EMPTY_PROVIDER_LIMIT_HISTORY: import("@multica/core/types").ProviderLimitSnapshot[] = [];
 
 // Local segmented control — same visual language the runtime usage section
 // uses for its period / tab toggles. shadcn's Tabs is wired for full tab
@@ -247,11 +255,26 @@ export function DashboardPage() {
   const runTimeDailyQuery = useQuery(
     dashboardRunTimeDailyOptions(wsId, chartFetchDays, projectId, viewTZ),
   );
+  const providerLimitsQuery = useQuery(providerLimitOverviewOptions(wsId));
+  const providerLimitHistoryQuery = useQuery(providerLimitHistoryOptions(wsId));
 
   const dailyUsage = dailyQuery.data ?? EMPTY_DAILY;
   const byAgentUsage = byAgentQuery.data ?? EMPTY_BY_AGENT;
   const runTimeRows = runTimeQuery.data ?? EMPTY_RUNTIME;
   const runTimeDailyRows = runTimeDailyQuery.data ?? EMPTY_RUNTIME_DAILY;
+  const providerLimits = Array.isArray(providerLimitsQuery.data)
+    ? EMPTY_PROVIDER_LIMITS
+    : providerLimitsQuery.data ?? EMPTY_PROVIDER_LIMITS;
+  const providerLimitHistory = Array.isArray(providerLimitHistoryQuery.data?.snapshots)
+    ? providerLimitHistoryQuery.data.snapshots
+    : EMPTY_PROVIDER_LIMIT_HISTORY;
+  const refreshProviderLimits = async (runtimeId: string) => {
+    await api.requestProviderLimitsRefresh(runtimeId);
+    window.setTimeout(() => {
+      void providerLimitsQuery.refetch();
+      void providerLimitHistoryQuery.refetch();
+    }, 1500);
+  };
 
   // Daily-aggregation surfaces (cost/tokens/time/tasks KPIs and the Daily
   // trend chart) re-scope to the user-selected `days` even when we
@@ -416,6 +439,14 @@ export function DashboardPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl space-y-5 p-6">
           <p className="text-xs text-muted-foreground">{t(($) => $.subtitle)}</p>
+
+          <ProviderLimitsOverview
+            overview={providerLimits}
+            history={providerLimitHistory}
+            isLoading={providerLimitsQuery.isLoading}
+            isError={providerLimitsQuery.isError}
+            onRefresh={refreshProviderLimits}
+          />
 
           {isLoading ? (
             <DashboardSkeleton />
