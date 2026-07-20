@@ -44,6 +44,7 @@ import {
   type ValidateLocalDirectoryResult,
 } from "../../platform";
 import { useT } from "../../i18n";
+import { ProjectEnvironmentsSection } from "./project-environments-section";
 
 // Project Resources sidebar section.
 //
@@ -381,6 +382,9 @@ export function ProjectResourcesSection({ projectId }: { projectId: string }) {
               )}
             </div>
           )}
+          <div className="border-t pt-3 mt-3">
+            <ProjectEnvironmentsSection projectId={projectId} />
+          </div>
         </div>
       )}
     </div>
