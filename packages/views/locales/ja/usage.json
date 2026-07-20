@@ -82,6 +82,21 @@
       "partial": "一部",
       "unavailable": "利用不可",
       "error": "エラー"
+    },
+    "detail": {
+      "trigger": "詳細",
+      "no_history": "このクォータ枠の履歴はまだありません。",
+      "pace_title": "消費ペースと残存見込み",
+      "estimated": "推定",
+      "pace_value": "約 {{value}} 消費",
+      "runway_value": "このペースで約 {{value}} 残存",
+      "runway_exhausted": "すでに上限に達しています",
+      "unavailable": {
+        "insufficient_points": "比較可能なスナップショットがまだ十分にありません。",
+        "stale_data": "最新のスナップショットが古いため、予測は信頼できません。更新してください。",
+        "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
+        "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
+      }
     }
   },
   "duration": {
