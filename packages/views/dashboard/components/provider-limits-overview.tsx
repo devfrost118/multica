@@ -10,6 +10,7 @@ import type {
   ProviderLimitsOverviewResponse,
 } from "@multica/core/types";
 import { useT } from "../../i18n";
+import { ProviderLimitDetail } from "./provider-limit-detail";
 
 type ViewMode = "accounts" | "daemons";
 
@@ -58,7 +59,7 @@ function effectiveStatus(record: ProviderLimitSnapshot): string {
   return record.stale ? "stale" : record.status;
 }
 
-function titleCase(value: string): string {
+export function titleCase(value: string): string {
   return value
     .split("_")
     .filter(Boolean)
@@ -278,7 +279,10 @@ function ProviderLimitCard({
             {titleCase(record.provider)}{record.runtime_id ? ` · ${record.runtime_id}` : ""}
           </p>
         </div>
-        <StatusBadge status={status} />
+        <div className="flex items-center gap-2">
+          <StatusBadge status={status} />
+          <ProviderLimitDetail record={record} history={history} />
+        </div>
       </div>
       <div className="mt-3 space-y-2">
         {record.buckets.map((bucket) => (

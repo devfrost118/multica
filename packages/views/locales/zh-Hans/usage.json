@@ -82,6 +82,21 @@
       "partial": "部分",
       "unavailable": "不可用",
       "error": "错误"
+    },
+    "detail": {
+      "trigger": "详情",
+      "no_history": "该配额 bucket 暂无历史记录。",
+      "pace_title": "消耗速度与预计可用时长",
+      "estimated": "预估",
+      "pace_value": "约消耗 {{value}}",
+      "runway_value": "按此速度约可用 {{value}}",
+      "runway_exhausted": "已达到或超过限额",
+      "unavailable": {
+        "insufficient_points": "可比较的 snapshot 数量还不够。",
+        "stale_data": "最新 snapshot 已过期，刷新后才能获得可信的预测。",
+        "not_decreasing": "剩余量并未下降，因此无法计算消耗趋势。",
+        "zero_elapsed_time": "snapshot 之间的时间间隔太短，无法估算消耗速度。"
+      }
     }
   },
   "duration": {

@@ -82,6 +82,21 @@
       "partial": "Partial",
       "unavailable": "Unavailable",
       "error": "Error"
+    },
+    "detail": {
+      "trigger": "Details",
+      "no_history": "No history recorded yet for this bucket.",
+      "pace_title": "Pace & runway",
+      "estimated": "Estimated",
+      "pace_value": "~{{value}} consumed",
+      "runway_value": "~{{value}} left at this pace",
+      "runway_exhausted": "Already at or past the limit",
+      "unavailable": {
+        "insufficient_points": "Not enough comparable snapshots yet.",
+        "stale_data": "Latest snapshot is stale — refresh before trusting a projection.",
+        "not_decreasing": "Remaining isn't decreasing, so no depletion trend applies.",
+        "zero_elapsed_time": "Snapshots are too close together to estimate a rate."
+      }
     }
   },
   "duration": {

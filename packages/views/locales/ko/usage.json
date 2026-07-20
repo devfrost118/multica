@@ -82,6 +82,21 @@
       "partial": "부분",
       "unavailable": "사용 불가",
       "error": "오류"
+    },
+    "detail": {
+      "trigger": "상세 정보",
+      "no_history": "이 bucket에 대한 기록이 아직 없습니다.",
+      "pace_title": "소비 속도 및 예상 잔여 시간",
+      "estimated": "추정값",
+      "pace_value": "약 {{value}} 소비",
+      "runway_value": "이 속도로 약 {{value}} 남음",
+      "runway_exhausted": "이미 한도에 도달했거나 초과했습니다",
+      "unavailable": {
+        "insufficient_points": "비교할 수 있는 snapshot이 아직 충분하지 않습니다.",
+        "stale_data": "최신 snapshot이 오래되어 예측을 신뢰할 수 없습니다. 새로고침하세요.",
+        "not_decreasing": "잔여량이 감소하지 않아 소비 추세를 계산할 수 없습니다.",
+        "zero_elapsed_time": "snapshot 간격이 너무 짧아 소비 속도를 추정할 수 없습니다."
+      }
     }
   },
   "duration": {
