@@ -26,6 +26,8 @@
     "new_project": "Создать проект",
     "copy_issue_link": "Копировать ссылку на задачу",
     "copy_identifier": "Копировать идентификатор ({{identifier}})",
+    "fold_all_comments": "Свернуть все комментарии",
+    "unfold_all_comments": "Развернуть все комментарии",
     "switch_to_light": "Светлая тема",
     "switch_to_dark": "Тёмная тема",
     "use_system_theme": "Системная тема"

@@ -18,7 +18,8 @@
     "docs": "Документация",
     "changelog": "История изменений",
     "feedback": "Обратная связь",
-    "discord": "Discord"
+    "discord": "Discord",
+    "server_version": "Версия сервера {{version}}"
   },
   "workspace_loader": {
     "loading_workspace": "Загрузка рабочей области…",

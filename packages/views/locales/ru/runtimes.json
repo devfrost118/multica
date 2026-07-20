@@ -277,6 +277,8 @@
     "version_unknown": "неизвестно",
     "managed_by_desktop": "Управляется десктопом",
     "managed_by_desktop_title": "Бинарником CLI управляет Multica Desktop — обновите Desktop, чтобы обновить CLI.",
+    "read_only": "Только просмотр",
+    "read_only_title": "Обновлять CLI могут только владельцы среды выполнения и администраторы рабочей области.",
     "latest": "Актуальная",
     "available": "доступно",
     "action": "Обновить",

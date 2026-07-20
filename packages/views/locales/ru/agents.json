@@ -62,7 +62,8 @@
     "last_active": "Последняя активность",
     "model": "Модель",
     "created": "Создан",
-    "owner": "Владелец"
+    "owner": "Владелец",
+    "access": "Доступ"
   },
   "row": {
     "you": "Вы",
@@ -93,6 +94,12 @@
     "duplicate": "Дублировать",
     "restore": "Восстановить",
     "archive": "В архив",
+    "set_access": "Настроить область доступа",
+    "set_access_dialog_title": "Настроить область доступа",
+    "set_access_applies_to": "Применяется к {{count}} агентам.",
+    "set_access_skipped": "{{count}} пропущено (не принадлежат вам).",
+    "set_access_dialog_confirm": "Применить",
+    "set_access_bulk_partial": "Применено к {{succeeded}}; {{failed}} не удалось (оставлено в текущем состоянии).",
     "agent_archived_toast": "Агент архивирован",
     "archive_failed_toast": "Не удалось архивировать агента",
     "agent_restored_toast": "Агент восстановлен",
@@ -644,6 +651,7 @@
     "copy_filtered": "Копировать отфильтрованное",
     "copied": "Скопировано",
     "waiting_events": "Ожидание событий...",
+    "antigravity_live_unavailable": "Antigravity пока не предоставляет события выполнения в реальном времени. Стенограмма станет доступна после завершения задачи.",
     "no_data": "Данные о выполнении не записаны.",
     "sort_label": "Сортировка",
     "sort_chronological": "Сначала старые",
@@ -682,6 +690,7 @@
     "filter_active_count_other": "{{count}} фильтров",
     "clear_filters": "Очистить фильтры",
     "section_availability": "Доступность",
+    "section_access": "Доступ",
     "section_runtime": "Среда выполнения",
     "display": "Отображение",
     "sort_by": "Сортировать по",
@@ -700,6 +709,11 @@
     "tooltip": "Доступ · кто может запускать этого агента",
     "trigger_private": "Только я",
     "trigger_workspace": "Рабочая область",
+    "scope_labels": {
+      "workspace": "Рабочая область",
+      "specific_people": "Отдельные люди",
+      "owner_only": "Только владелец"
+    },
     "trigger_members_count": "{{count}} чел.",
     "trigger_members_empty": "Отдельные люди",
     "trigger_team": "Команда",
