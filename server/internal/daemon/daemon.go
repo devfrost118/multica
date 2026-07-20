@@ -415,7 +415,6 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 		Adapters: []providerlimits.Adapter{
 			claude.NewAdapter(claude.Config{}),
 			codex.NewAdapter(codex.Config{}),
-			providerlimits.NewUnavailableStub("antigravity"),
 		},
 		Reporter: providerLimitsReporter{client: d.client, runtimeIDs: d.allRuntimeIDs},
 		OnError: func(error) {

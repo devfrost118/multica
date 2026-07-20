@@ -150,6 +150,7 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 		if _, err := h.Queries.UpsertProviderLimitSnapshot(r.Context(), db.UpsertProviderLimitSnapshotParams{
 			WorkspaceID:            runtime.WorkspaceID,
 			RuntimeID:              runtime.ID,
+			DaemonID:               runtime.DaemonID.String,
 			Provider:               snapshot.Provider,
 			AccountKey:             snapshot.AccountKey,
 			AccountLabel:           snapshot.AccountLabel,
@@ -213,6 +214,7 @@ func (h *Handler) RequestProviderLimitsRefresh(w http.ResponseWriter, r *http.Re
 
 type providerLimitSnapshotResponse struct {
 	RuntimeID    string                   `json:"runtime_id"`
+	DaemonID     string                   `json:"daemon_id,omitempty"`
 	Provider     string                   `json:"provider"`
 	AccountKey   string                   `json:"account_key"`
 	AccountLabel string                   `json:"account_label,omitempty"`
@@ -238,7 +240,7 @@ func (h *Handler) GetProviderLimits(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
 		return
 	}
-	byDaemon, err := h.Queries.ListLatestProviderLimitSnapshotsByRuntime(r.Context(), workspaceUUID)
+	byDaemon, err := h.Queries.ListLatestProviderLimitSnapshotsByDaemon(r.Context(), workspaceUUID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
 		return
@@ -279,7 +281,7 @@ func providerLimitRows(rows []db.ProviderLimitSnapshot) []providerLimitSnapshotR
 		if freshness <= 0 {
 			freshness = 900
 		}
-		response = append(response, providerLimitSnapshotResponse{RuntimeID: uuidToString(row.RuntimeID), Provider: row.Provider, AccountKey: row.AccountKey, AccountLabel: row.AccountLabel, CheckedAt: checkedAt, Status: row.Status, Source: providerLimitSourceInput{Kind: row.SourceKind, Confidence: row.SourceConfidence, FreshnessSeconds: row.SourceFreshnessSeconds}, Buckets: row.Buckets, ErrorNote: row.ErrorNote, Stale: now.After(checkedAt.Add(time.Duration(freshness) * time.Second))})
+		response = append(response, providerLimitSnapshotResponse{RuntimeID: uuidToString(row.RuntimeID), DaemonID: row.DaemonID, Provider: row.Provider, AccountKey: row.AccountKey, AccountLabel: row.AccountLabel, CheckedAt: checkedAt, Status: row.Status, Source: providerLimitSourceInput{Kind: row.SourceKind, Confidence: row.SourceConfidence, FreshnessSeconds: row.SourceFreshnessSeconds}, Buckets: row.Buckets, ErrorNote: row.ErrorNote, Stale: now.After(checkedAt.Add(time.Duration(freshness) * time.Second))})
 	}
 	return response
 }

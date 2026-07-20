@@ -17,9 +17,10 @@ import (
 )
 
 func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
-	var authorization string
+	var authorization, beta string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorization = r.Header.Get("Authorization")
+		beta = r.Header.Get("anthropic-beta")
 		if r.URL.Path != "/api/oauth/usage" {
 			t.Fatalf("path = %q", r.URL.Path)
 		}
@@ -27,12 +28,8 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 		_, _ = w.Write([]byte(`{
 			"five_hour":{"utilization":25,"resets_at":"2026-07-19T18:00:00Z","unknown":true},
 			"seven_day":{"utilization":"40","resets_at":"2026-07-25T18:00:00Z"},
-			"limits":[
-				{"kind":"seven_day_opus","percent":35,"resets_at":"2026-07-25T18:00:00Z","ignored":"value"},
-				{"kind":"invalid","percent":"not-a-number"}
-			],
-			"extra_usage":{"utilization":12,"currency":"USD","ignored":true},
-			"spend":null,
+			"seven_day_opus":{"utilization":35,"resets_at":"2026-07-25T18:00:00Z"},
+			"seven_day_sonnet":{"utilization":10,"resets_at":"2026-07-25T18:00:00Z"},
 			"future_field":"sk-response-token-must-not-leak"
 		}`))
 	}))
@@ -47,6 +44,9 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 	if authorization != "Bearer test-access-token-must-not-leak" {
 		t.Fatalf("Authorization = %q", authorization)
 	}
+	if beta != "oauth-2025-04-20" {
+		t.Fatalf("anthropic-beta = %q", beta)
+	}
 	if len(snapshots) != 1 {
 		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
 	}
@@ -55,16 +55,18 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 	if snapshot.Provider != "claude" || snapshot.AccountKey != "unavailable" || !snapshot.CheckedAt.Equal(now) {
 		t.Fatalf("snapshot identity = %#v", snapshot)
 	}
+	if snapshot.AccountLabel != "profile-max" {
+		t.Fatalf("snapshot account label = %q, want profile-max", snapshot.AccountLabel)
+	}
 	if snapshot.Status != providerlimits.StatusOK || snapshot.Source.Kind != providerlimits.SourceKindLocalAuthState || snapshot.Source.Confidence != providerlimits.ConfidenceOfficial {
 		t.Fatalf("snapshot metadata = %#v", snapshot)
 	}
-	if len(snapshot.Buckets) != 4 {
-		t.Fatalf("bucket count = %d, want 4: %#v", len(snapshot.Buckets), snapshot.Buckets)
+	if len(snapshot.Buckets) != 3 {
+		t.Fatalf("bucket count = %d, want 3: %#v", len(snapshot.Buckets), snapshot.Buckets)
 	}
-	assertPercentBucket(t, snapshot.Buckets[0], "five_hour", "Five hour", 25, 75, "2026-07-19T18:00:00Z")
-	assertPercentBucket(t, snapshot.Buckets[1], "seven_day", "Seven day", 40, 60, "2026-07-25T18:00:00Z")
-	assertPercentBucket(t, snapshot.Buckets[2], "limit-seven_day_opus", "Limit seven day opus", 35, 65, "2026-07-25T18:00:00Z")
-	assertPercentBucket(t, snapshot.Buckets[3], "extra_usage", "Extra usage", 12, 88, "")
+	assertPercentBucket(t, snapshot.Buckets[0], "session", "Limit session", 25, 75, "2026-07-19T18:00:00Z")
+	assertPercentBucket(t, snapshot.Buckets[1], "weekly_all", "Limit weekly all", 40, 60, "2026-07-25T18:00:00Z")
+	assertPercentBucket(t, snapshot.Buckets[2], "weekly_scoped", "Limit weekly scoped", 35, 65, "2026-07-25T18:00:00Z")
 
 	encoded, marshalErr := json.Marshal(snapshots)
 	if marshalErr != nil {
@@ -208,7 +210,7 @@ func writeCredentialsAt(t *testing.T, configDir, token string, expiresAt time.Ti
 	if err := os.MkdirAll(configDir, 0o700); err != nil {
 		t.Fatalf("create config dir: %v", err)
 	}
-	contents := `{"claudeAiOauth":{"accessToken":` + quoteJSON(token) + `,"refreshToken":"refresh-token-must-not-leak","expiresAt":` + quoteJSON(expiresAt.UTC().Format(time.RFC3339)) + `}}`
+	contents := `{"claudeAiOauth":{"accessToken":` + quoteJSON(token) + `,"refreshToken":"refresh-token-must-not-leak","expiresAt":` + quoteJSON(expiresAt.UTC().Format(time.RFC3339)) + `,"subscriptionType":"max"}}`
 	if err := os.WriteFile(filepath.Join(configDir, ".credentials.json"), []byte(contents), 0o600); err != nil {
 		t.Fatalf("write credentials: %v", err)
 	}

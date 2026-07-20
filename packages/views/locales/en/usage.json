@@ -65,7 +65,7 @@
     "error": "Provider limits could not be loaded.",
     "unknown": "Unknown",
     "no_buckets": "No quota buckets are available.",
-    "remaining": "{{value}}% remaining",
+    "used": "{{value}}% used",
     "freshness": "Fresh for {{value}}",
     "resets_at": "Resets {{value}}",
     "checked_at": "Checked {{value}}",

@@ -3,117 +3,116 @@ package codex
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 )
 
-func TestAdapter_CollectsLatestValidRateLimitsEventAcrossSessionFiles(t *testing.T) {
-	t.Parallel()
+func TestAdapter_CollectsUsageAndIgnoresUnknownFields(t *testing.T) {
+	var authorization string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authorization = r.Header.Get("Authorization")
+		if r.URL.Path != "/backend-api/wham/usage" {
+			t.Fatalf("path = %q", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"account_id":"user-Q7nL2pX4mV8sK1dR5tY9cH3b",
+			"email":"demo@gmail.com",
+			"plan_type":"plus",
+			"rate_limit":{
+				"primary_window":{"used_percent":4,"reset_at":1772962692,"unknown":true},
+				"secondary_window":{"used_percent":1,"reset_at":1773549492}
+			},
+			"future_field":"sk-response-token-must-not-leak"
+		}`))
+	}))
+	defer server.Close()
 
-	home := t.TempDir()
-	writeSessionFile(t, home, "2026/07/older.jsonl", strings.Join([]string{
-		"{malformed-json",
-		rateLimitsEvent("2026-07-17T10:00:00Z", 20, 300, 1_784_358_000, 40, 10_080, 1_784_358_000, `{"balance":"12.5","unlimited":false}`, "plus"),
-	}, "\n"))
-	writeSessionFile(t, home, "2026/07/newer.jsonl", rateLimitsEvent("2026-07-17T12:00:00Z", 25, 300, 1_784_365_200, 50, 10_080, 1_784_965_200, `{"balance":"9","unlimited":false}`, "pro"))
-
-	snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
+	now := time.Date(2026, time.July, 19, 17, 0, 0, 0, time.UTC)
+	home := writeAuth(t, "test-access-token-must-not-leak")
+	snapshots, err := NewAdapter(Config{Home: home, Endpoint: server.URL + "/backend-api/wham/usage", Now: func() time.Time { return now }}).Collect(context.Background())
 	if err != nil {
 		t.Fatalf("Collect() error = %v", err)
+	}
+	if authorization != "Bearer test-access-token-must-not-leak" {
+		t.Fatalf("Authorization = %q", authorization)
 	}
 	if len(snapshots) != 1 {
 		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
 	}
 
 	snapshot := snapshots[0]
-	if snapshot.Provider != "codex" || snapshot.AccountKey != "unavailable" || snapshot.AccountLabel != "profile-pro" {
-		t.Fatalf("identity = %#v", snapshot)
+	if snapshot.Provider != "codex" || !snapshot.CheckedAt.Equal(now) {
+		t.Fatalf("snapshot identity = %#v", snapshot)
 	}
-	if want := time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC); !snapshot.CheckedAt.Equal(want) {
-		t.Fatalf("checked_at = %s, want %s", snapshot.CheckedAt, want)
+	if snapshot.AccountKey == "unavailable" || len(snapshot.AccountKey) != 16 {
+		t.Fatalf("snapshot account key = %q, want a stable hash prefix", snapshot.AccountKey)
 	}
-	if snapshot.Status != providerlimits.StatusOK || snapshot.Source.Kind != providerlimits.SourceKindLocalLog || snapshot.Source.Confidence != providerlimits.ConfidenceObserved {
+	if snapshot.AccountLabel != "profile-plus" {
+		t.Fatalf("snapshot account label = %q, want profile-plus", snapshot.AccountLabel)
+	}
+	if snapshot.Status != providerlimits.StatusOK || snapshot.Source.Kind != providerlimits.SourceKindOfficialAPI || snapshot.Source.Confidence != providerlimits.ConfidenceOfficial {
 		t.Fatalf("snapshot metadata = %#v", snapshot)
 	}
-	if snapshot.Source.FreshnessSeconds != 15*60 {
-		t.Fatalf("freshness_seconds = %d, want 900", snapshot.Source.FreshnessSeconds)
+	if len(snapshot.Buckets) != 2 {
+		t.Fatalf("bucket count = %d, want 2: %#v", len(snapshot.Buckets), snapshot.Buckets)
 	}
-	if len(snapshot.Buckets) != 3 {
-		t.Fatalf("bucket count = %d, want 3", len(snapshot.Buckets))
-	}
+	assertPercentBucket(t, snapshot.Buckets[0], "session", "Limit session", 4, 96, time.Unix(1772962692, 0).UTC())
+	assertPercentBucket(t, snapshot.Buckets[1], "weekly", "Limit weekly", 1, 99, time.Unix(1773549492, 0).UTC())
 
-	assertPercentBucket(t, snapshot.Buckets[0], "primary", "Primary 5h", 25, 75, time.Unix(1_784_365_200, 0).UTC())
-	assertPercentBucket(t, snapshot.Buckets[1], "secondary", "Secondary 7d", 50, 50, time.Unix(1_784_965_200, 0).UTC())
-	credits := snapshot.Buckets[2]
-	if credits.ID != "credits" || credits.Unit != providerlimits.UnitCredits || credits.RemainingValue == nil || *credits.RemainingValue != 9 {
-		t.Fatalf("credits bucket = %#v", credits)
+	encoded, marshalErr := json.Marshal(snapshots)
+	if marshalErr != nil {
+		t.Fatalf("marshal snapshots: %v", marshalErr)
 	}
-}
-
-func TestAdapter_SkipsNewerRateLimitsEventWithoutUsableQuotaData(t *testing.T) {
-	t.Parallel()
-
-	home := t.TempDir()
-	writeSessionFile(t, home, "older.jsonl", rateLimitsEvent("2026-07-17T12:00:00Z", 25, 300, 1_784_365_200, 50, 10_080, 1_784_965_200, "null", "plus"))
-	writeSessionFile(t, home, "newer-invalid.jsonl", `{"timestamp":"2026-07-17T13:00:00Z","payload":{"rate_limits":{"primary":{"used_percent":"not-a-number"}}}}`)
-
-	snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
-	if err != nil {
-		t.Fatalf("Collect() error = %v", err)
-	}
-	if len(snapshots) != 1 {
-		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
-	}
-	if want := time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC); !snapshots[0].CheckedAt.Equal(want) {
-		t.Fatalf("checked_at = %s, want previous valid event at %s", snapshots[0].CheckedAt, want)
+	for _, secret := range []string{
+		"test-access-token-must-not-leak",
+		"sk-response-token-must-not-leak",
+		"user-Q7nL2pX4mV8sK1dR5tY9cH3b",
+		"demo@gmail.com",
+	} {
+		if strings.Contains(string(encoded), secret) {
+			t.Fatalf("secret or raw identity crossed snapshot boundary: %s", encoded)
+		}
 	}
 }
 
-func TestAdapter_SkipsOversizedMalformedLineAndContinuesScanningFile(t *testing.T) {
-	t.Parallel()
+func TestAdapter_ProducesStableAccountKeyForSameIdentity(t *testing.T) {
+	server := usageServer(t, http.StatusOK, `{"account_id":"acct-123","plan_type":"pro","rate_limit":{"primary_window":{"used_percent":1,"reset_at":1}}}`)
+	defer server.Close()
 
-	home := t.TempDir()
-	writeSessionFile(t, home, "session.jsonl", strings.Repeat("x", maxJSONLLineSize+1)+"\n"+rateLimitsEvent("2026-07-17T12:00:00Z", 25, 300, 1_784_365_200, 50, 10_080, 1_784_965_200, "null", "plus"))
-
-	snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
+	home := writeAuth(t, "token")
+	adapter := NewAdapter(Config{Home: home, Endpoint: server.URL})
+	first, err := adapter.Collect(context.Background())
 	if err != nil {
 		t.Fatalf("Collect() error = %v", err)
 	}
-	if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusOK {
-		t.Fatalf("snapshots = %#v", snapshots)
-	}
-}
-
-func TestAdapter_DoesNotTreatCreditsWithoutBalanceAsUsableQuotaData(t *testing.T) {
-	t.Parallel()
-
-	home := t.TempDir()
-	writeSessionFile(t, home, "older.jsonl", rateLimitsEvent("2026-07-17T12:00:00Z", 25, 300, 1_784_365_200, 50, 10_080, 1_784_965_200, "null", "plus"))
-	writeSessionFile(t, home, "newer-credits-only.jsonl", `{"timestamp":"2026-07-17T13:00:00Z","type":"event_msg","payload":{"type":"token_count","rate_limits":{"credits":{"unlimited":false}}}}`)
-
-	snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
+	second, err := adapter.Collect(context.Background())
 	if err != nil {
 		t.Fatalf("Collect() error = %v", err)
 	}
-	if len(snapshots) != 1 {
-		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
-	}
-	if want := time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC); !snapshots[0].CheckedAt.Equal(want) {
-		t.Fatalf("checked_at = %s, want previous valid event at %s", snapshots[0].CheckedAt, want)
+	if first[0].AccountKey != second[0].AccountKey {
+		t.Fatalf("account key changed across identical identity: %q vs %q", first[0].AccountKey, second[0].AccountKey)
 	}
 }
 
 func TestAdapter_UsesCodexHomeAndHandlesCyrillicWindowsPath(t *testing.T) {
-	home := filepath.Join(t.TempDir(), "\u041a\u043e\u0434\u0435\u043a\u0441", "\u043f\u0440\u043e\u0444\u0438\u043b\u044c")
+	home := filepath.Join(t.TempDir(), "Кодекс", "профиль")
 	t.Setenv("CODEX_HOME", home)
-	writeSessionFile(t, home, "2026/07/session.jsonl", rateLimitsEvent("2026-07-17T12:00:00Z", 1, 60, 1_784_365_200, 2, 120, 1_784_365_200, "null", "free"))
+	writeAuthAt(t, home, "token")
 
-	snapshots, err := NewAdapter(Config{}).Collect(context.Background())
+	server := usageServer(t, http.StatusOK, `{"plan_type":"free","rate_limit":{"primary_window":{"used_percent":1,"reset_at":1}}}`)
+	defer server.Close()
+
+	snapshots, err := NewAdapter(Config{Endpoint: server.URL}).Collect(context.Background())
 	if err != nil {
 		t.Fatalf("Collect() error = %v", err)
 	}
@@ -122,55 +121,116 @@ func TestAdapter_UsesCodexHomeAndHandlesCyrillicWindowsPath(t *testing.T) {
 	}
 }
 
-func TestAdapter_ReturnsUnavailableForMissingOrInvalidSessionsWithoutLeakingLogContent(t *testing.T) {
-	t.Parallel()
-
+func TestAdapter_ReturnsUnavailableForMissingAuthAndUnauthorizedResponse(t *testing.T) {
 	for _, testCase := range []struct {
 		name  string
-		setup func(t *testing.T, home string)
+		setup func(t *testing.T, home string) string
 	}{
-		{name: "missing directory", setup: func(*testing.T, string) {}},
-		{name: "empty file", setup: func(t *testing.T, home string) { writeSessionFile(t, home, "empty.jsonl", "") }},
-		{name: "malformed lines", setup: func(t *testing.T, home string) {
-			writeSessionFile(t, home, "bad.jsonl", "{not json}\n{\"prompt\":\"must-not-cross-boundary\"}")
+		{name: "missing auth", setup: func(*testing.T, string) string { return "" }},
+		{name: "unauthorized response", setup: func(t *testing.T, home string) string {
+			writeAuthAt(t, home, "token")
+			server := usageServer(t, http.StatusUnauthorized, `{}`)
+			t.Cleanup(server.Close)
+			return server.URL
 		}},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
 			home := t.TempDir()
-			testCase.setup(t, home)
-
-			snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
+			endpoint := testCase.setup(t, home)
+			if endpoint == "" {
+				endpoint = "http://127.0.0.1:1/backend-api/wham/usage"
+			}
+			snapshots, err := NewAdapter(Config{Home: home, Endpoint: endpoint}).Collect(context.Background())
 			if err != nil {
 				t.Fatalf("Collect() error = %v", err)
 			}
-			if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusUnavailable || snapshots[0].ErrorNote != "rate_limits_unavailable" {
+			if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusUnavailable || snapshots[0].ErrorNote != "usage_unavailable" {
 				t.Fatalf("snapshots = %#v", snapshots)
-			}
-			encoded, marshalErr := json.Marshal(snapshots)
-			if marshalErr != nil {
-				t.Fatalf("marshal snapshots: %v", marshalErr)
-			}
-			if strings.Contains(string(encoded), "must-not-cross-boundary") {
-				t.Fatalf("raw log content crossed snapshot boundary: %s", encoded)
 			}
 		})
 	}
 }
 
-func TestAdapter_PreservesOldEventTimestampForBackendStaleness(t *testing.T) {
-	t.Parallel()
+func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if calls.Add(1) == 1 {
+			_, _ = w.Write([]byte(`{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":20,"reset_at":1}}}`))
+			return
+		}
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer server.Close()
 
-	home := t.TempDir()
-	old := time.Date(2020, time.January, 2, 3, 4, 5, 0, time.UTC)
-	writeSessionFile(t, home, "stale.jsonl", rateLimitsEvent(old.Format(time.RFC3339), 1, 60, 1_784_365_200, 2, 120, 1_784_365_200, "null", "plus"))
-
-	snapshots, err := NewAdapter(Config{Home: home}).Collect(context.Background())
-	if err != nil {
-		t.Fatalf("Collect() error = %v", err)
+	home := writeAuth(t, "token")
+	adapter := NewAdapter(Config{Home: home, Endpoint: server.URL})
+	first, err := adapter.Collect(context.Background())
+	if err != nil || len(first) != 1 || first[0].Status != providerlimits.StatusOK {
+		t.Fatalf("first Collect() = %#v, %v", first, err)
 	}
-	if len(snapshots) != 1 || !snapshots[0].CheckedAt.Equal(old) || snapshots[0].Status != providerlimits.StatusOK {
-		t.Fatalf("snapshots = %#v", snapshots)
+	stale, err := adapter.Collect(context.Background())
+	if !errors.Is(err, ErrRateLimited) {
+		t.Fatalf("rate limited error = %v, want ErrRateLimited", err)
+	}
+	if len(stale) != 1 || stale[0].Status != providerlimits.StatusStale || stale[0].ErrorNote != "rate_limited" {
+		t.Fatalf("stale snapshots = %#v", stale)
+	}
+	for _, bucket := range stale[0].Buckets {
+		if bucket.Status != providerlimits.StatusStale {
+			t.Fatalf("stale bucket = %#v", bucket)
+		}
+	}
+}
+
+func TestAdapter_DoesNotExposeCredentialFromTransportError(t *testing.T) {
+	const token = "test-access-token-must-not-cross-error-boundary"
+	home := writeAuth(t, token)
+	client := &http.Client{Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+		return nil, errors.New("Bearer " + token)
+	})}
+
+	snapshots, err := NewAdapter(Config{Home: home, Endpoint: "https://example.test/backend-api/wham/usage", Client: client}).Collect(context.Background())
+	if err == nil || strings.Contains(err.Error(), token) {
+		t.Fatalf("Collect() error = %v, must be generic", err)
+	}
+	encoded, marshalErr := json.Marshal(snapshots)
+	if marshalErr != nil {
+		t.Fatalf("marshal snapshots: %v", marshalErr)
+	}
+	if strings.Contains(string(encoded), token) {
+		t.Fatalf("credential crossed snapshot boundary: %s", encoded)
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return f(request)
+}
+
+func usageServer(t *testing.T, status int, body string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(body))
+	}))
+}
+
+func writeAuth(t *testing.T, token string) string {
+	t.Helper()
+	home := t.TempDir()
+	writeAuthAt(t, home, token)
+	return home
+}
+
+func writeAuthAt(t *testing.T, home, token string) {
+	t.Helper()
+	if err := os.MkdirAll(home, 0o700); err != nil {
+		t.Fatalf("create home dir: %v", err)
+	}
+	contents := `{"tokens":{"access_token":` + quoteJSON(token) + `,"refresh_token":"refresh-token-must-not-leak","account_id":"acct-must-not-leak"}}`
+	if err := os.WriteFile(filepath.Join(home, "auth.json"), []byte(contents), 0o600); err != nil {
+		t.Fatalf("write auth.json: %v", err)
 	}
 }
 
@@ -181,27 +241,7 @@ func assertPercentBucket(t *testing.T, bucket providerlimits.Bucket, id, label s
 	}
 }
 
-func writeSessionFile(t *testing.T, home, relativePath, content string) {
-	t.Helper()
-	path := filepath.Join(home, "sessions", relativePath)
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatalf("create session directory: %v", err)
-	}
-	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
-		t.Fatalf("write session fixture: %v", err)
-	}
-}
-
-func rateLimitsEvent(timestamp string, primaryUsed float64, primaryWindow int64, primaryReset int64, secondaryUsed float64, secondaryWindow int64, secondaryReset int64, credits, planType string) string {
-	return `{"timestamp":` + quoteJSON(timestamp) + `,"type":"event_msg","payload":{"type":"token_count","rate_limits":{"primary":{"used_percent":` + numberJSON(primaryUsed) + `,"window_minutes":` + numberJSON(primaryWindow) + `,"resets_at":` + numberJSON(primaryReset) + `},"secondary":{"used_percent":` + numberJSON(secondaryUsed) + `,"window_minutes":` + numberJSON(secondaryWindow) + `,"resets_at":` + numberJSON(secondaryReset) + `},"credits":` + credits + `,"plan_type":` + quoteJSON(planType) + `}}}`
-}
-
 func quoteJSON(value string) string {
-	encoded, _ := json.Marshal(value)
-	return string(encoded)
-}
-
-func numberJSON[T int64 | float64](value T) string {
 	encoded, _ := json.Marshal(value)
 	return string(encoded)
 }

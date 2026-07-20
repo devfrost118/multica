@@ -1,0 +1,1 @@
+DROP INDEX CONCURRENTLY IF EXISTS idx_provider_limit_snapshots_daemon_latest;

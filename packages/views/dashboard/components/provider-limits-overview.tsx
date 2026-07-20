@@ -17,21 +17,6 @@ type ViewMode = "accounts" | "daemons";
 const EMPTY_OVERVIEW: ProviderLimitsOverviewResponse = { accounts: [], daemons: [] };
 const EMPTY_HISTORY: ProviderLimitHistoryResponse["snapshots"] = [];
 
-function unavailableAntigravity(): ProviderLimitSnapshot {
-  return {
-    runtime_id: "",
-    provider: "antigravity",
-    account_key: "unavailable",
-    account_label: "Antigravity",
-    checked_at: "",
-    status: "unavailable",
-    source: { kind: "", freshness_seconds: 0, confidence: "" },
-    buckets: [],
-    error_note: "not_supported",
-    stale: false,
-  };
-}
-
 function timestamp(value: string): number {
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? 0 : parsed;
@@ -49,12 +34,6 @@ function deduplicateAccounts(records: ProviderLimitSnapshot[]): ProviderLimitSna
   return [...latest.values()];
 }
 
-function includeAntigravity(records: ProviderLimitSnapshot[]): ProviderLimitSnapshot[] {
-  return records.some((record) => record.provider === "antigravity")
-    ? records
-    : [...records, unavailableAntigravity()];
-}
-
 function effectiveStatus(record: ProviderLimitSnapshot): string {
   return record.stale ? "stale" : record.status;
 }
@@ -65,6 +44,14 @@ export function titleCase(value: string): string {
     .filter(Boolean)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(" ");
+}
+
+// account_label is stored internally as "profile-<slug>" (e.g. "profile-max")
+// so it can pass the daemon-side sanitizer; render it as a clean subscription
+// name ("Max") instead of the raw slug.
+export function subscriptionLabel(accountLabel: string): string {
+  const slug = accountLabel.startsWith("profile-") ? accountLabel.slice("profile-".length) : accountLabel;
+  return titleCase(slug.replaceAll("-", "_"));
 }
 
 function remainingPercent(bucket: ProviderLimitSnapshot["buckets"][number]): number | null {
@@ -127,10 +114,7 @@ export function ProviderLimitsOverview({
   const setWarningThreshold = useProviderLimitSettingsStore((state) => state.setWarningThreshold);
   const setCriticalThreshold = useProviderLimitSettingsStore((state) => state.setCriticalThreshold);
   const records = useMemo(() => {
-    const base = view === "accounts"
-      ? deduplicateAccounts(overview.accounts)
-      : overview.daemons;
-    return includeAntigravity(base);
+    return view === "accounts" ? deduplicateAccounts(overview.accounts) : overview.daemons;
   }, [overview.accounts, overview.daemons, view]);
   const hasReportedRecords = view === "accounts"
     ? overview.accounts.length > 0
@@ -209,7 +193,7 @@ export function ProviderLimitsOverview({
             <div className="grid gap-3 lg:grid-cols-2">
               {records.map((record) => (
                 <ProviderLimitCard
-                  key={`${record.runtime_id}:${record.provider}:${record.account_key}`}
+                  key={`${record.daemon_id}:${record.runtime_id}:${record.provider}:${record.account_key}`}
                   record={record}
                   history={history}
                   warningThreshold={warningThreshold}
@@ -268,16 +252,15 @@ function ProviderLimitCard({
   const { t } = useT("usage");
   const status = effectiveStatus(record);
   const lastGood = lastGoodSnapshot(history, record);
-  const displayName = record.account_label || titleCase(record.provider);
   const checkedAt = record.checked_at ? new Date(record.checked_at).toLocaleString(locale) : t(($) => $.provider_limits.unknown);
   return (
     <article className="rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-sm font-medium">{displayName}</h3>
-          <p className="text-xs text-muted-foreground">
-            {titleCase(record.provider)}{record.runtime_id ? ` · ${record.runtime_id}` : ""}
-          </p>
+          <h3 className="text-sm font-medium">{titleCase(record.provider)}</h3>
+          {record.account_label && (
+            <p className="text-xs text-muted-foreground">{subscriptionLabel(record.account_label)}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={status} />
@@ -316,16 +299,17 @@ function BucketRow({
 }) {
   const { t } = useT("usage");
   const remaining = remainingPercent(bucket);
+  const used = remaining === null ? null : 100 - remaining;
   const severity = remaining === null ? "unknown" : remaining <= criticalThreshold ? "critical" : remaining <= warningThreshold ? "warning" : "normal";
   return (
     <div className="rounded bg-muted/40 p-2">
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="truncate font-medium">{bucket.label}</span>
         <span className={severity === "critical" ? "text-destructive" : "text-muted-foreground"}>
-          {remaining === null ? t(($) => $.provider_limits.unknown) : t(($) => $.provider_limits.remaining, { value: Math.round(remaining) })}
+          {used === null ? t(($) => $.provider_limits.unknown) : t(($) => $.provider_limits.used, { value: Math.round(used) })}
         </span>
       </div>
-      {remaining !== null && <div className="mt-1 h-1.5 overflow-hidden rounded bg-background"><div className={severity === "critical" ? "h-full bg-destructive" : "h-full bg-primary"} style={{ width: `${remaining}%` }} /></div>}
+      {used !== null && <div className="mt-1 h-1.5 overflow-hidden rounded bg-background"><div className={severity === "critical" ? "h-full bg-destructive" : "h-full bg-primary"} style={{ width: `${used}%` }} /></div>}
       {bucket.resets_at && <p className="mt-1 text-xs text-muted-foreground">{t(($) => $.provider_limits.resets_at, { value: new Date(bucket.resets_at).toLocaleString() })}</p>}
       {bucket.note && <p className="mt-1 text-xs text-muted-foreground">{titleCase(bucket.note)}</p>}
     </div>

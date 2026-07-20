@@ -65,7 +65,7 @@
     "error": "プロバイダーの上限を読み込めませんでした。",
     "unknown": "不明",
     "no_buckets": "利用可能なクォータ枠はありません。",
-    "remaining": "残り {{value}}%",
+    "used": "使用 {{value}}%",
     "freshness": "鮮度 {{value}}",
     "resets_at": "リセット {{value}}",
     "checked_at": "確認 {{value}}",

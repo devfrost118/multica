@@ -65,7 +65,7 @@
     "error": "无法加载提供商限额。",
     "unknown": "未知",
     "no_buckets": "没有可用的配额 bucket。",
-    "remaining": "剩余 {{value}}%",
+    "used": "已用 {{value}}%",
     "freshness": "新鲜度 {{value}}",
     "resets_at": "重置时间 {{value}}",
     "checked_at": "检查时间 {{value}}",

@@ -2,6 +2,7 @@ CREATE TABLE provider_limit_snapshots (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id             UUID NOT NULL REFERENCES workspace(id) ON DELETE CASCADE,
     runtime_id               UUID NOT NULL REFERENCES agent_runtime(id) ON DELETE CASCADE,
+    daemon_id                TEXT NOT NULL DEFAULT '',
     provider                 TEXT NOT NULL,
     account_key              TEXT NOT NULL,
     account_label            TEXT NOT NULL DEFAULT '',

@@ -65,7 +65,7 @@
     "error": "공급자 한도를 불러올 수 없습니다.",
     "unknown": "알 수 없음",
     "no_buckets": "사용 가능한 할당량 bucket이 없습니다.",
-    "remaining": "{{value}}% 남음",
+    "used": "{{value}}% 사용",
     "freshness": "신선도 {{value}}",
     "resets_at": "재설정 {{value}}",
     "checked_at": "확인 {{value}}",

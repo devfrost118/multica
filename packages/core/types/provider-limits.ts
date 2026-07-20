@@ -18,6 +18,7 @@ export interface ProviderLimitBucket {
 
 export interface ProviderLimitSnapshot {
   runtime_id: string;
+  daemon_id: string;
   provider: string;
   account_key: string;
   account_label: string;

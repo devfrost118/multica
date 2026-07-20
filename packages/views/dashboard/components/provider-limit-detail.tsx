@@ -20,7 +20,7 @@ import {
 } from "@multica/core/provider-limits";
 import type { ProviderLimitSnapshot } from "@multica/core/types";
 import { useT } from "../../i18n";
-import { titleCase } from "./provider-limits-overview";
+import { subscriptionLabel, titleCase } from "./provider-limits-overview";
 import { ProviderLimitHistoryChart } from "./provider-limit-history-chart";
 
 // Compact number formatting so a token/credit rate like 1234.5/hour reads
@@ -66,7 +66,6 @@ export function ProviderLimitDetail({
   );
 
   const pace = useMemo(() => computeBucketPace(points), [points]);
-  const displayName = record.account_label || titleCase(record.provider);
 
   return (
     <>
@@ -76,11 +75,8 @@ export function ProviderLimitDetail({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{displayName}</DialogTitle>
-            <DialogDescription>
-              {titleCase(record.provider)}
-              {record.account_key ? ` · ${record.account_key}` : ""}
-            </DialogDescription>
+            <DialogTitle>{titleCase(record.provider)}</DialogTitle>
+            {record.account_label && <DialogDescription>{subscriptionLabel(record.account_label)}</DialogDescription>}
           </DialogHeader>
 
           {bucketOptions.length === 0 ? (

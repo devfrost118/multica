@@ -12,6 +12,7 @@ const checkedAt = "2026-07-19T10:00:00Z";
 function snapshot(overrides: Record<string, unknown> = {}) {
   return {
     runtime_id: "daemon-1",
+    daemon_id: "daemon-1",
     provider: "claude",
     account_key: "account-a",
     account_label: "Shared account",
@@ -51,14 +52,13 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getByText("Loading provider limits…")).toBeTruthy();
   });
 
-  it("shows the empty explanation and the required unavailable Antigravity provider", () => {
+  it("shows the empty explanation when no providers have reported", () => {
     renderWithI18n(
       <ProviderLimitsOverview overview={{ accounts: [], daemons: [] }} history={[]} isLoading={false} isError={false} />,
     );
 
     expect(screen.getByText("No provider limits reported yet.")).toBeTruthy();
-    expect(screen.getAllByText("Antigravity").length).toBeGreaterThan(0);
-    expect(screen.getByText("Unavailable")).toBeTruthy();
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
   });
 
   it("renders every provider and bucket status with remaining/reset/source metadata", () => {
@@ -79,7 +79,7 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getByText("Partial")).toBeTruthy();
     expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0);
     expect(screen.getByText("Error")).toBeTruthy();
-    expect(screen.getAllByText("70% remaining").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("30% used").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Resets/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Official API · official").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Fresh for 15m").length).toBeGreaterThan(0);
@@ -98,8 +98,8 @@ describe("ProviderLimitsOverview", () => {
   });
 
   it("deduplicates an account reported by two daemons while preserving the diagnostic daemon view", () => {
-    const newer = snapshot({ runtime_id: "daemon-2", checked_at: "2026-07-19T11:00:00Z" });
-    const older = snapshot({ runtime_id: "daemon-1" });
+    const newer = snapshot({ runtime_id: "daemon-2", daemon_id: "daemon-2", checked_at: "2026-07-19T11:00:00Z" });
+    const older = snapshot({ runtime_id: "daemon-1", daemon_id: "daemon-1" });
 
     renderWithI18n(
       <ProviderLimitsOverview
@@ -113,8 +113,7 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getAllByText("Shared account")).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("button", { name: "By daemon" }));
-    expect(screen.getByText(/daemon-1/)).toBeTruthy();
-    expect(screen.getByText(/daemon-2/)).toBeTruthy();
+    expect(screen.getAllByRole("article")).toHaveLength(2);
   });
 
   it("shows a query error instead of treating it as an empty response", () => {

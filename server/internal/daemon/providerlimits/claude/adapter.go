@@ -85,7 +85,7 @@ func (*Adapter) Capabilities() providerlimits.Capabilities {
 // outcomes, not transport errors. Refresh tokens are intentionally ignored.
 func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot, error) {
 	checkedAt := a.now().UTC()
-	accessToken, ok := a.loadAccessToken(checkedAt)
+	accessToken, subscriptionType, ok := a.loadCredentials(checkedAt)
 	if !ok {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
 	}
@@ -95,6 +95,7 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("claude usage request unavailable")
 	}
 	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("anthropic-beta", "oauth-2025-04-20")
 	response, err := a.client.Do(request)
 	if err != nil {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("claude usage request unavailable")
@@ -116,7 +117,7 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 	if err := decoder.Decode(&usage); err != nil {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("claude usage response unavailable")
 	}
-	snapshot := snapshotFromUsage(usage, checkedAt)
+	snapshot := snapshotFromUsage(usage, checkedAt, subscriptionType)
 	if len(snapshot.Buckets) == 0 {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
 	}
@@ -126,26 +127,27 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 
 type credentialsFile struct {
 	ClaudeAIOAuth struct {
-		AccessToken string          `json:"accessToken"`
-		ExpiresAt   json.RawMessage `json:"expiresAt"`
+		AccessToken      string          `json:"accessToken"`
+		ExpiresAt        json.RawMessage `json:"expiresAt"`
+		SubscriptionType string          `json:"subscriptionType"`
 	} `json:"claudeAiOauth"`
 }
 
-func (a *Adapter) loadAccessToken(now time.Time) (string, bool) {
+func (a *Adapter) loadCredentials(now time.Time) (accessToken, subscriptionType string, ok bool) {
 	contents, err := os.ReadFile(filepath.Join(a.configDir, ".credentials.json"))
 	if err != nil {
-		return "", false
+		return "", "", false
 	}
 	var credentials credentialsFile
 	if err := json.Unmarshal(contents, &credentials); err != nil {
-		return "", false
+		return "", "", false
 	}
-	accessToken := strings.TrimSpace(credentials.ClaudeAIOAuth.AccessToken)
-	expiresAt, ok := parseExpiry(credentials.ClaudeAIOAuth.ExpiresAt)
-	if accessToken == "" || !ok || !expiresAt.After(now) {
-		return "", false
+	accessToken = strings.TrimSpace(credentials.ClaudeAIOAuth.AccessToken)
+	expiresAt, expiryOK := parseExpiry(credentials.ClaudeAIOAuth.ExpiresAt)
+	if accessToken == "" || !expiryOK || !expiresAt.After(now) {
+		return "", "", false
 	}
-	return accessToken, true
+	return accessToken, strings.TrimSpace(credentials.ClaudeAIOAuth.SubscriptionType), true
 }
 
 func parseExpiry(raw json.RawMessage) (time.Time, bool) {
@@ -166,12 +168,14 @@ func parseExpiry(raw json.RawMessage) (time.Time, bool) {
 	return parsed.UTC(), true
 }
 
+// usageResponse mirrors the real shape of Anthropic's official usage
+// endpoint: four independent windows, each already percent-scale via
+// utilization. There is no generic "limits" list or spend/extra-usage field.
 type usageResponse struct {
-	FiveHour   *usageWindow `json:"five_hour"`
-	SevenDay   *usageWindow `json:"seven_day"`
-	Limits     []usageLimit `json:"limits"`
-	ExtraUsage *usageWindow `json:"extra_usage"`
-	Spend      *usageWindow `json:"spend"`
+	FiveHour       *usageWindow `json:"five_hour"`
+	SevenDay       *usageWindow `json:"seven_day"`
+	SevenDayOpus   *usageWindow `json:"seven_day_opus"`
+	SevenDaySonnet *usageWindow `json:"seven_day_sonnet"`
 }
 
 type usageWindow struct {
@@ -180,53 +184,27 @@ type usageWindow struct {
 	ResetsAt    json.RawMessage `json:"resets_at"`
 }
 
-type usageLimit struct {
-	Kind     string          `json:"kind"`
-	Percent  json.RawMessage `json:"percent"`
-	ResetsAt json.RawMessage `json:"resets_at"`
-}
-
-func snapshotFromUsage(usage usageResponse, checkedAt time.Time) providerlimits.AccountSnapshot {
-	buckets := make([]providerlimits.Bucket, 0, 4+len(usage.Limits))
-	for _, window := range []struct {
-		id     string
-		label  string
-		window *usageWindow
-	}{
-		{id: "five_hour", label: "Five hour", window: usage.FiveHour},
-		{id: "seven_day", label: "Seven day", window: usage.SevenDay},
-	} {
-		if bucket, ok := bucketFromWindow(window.id, window.label, window.window); ok {
-			buckets = append(buckets, bucket)
-		}
+func snapshotFromUsage(usage usageResponse, checkedAt time.Time, subscriptionType string) providerlimits.AccountSnapshot {
+	buckets := make([]providerlimits.Bucket, 0, 3)
+	if bucket, ok := bucketFromWindow("session", "Limit session", usage.FiveHour); ok {
+		buckets = append(buckets, bucket)
 	}
-	for _, limit := range usage.Limits {
-		kind := normalizeIdentifier(limit.Kind)
-		if kind == "" {
-			continue
-		}
-		bucket, ok := percentBucket("limit-"+kind, "Limit "+strings.ReplaceAll(kind, "_", " "), limit.Percent, limit.ResetsAt)
-		if ok {
-			buckets = append(buckets, bucket)
-		}
+	if bucket, ok := bucketFromWindow("weekly_all", "Limit weekly all", usage.SevenDay); ok {
+		buckets = append(buckets, bucket)
 	}
-	for _, window := range []struct {
-		id     string
-		label  string
-		window *usageWindow
-	}{
-		{id: "extra_usage", label: "Extra usage", window: usage.ExtraUsage},
-		{id: "spend", label: "Spend", window: usage.Spend},
-	} {
-		if bucket, ok := bucketFromWindow(window.id, window.label, window.window); ok {
-			buckets = append(buckets, bucket)
-		}
+	scopedWindow := usage.SevenDayOpus
+	if scopedWindow == nil {
+		scopedWindow = usage.SevenDaySonnet
+	}
+	if bucket, ok := bucketFromWindow("weekly_scoped", "Limit weekly scoped", scopedWindow); ok {
+		buckets = append(buckets, bucket)
 	}
 	return providerlimits.AccountSnapshot{
-		Provider:   "claude",
-		AccountKey: "unavailable",
-		CheckedAt:  checkedAt,
-		Status:     providerlimits.StatusOK,
+		Provider:     "claude",
+		AccountKey:   "unavailable",
+		AccountLabel: providerlimits.NormalizeProfileLabel(subscriptionType),
+		CheckedAt:    checkedAt,
+		Status:       providerlimits.StatusOK,
 		Source: providerlimits.Source{
 			Kind:             providerlimits.SourceKindLocalAuthState,
 			FreshnessSeconds: int64(defaultFreshness / time.Second),
@@ -345,27 +323,6 @@ func resolveConfigDir(configured string) string {
 		return ".claude"
 	}
 	return filepath.Join(home, ".claude")
-}
-
-func normalizeIdentifier(value string) string {
-	value = strings.ToLower(strings.TrimSpace(value))
-	if value == "" {
-		return ""
-	}
-	var builder strings.Builder
-	for _, character := range value {
-		switch {
-		case character >= 'a' && character <= 'z', character >= '0' && character <= '9', character == '_', character == '-':
-			builder.WriteRune(character)
-		default:
-			builder.WriteByte('_')
-		}
-	}
-	normalized := strings.Trim(builder.String(), "_-")
-	if len(normalized) > 48 {
-		normalized = normalized[:48]
-	}
-	return normalized
 }
 
 func numberFromJSON(raw json.RawMessage) (float64, bool) {

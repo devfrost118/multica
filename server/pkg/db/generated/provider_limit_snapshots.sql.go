@@ -45,7 +45,7 @@ func (q *Queries) DeleteExpiredProviderLimitSnapshots(ctx context.Context, check
 }
 
 const listLatestProviderLimitSnapshots = `-- name: ListLatestProviderLimitSnapshots :many
-SELECT DISTINCT ON (provider, account_key) id, workspace_id, runtime_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+SELECT DISTINCT ON (provider, account_key) id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
 FROM provider_limit_snapshots
 WHERE workspace_id = $1
 ORDER BY provider, account_key, checked_at DESC, created_at DESC
@@ -64,6 +64,7 @@ func (q *Queries) ListLatestProviderLimitSnapshots(ctx context.Context, workspac
 			&i.ID,
 			&i.WorkspaceID,
 			&i.RuntimeID,
+			&i.DaemonID,
 			&i.Provider,
 			&i.AccountKey,
 			&i.AccountLabel,
@@ -87,15 +88,15 @@ func (q *Queries) ListLatestProviderLimitSnapshots(ctx context.Context, workspac
 	return items, nil
 }
 
-const listLatestProviderLimitSnapshotsByRuntime = `-- name: ListLatestProviderLimitSnapshotsByRuntime :many
-SELECT DISTINCT ON (runtime_id, provider, account_key) id, workspace_id, runtime_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+const listLatestProviderLimitSnapshotsByDaemon = `-- name: ListLatestProviderLimitSnapshotsByDaemon :many
+SELECT DISTINCT ON (daemon_id, provider, account_key) id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
 FROM provider_limit_snapshots
 WHERE workspace_id = $1
-ORDER BY runtime_id, provider, account_key, checked_at DESC, created_at DESC
+ORDER BY daemon_id, provider, account_key, checked_at DESC, created_at DESC
 `
 
-func (q *Queries) ListLatestProviderLimitSnapshotsByRuntime(ctx context.Context, workspaceID pgtype.UUID) ([]ProviderLimitSnapshot, error) {
-	rows, err := q.db.Query(ctx, listLatestProviderLimitSnapshotsByRuntime, workspaceID)
+func (q *Queries) ListLatestProviderLimitSnapshotsByDaemon(ctx context.Context, workspaceID pgtype.UUID) ([]ProviderLimitSnapshot, error) {
+	rows, err := q.db.Query(ctx, listLatestProviderLimitSnapshotsByDaemon, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +108,7 @@ func (q *Queries) ListLatestProviderLimitSnapshotsByRuntime(ctx context.Context,
 			&i.ID,
 			&i.WorkspaceID,
 			&i.RuntimeID,
+			&i.DaemonID,
 			&i.Provider,
 			&i.AccountKey,
 			&i.AccountLabel,
@@ -131,7 +133,7 @@ func (q *Queries) ListLatestProviderLimitSnapshotsByRuntime(ctx context.Context,
 }
 
 const listProviderLimitSnapshotHistory = `-- name: ListProviderLimitSnapshotHistory :many
-SELECT id, workspace_id, runtime_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+SELECT id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
 FROM provider_limit_snapshots
 WHERE workspace_id = $1
 ORDER BY checked_at DESC, created_at DESC
@@ -156,6 +158,7 @@ func (q *Queries) ListProviderLimitSnapshotHistory(ctx context.Context, arg List
 			&i.ID,
 			&i.WorkspaceID,
 			&i.RuntimeID,
+			&i.DaemonID,
 			&i.Provider,
 			&i.AccountKey,
 			&i.AccountLabel,
@@ -183,6 +186,7 @@ const upsertProviderLimitSnapshot = `-- name: UpsertProviderLimitSnapshot :one
 INSERT INTO provider_limit_snapshots (
     workspace_id,
     runtime_id,
+    daemon_id,
     provider,
     account_key,
     account_label,
@@ -195,16 +199,17 @@ INSERT INTO provider_limit_snapshots (
     error_note,
     content_hash
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 )
 ON CONFLICT (workspace_id, runtime_id, content_hash) DO UPDATE
 SET content_hash = provider_limit_snapshots.content_hash
-RETURNING id, workspace_id, runtime_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+RETURNING id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
 `
 
 type UpsertProviderLimitSnapshotParams struct {
 	WorkspaceID            pgtype.UUID        `json:"workspace_id"`
 	RuntimeID              pgtype.UUID        `json:"runtime_id"`
+	DaemonID               string             `json:"daemon_id"`
 	Provider               string             `json:"provider"`
 	AccountKey             string             `json:"account_key"`
 	AccountLabel           string             `json:"account_label"`
@@ -222,6 +227,7 @@ func (q *Queries) UpsertProviderLimitSnapshot(ctx context.Context, arg UpsertPro
 	row := q.db.QueryRow(ctx, upsertProviderLimitSnapshot,
 		arg.WorkspaceID,
 		arg.RuntimeID,
+		arg.DaemonID,
 		arg.Provider,
 		arg.AccountKey,
 		arg.AccountLabel,
@@ -239,6 +245,7 @@ func (q *Queries) UpsertProviderLimitSnapshot(ctx context.Context, arg UpsertPro
 		&i.ID,
 		&i.WorkspaceID,
 		&i.RuntimeID,
+		&i.DaemonID,
 		&i.Provider,
 		&i.AccountKey,
 		&i.AccountLabel,

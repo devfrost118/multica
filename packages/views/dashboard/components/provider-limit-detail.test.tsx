@@ -21,6 +21,7 @@ afterEach(cleanup);
 function snapshot(overrides: Partial<ProviderLimitSnapshot> = {}): ProviderLimitSnapshot {
   return {
     runtime_id: "daemon-1",
+    daemon_id: "daemon-1",
     provider: "claude",
     account_key: "account-a",
     account_label: "Shared account",

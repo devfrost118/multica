@@ -89,6 +89,7 @@ const ProviderLimitBucketSchema = z.object({
 
 export const ProviderLimitSnapshotSchema = z.object({
   runtime_id: z.string().default(""),
+  daemon_id: z.string().default(""),
   provider: z.string().default(""),
   account_key: z.string().default(""),
   account_label: z.string().default(""),

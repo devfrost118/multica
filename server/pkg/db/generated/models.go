@@ -795,6 +795,7 @@ type ProviderLimitSnapshot struct {
 	ID                     pgtype.UUID        `json:"id"`
 	WorkspaceID            pgtype.UUID        `json:"workspace_id"`
 	RuntimeID              pgtype.UUID        `json:"runtime_id"`
+	DaemonID               string             `json:"daemon_id"`
 	Provider               string             `json:"provider"`
 	AccountKey             string             `json:"account_key"`
 	AccountLabel           string             `json:"account_label"`

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiClient, ApiError, CHAT_DRAFT_RESTORE_CAPABILITY } from "./client";
-import { setSchemaLogger } from "./schema";
 
 describe("provider limits API", () => {
   it("falls back to empty provider limits when a server response is malformed", async () => {
@@ -21,7 +20,6 @@ describe("provider limits API", () => {
     await expect(client.getProviderLimits()).resolves.toEqual({ accounts: [], daemons: [] });
   });
 });
-import { setSchemaLogger } from "./schema";
 
 afterEach(() => {
   vi.unstubAllGlobals();

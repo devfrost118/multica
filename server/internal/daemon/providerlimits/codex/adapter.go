@@ -1,306 +1,303 @@
-// Package codex reads normalized subscription limits from local Codex session
-// logs. It never returns, stores, or logs raw session content.
+// Package codex reads Codex CLI OAuth state locally and obtains normalized
+// subscription limits from the same ChatGPT backend endpoint the Codex CLI's
+// usage screen queries. Credentials and raw endpoint payloads never leave
+// this package.
 package codex
 
 import (
-	"bufio"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
-	"io/fs"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 )
 
 const (
+	defaultEndpoint  = "https://chatgpt.com/backend-api/wham/usage"
 	defaultFreshness = 15 * time.Minute
-	maxJSONLLineSize = 1 << 20
 )
 
-// Config configures the local Codex session location. An empty Home honors
-// CODEX_HOME and falls back to ~/.codex.
+// ErrRateLimited deliberately contains no provider response detail. Returning
+// it with a stale snapshot lets the collector retain the last useful reading
+// while applying its ordinary provider backoff.
+var ErrRateLimited = errors.New("codex usage rate limited")
+
+// Config supplies testable local and HTTP dependencies. An empty Home honors
+// CODEX_HOME and otherwise falls back to ~/.codex.
 type Config struct {
-	Home string
+	Home     string
+	Endpoint string
+	Client   *http.Client
+	Now      func() time.Time
 }
 
-// Adapter provides observed Codex subscription-limit snapshots.
+// Adapter is a daemon-local Codex subscription-limit adapter.
 type Adapter struct {
-	home string
+	home     string
+	endpoint string
+	client   *http.Client
+	now      func() time.Time
+
+	mu       sync.Mutex
+	lastGood *providerlimits.AccountSnapshot
 }
 
-// NewAdapter creates a local-log adapter without reading the filesystem.
-func NewAdapter(config Config) Adapter {
-	return Adapter{home: resolveHome(config.Home)}
+// NewAdapter constructs an adapter without touching local auth state.
+func NewAdapter(config Config) *Adapter {
+	now := config.Now
+	if now == nil {
+		now = time.Now
+	}
+	endpoint := strings.TrimSpace(config.Endpoint)
+	if endpoint == "" {
+		endpoint = defaultEndpoint
+	}
+	client := config.Client
+	if client == nil {
+		client = &http.Client{Timeout: 5 * time.Second}
+	}
+	return &Adapter{
+		home:     resolveHome(config.Home),
+		endpoint: endpoint,
+		client:   client,
+		now:      now,
+	}
 }
 
-func (Adapter) Provider() string { return "codex" }
+func (*Adapter) Provider() string { return "codex" }
 
-func (Adapter) Capabilities() providerlimits.Capabilities {
+func (*Adapter) Capabilities() providerlimits.Capabilities {
 	return providerlimits.Capabilities{Timeout: 5 * time.Second, MinimumInterval: defaultFreshness}
 }
 
-// Collect scans JSONL files incrementally and returns the most recent valid
-// rate_limits event. checked_at deliberately remains the event timestamp so
-// backend staleness reflects the latest Codex activity, not collection time.
-func (a Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot, error) {
-	latest, found, err := latestRateLimitsEvent(ctx, filepath.Join(a.home, "sessions"))
+// Collect probes the ChatGPT backend usage endpoint with the local OAuth
+// access token from ~/.codex/auth.json. Missing auth state and unauthorized
+// responses are normal unavailable outcomes, not transport errors. Refresh
+// tokens are intentionally ignored, matching the Claude adapter's approach.
+func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot, error) {
+	checkedAt := a.now().UTC()
+	accessToken, ok := a.loadAccessToken()
+	if !ok {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, a.endpoint, nil)
 	if err != nil {
-		return nil, err
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
 	}
-	if !found {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot()}, nil
-	}
-	return []providerlimits.AccountSnapshot{snapshotFromEvent(latest)}, nil
-}
-
-type sessionEvent struct {
-	Timestamp string `json:"timestamp"`
-	Type      string `json:"type"`
-	Payload   struct {
-		RateLimits json.RawMessage `json:"rate_limits"`
-		Type       string          `json:"type"`
-	} `json:"payload"`
-}
-
-type parsedRateLimitsEvent struct {
-	checkedAt time.Time
-	limits    rawRateLimits
-}
-
-type rawRateLimits struct {
-	Primary   rawWindow                  `json:"primary"`
-	Secondary rawWindow                  `json:"secondary"`
-	Credits   map[string]json.RawMessage `json:"credits"`
-	PlanType  string                     `json:"plan_type"`
-}
-
-type rawWindow struct {
-	UsedPercent   json.RawMessage `json:"used_percent"`
-	WindowMinutes json.RawMessage `json:"window_minutes"`
-	ResetsAt      json.RawMessage `json:"resets_at"`
-}
-
-func latestRateLimitsEvent(ctx context.Context, sessionsDir string) (parsedRateLimitsEvent, bool, error) {
-	latest := parsedRateLimitsEvent{}
-	found := false
-
-	err := filepath.WalkDir(sessionsDir, func(path string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil || entry == nil || entry.IsDir() || filepath.Ext(entry.Name()) != ".jsonl" {
-			return nil
-		}
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		candidate, ok, fileErr := latestEventInFile(ctx, path)
-		if fileErr != nil {
-			if ctx.Err() != nil || errors.Is(fileErr, context.Canceled) || errors.Is(fileErr, context.DeadlineExceeded) {
-				return fileErr
-			}
-			return nil
-		}
-		if !ok {
-			return nil
-		}
-		if !found || candidate.checkedAt.After(latest.checkedAt) {
-			latest = candidate
-			found = true
-		}
-		return nil
-	})
+	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("Accept", "application/json")
+	response, err := a.client.Do(request)
 	if err != nil {
-		if ctx.Err() != nil {
-			return parsedRateLimitsEvent{}, false, ctx.Err()
-		}
-		return parsedRateLimitsEvent{}, false, nil
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
 	}
-	return latest, found, nil
+	defer response.Body.Close()
+
+	switch response.StatusCode {
+	case http.StatusUnauthorized:
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+	case http.StatusTooManyRequests:
+		return a.staleOrUnavailable(checkedAt), ErrRateLimited
+	}
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
+	}
+
+	var usage usageResponse
+	decoder := json.NewDecoder(io.LimitReader(response.Body, 1<<20))
+	if err := decoder.Decode(&usage); err != nil {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage response unavailable")
+	}
+	snapshot := snapshotFromUsage(usage, checkedAt)
+	if len(snapshot.Buckets) == 0 {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+	}
+	a.storeLastGood(snapshot)
+	return []providerlimits.AccountSnapshot{snapshot}, nil
 }
 
-func latestEventInFile(ctx context.Context, path string) (parsedRateLimitsEvent, bool, error) {
-	file, err := os.Open(path)
+// authFile mirrors the OAuth tokens Codex CLI writes to ~/.codex/auth.json.
+type authFile struct {
+	Tokens struct {
+		AccessToken string `json:"access_token"`
+		AccountID   string `json:"account_id"`
+	} `json:"tokens"`
+}
+
+func (a *Adapter) loadAccessToken() (string, bool) {
+	contents, err := os.ReadFile(filepath.Join(a.home, "auth.json"))
 	if err != nil {
-		return parsedRateLimitsEvent{}, false, err
+		return "", false
 	}
-	defer file.Close()
-
-	latest := parsedRateLimitsEvent{}
-	found := false
-	reader := bufio.NewReaderSize(file, 64*1024)
-	line := make([]byte, 0, 64*1024)
-	discardingLine := false
-	for {
-		if err := ctx.Err(); err != nil {
-			return parsedRateLimitsEvent{}, false, err
-		}
-		fragment, readErr := reader.ReadSlice('\n')
-		if !discardingLine {
-			if len(line)+len(fragment) > maxJSONLLineSize {
-				line = line[:0]
-				discardingLine = true
-			} else {
-				line = append(line, fragment...)
-			}
-		}
-		if errors.Is(readErr, bufio.ErrBufferFull) {
-			continue
-		}
-		if !discardingLine {
-			candidate, ok := parseRateLimitsLine(line)
-			if ok && (!found || candidate.checkedAt.After(latest.checkedAt)) {
-				latest = candidate
-				found = true
-			}
-		}
-		line = line[:0]
-		discardingLine = false
-		switch {
-		case readErr == nil:
-			continue
-		case errors.Is(readErr, io.EOF):
-			return latest, found, nil
-		default:
-			return parsedRateLimitsEvent{}, false, readErr
-		}
+	var auth authFile
+	if err := json.Unmarshal(contents, &auth); err != nil {
+		return "", false
 	}
+	accessToken := strings.TrimSpace(auth.Tokens.AccessToken)
+	if accessToken == "" {
+		return "", false
+	}
+	return accessToken, true
 }
 
-func parseRateLimitsLine(line []byte) (parsedRateLimitsEvent, bool) {
-	var event sessionEvent
-	if err := json.Unmarshal(line, &event); err != nil || event.Type != "event_msg" || event.Payload.Type != "token_count" || len(event.Payload.RateLimits) == 0 || string(event.Payload.RateLimits) == "null" {
-		return parsedRateLimitsEvent{}, false
-	}
-	checkedAt, err := time.Parse(time.RFC3339Nano, event.Timestamp)
-	if err != nil {
-		return parsedRateLimitsEvent{}, false
-	}
-	var limits rawRateLimits
-	if err := json.Unmarshal(event.Payload.RateLimits, &limits); err != nil {
-		return parsedRateLimitsEvent{}, false
-	}
-	if !hasUsableQuotaData(limits) {
-		return parsedRateLimitsEvent{}, false
-	}
-	return parsedRateLimitsEvent{checkedAt: checkedAt.UTC(), limits: limits}, true
+// usageResponse mirrors the real shape of the ChatGPT backend usage endpoint
+// (GET /backend-api/wham/usage), the same endpoint the Codex CLI's usage
+// screen queries. primary_window is the short session window; secondary_window
+// is the weekly window.
+type usageResponse struct {
+	AccountID string          `json:"account_id"`
+	Email     string          `json:"email"`
+	PlanType  string          `json:"plan_type"`
+	RateLimit *usageRateLimit `json:"rate_limit"`
 }
 
-func hasUsableQuotaData(limits rawRateLimits) bool {
-	if _, ok := bucketFromWindow("primary", "Primary", limits.Primary); ok {
-		return true
-	}
-	if _, ok := bucketFromWindow("secondary", "Secondary", limits.Secondary); ok {
-		return true
-	}
-	_, ok := bucketFromCredits(limits.Credits)
-	return ok
+type usageRateLimit struct {
+	PrimaryWindow   *usageWindow `json:"primary_window"`
+	SecondaryWindow *usageWindow `json:"secondary_window"`
 }
 
-func snapshotFromEvent(event parsedRateLimitsEvent) providerlimits.AccountSnapshot {
-	buckets := make([]providerlimits.Bucket, 0, 3)
-	status := providerlimits.StatusOK
-	for _, window := range []struct {
-		id    string
-		label string
-		value rawWindow
-	}{
-		{id: "primary", label: "Primary", value: event.limits.Primary},
-		{id: "secondary", label: "Secondary", value: event.limits.Secondary},
-	} {
-		bucket, ok := bucketFromWindow(window.id, window.label, window.value)
-		if !ok {
-			status = providerlimits.StatusPartial
-			continue
-		}
-		if bucket.Status != providerlimits.StatusOK {
-			status = providerlimits.StatusPartial
-		}
-		buckets = append(buckets, bucket)
-	}
-	if credits, ok := bucketFromCredits(event.limits.Credits); ok {
-		if credits.Status != providerlimits.StatusOK {
-			status = providerlimits.StatusPartial
-		}
-		buckets = append(buckets, credits)
-	}
-	if len(buckets) == 0 {
-		status = providerlimits.StatusPartial
-	}
+type usageWindow struct {
+	UsedPercent json.RawMessage `json:"used_percent"`
+	ResetAt     json.RawMessage `json:"reset_at"`
+}
 
-	snapshot := providerlimits.AccountSnapshot{
+func snapshotFromUsage(usage usageResponse, checkedAt time.Time) providerlimits.AccountSnapshot {
+	buckets := make([]providerlimits.Bucket, 0, 2)
+	if usage.RateLimit != nil {
+		if bucket, ok := bucketFromWindow("session", "Limit session", usage.RateLimit.PrimaryWindow); ok {
+			buckets = append(buckets, bucket)
+		}
+		if bucket, ok := bucketFromWindow("weekly", "Limit weekly", usage.RateLimit.SecondaryWindow); ok {
+			buckets = append(buckets, bucket)
+		}
+	}
+	return providerlimits.AccountSnapshot{
 		Provider:     "codex",
-		AccountKey:   "unavailable",
-		AccountLabel: normalizePlanLabel(event.limits.PlanType),
-		CheckedAt:    event.checkedAt,
-		Status:       status,
+		AccountKey:   accountKeyFrom(usage.AccountID, usage.Email),
+		AccountLabel: providerlimits.NormalizeProfileLabel(usage.PlanType),
+		CheckedAt:    checkedAt,
+		Status:       providerlimits.StatusOK,
 		Source: providerlimits.Source{
-			Kind:             providerlimits.SourceKindLocalLog,
+			Kind:             providerlimits.SourceKindOfficialAPI,
 			FreshnessSeconds: int64(defaultFreshness / time.Second),
-			Confidence:       providerlimits.ConfidenceObserved,
+			Confidence:       providerlimits.ConfidenceOfficial,
 		},
 		Buckets: buckets,
 	}
-	if status == providerlimits.StatusPartial {
-		snapshot.ErrorNote = "rate_limits_partial"
-	}
-	return snapshot
 }
 
-func bucketFromWindow(id, baseLabel string, window rawWindow) (providerlimits.Bucket, bool) {
-	used, usedOK := numberFromJSON(window.UsedPercent)
-	if !usedOK || used < 0 || used > 100 {
+func bucketFromWindow(id, label string, window *usageWindow) (providerlimits.Bucket, bool) {
+	if window == nil {
 		return providerlimits.Bucket{}, false
 	}
-	remaining := 100 - used
-	minutes, minutesOK := positiveIntFromJSON(window.WindowMinutes)
-	resetsAt, resetsOK := timeFromJSON(window.ResetsAt)
-	status := providerlimits.StatusOK
-	if !minutesOK || !resetsOK {
-		status = providerlimits.StatusPartial
+	used, ok := numberFromJSON(window.UsedPercent)
+	if !ok || used < 0 || used > 100 {
+		return providerlimits.Bucket{}, false
 	}
+	resetsAt, _ := timeFromJSON(window.ResetAt)
 	return providerlimits.Bucket{
 		ID:             id,
-		Label:          windowLabel(baseLabel, minutes, minutesOK),
+		Label:          label,
 		Unit:           providerlimits.UnitPercent,
 		LimitValue:     numberPointer(100),
 		UsedValue:      numberPointer(used),
-		RemainingValue: numberPointer(remaining),
+		RemainingValue: numberPointer(100 - used),
 		ResetsAt:       resetsAt,
-		Status:         status,
+		Status:         providerlimits.StatusOK,
 	}, true
 }
 
-func bucketFromCredits(credits map[string]json.RawMessage) (providerlimits.Bucket, bool) {
-	if len(credits) == 0 {
-		return providerlimits.Bucket{}, false
+// accountKeyFrom derives a stable, non-reversible account key from whichever
+// real identifier the endpoint returned. It intentionally never crosses the
+// package boundary as anything but a hash prefix.
+func accountKeyFrom(accountID, email string) string {
+	identity := strings.TrimSpace(accountID)
+	if identity == "" {
+		identity = strings.ToLower(strings.TrimSpace(email))
 	}
-	if unlimited, ok := boolFromJSON(credits["unlimited"]); ok && unlimited {
-		return providerlimits.Bucket{ID: "credits", Label: "Credits", Unit: providerlimits.UnitCredits, Status: providerlimits.StatusOK, Note: "unlimited"}, true
+	if identity == "" {
+		return "unavailable"
 	}
-	balance, ok := numberFromJSON(credits["balance"])
-	if !ok || balance < 0 {
-		return providerlimits.Bucket{}, false
-	}
-	return providerlimits.Bucket{ID: "credits", Label: "Credits", Unit: providerlimits.UnitCredits, RemainingValue: numberPointer(balance), Status: providerlimits.StatusOK}, true
+	hash := sha256.Sum256([]byte(identity))
+	return hex.EncodeToString(hash[:])[:16]
 }
 
-func unavailableSnapshot() providerlimits.AccountSnapshot {
+func (a *Adapter) staleOrUnavailable(checkedAt time.Time) []providerlimits.AccountSnapshot {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.lastGood == nil {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}
+	}
+	stale := staleSnapshot(*a.lastGood, checkedAt)
+	return []providerlimits.AccountSnapshot{stale}
+}
+
+func (a *Adapter) storeLastGood(snapshot providerlimits.AccountSnapshot) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	copied := copySnapshot(snapshot)
+	a.lastGood = &copied
+}
+
+func staleSnapshot(snapshot providerlimits.AccountSnapshot, checkedAt time.Time) providerlimits.AccountSnapshot {
+	copied := copySnapshot(snapshot)
+	copied.CheckedAt = checkedAt
+	copied.Status = providerlimits.StatusStale
+	copied.ErrorNote = "rate_limited"
+	for index := range copied.Buckets {
+		copied.Buckets[index].Status = providerlimits.StatusStale
+	}
+	return copied
+}
+
+func copySnapshot(snapshot providerlimits.AccountSnapshot) providerlimits.AccountSnapshot {
+	copied := snapshot
+	copied.Buckets = make([]providerlimits.Bucket, len(snapshot.Buckets))
+	for index, bucket := range snapshot.Buckets {
+		copied.Buckets[index] = bucket
+		if bucket.LimitValue != nil {
+			value := *bucket.LimitValue
+			copied.Buckets[index].LimitValue = &value
+		}
+		if bucket.UsedValue != nil {
+			value := *bucket.UsedValue
+			copied.Buckets[index].UsedValue = &value
+		}
+		if bucket.RemainingValue != nil {
+			value := *bucket.RemainingValue
+			copied.Buckets[index].RemainingValue = &value
+		}
+		if bucket.ResetsAt != nil {
+			value := *bucket.ResetsAt
+			copied.Buckets[index].ResetsAt = &value
+		}
+	}
+	return copied
+}
+
+func unavailableSnapshot(checkedAt time.Time) providerlimits.AccountSnapshot {
 	return providerlimits.AccountSnapshot{
 		Provider:   "codex",
 		AccountKey: "unavailable",
-		CheckedAt:  time.Now().UTC(),
+		CheckedAt:  checkedAt,
 		Status:     providerlimits.StatusUnavailable,
 		Source: providerlimits.Source{
-			Kind:             providerlimits.SourceKindLocalLog,
+			Kind:             providerlimits.SourceKindOfficialAPI,
 			FreshnessSeconds: int64(defaultFreshness / time.Second),
-			Confidence:       providerlimits.ConfidenceObserved,
+			Confidence:       providerlimits.ConfidenceOfficial,
 		},
-		ErrorNote: "rate_limits_unavailable",
+		ErrorNote: "usage_unavailable",
 	}
 }
 
@@ -318,49 +315,6 @@ func resolveHome(configured string) string {
 	return filepath.Join(home, ".codex")
 }
 
-func normalizePlanLabel(planType string) string {
-	planType = strings.ToLower(strings.TrimSpace(planType))
-	if planType == "" {
-		return ""
-	}
-	var builder strings.Builder
-	previousDash := false
-	for _, character := range planType {
-		switch {
-		case character >= 'a' && character <= 'z', character >= '0' && character <= '9', character == '_', character == '-':
-			builder.WriteRune(character)
-			previousDash = false
-		default:
-			if !previousDash {
-				builder.WriteByte('-')
-				previousDash = true
-			}
-		}
-	}
-	normalized := strings.Trim(builder.String(), "-_")
-	if normalized == "" {
-		return ""
-	}
-	if len(normalized) > 48 {
-		normalized = normalized[:48]
-	}
-	return "profile-" + normalized
-}
-
-func windowLabel(base string, minutes int64, valid bool) string {
-	if !valid {
-		return base
-	}
-	switch {
-	case minutes%1_440 == 0:
-		return base + " " + strconv.FormatInt(minutes/1_440, 10) + "d"
-	case minutes%60 == 0:
-		return base + " " + strconv.FormatInt(minutes/60, 10) + "h"
-	default:
-		return base + " " + strconv.FormatInt(minutes, 10) + "m"
-	}
-}
-
 func numberFromJSON(raw json.RawMessage) (float64, bool) {
 	value := strings.Trim(strings.TrimSpace(string(raw)), "\"")
 	if value == "" || value == "null" {
@@ -373,37 +327,24 @@ func numberFromJSON(raw json.RawMessage) (float64, bool) {
 	return number, true
 }
 
-func positiveIntFromJSON(raw json.RawMessage) (int64, bool) {
-	number, ok := numberFromJSON(raw)
-	if !ok || number <= 0 || number != math.Trunc(number) || number > math.MaxInt64 {
-		return 0, false
-	}
-	return int64(number), true
-}
-
 func timeFromJSON(raw json.RawMessage) (*time.Time, bool) {
-	if seconds, ok := positiveIntFromJSON(raw); ok {
+	value := strings.Trim(strings.TrimSpace(string(raw)), "\"")
+	if value == "" || value == "null" {
+		return nil, false
+	}
+	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil && seconds > 0 {
 		if seconds > 100_000_000_000 {
 			seconds /= 1_000
 		}
 		parsed := time.Unix(seconds, 0).UTC()
 		return &parsed, true
 	}
-	value := strings.Trim(strings.TrimSpace(string(raw)), "\"")
 	parsed, err := time.Parse(time.RFC3339Nano, value)
 	if err != nil {
 		return nil, false
 	}
 	parsed = parsed.UTC()
 	return &parsed, true
-}
-
-func boolFromJSON(raw json.RawMessage) (bool, bool) {
-	var value bool
-	if err := json.Unmarshal(raw, &value); err != nil {
-		return false, false
-	}
-	return value, true
 }
 
 func numberPointer(value float64) *float64 {

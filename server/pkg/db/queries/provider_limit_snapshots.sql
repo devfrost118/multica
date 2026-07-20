@@ -2,6 +2,7 @@
 INSERT INTO provider_limit_snapshots (
     workspace_id,
     runtime_id,
+    daemon_id,
     provider,
     account_key,
     account_label,
@@ -14,7 +15,7 @@ INSERT INTO provider_limit_snapshots (
     error_note,
     content_hash
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 )
 ON CONFLICT (workspace_id, runtime_id, content_hash) DO UPDATE
 SET content_hash = provider_limit_snapshots.content_hash
@@ -26,11 +27,11 @@ FROM provider_limit_snapshots
 WHERE workspace_id = $1
 ORDER BY provider, account_key, checked_at DESC, created_at DESC;
 
--- name: ListLatestProviderLimitSnapshotsByRuntime :many
-SELECT DISTINCT ON (runtime_id, provider, account_key) *
+-- name: ListLatestProviderLimitSnapshotsByDaemon :many
+SELECT DISTINCT ON (daemon_id, provider, account_key) *
 FROM provider_limit_snapshots
 WHERE workspace_id = $1
-ORDER BY runtime_id, provider, account_key, checked_at DESC, created_at DESC;
+ORDER BY daemon_id, provider, account_key, checked_at DESC, created_at DESC;
 
 -- name: ListProviderLimitSnapshotHistory :many
 SELECT *
