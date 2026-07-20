@@ -86,6 +86,10 @@ import type {
   CreateProjectResourceRequest,
   UpdateProjectResourceRequest,
   ListProjectResourcesResponse,
+  ProjectEnvironment,
+  ProjectEnvironmentReveal,
+  ProjectEnvironmentRequest,
+  ListProjectEnvironmentsResponse,
   Label,
   IssueProperty,
   IssuePropertyValue,
@@ -259,6 +263,12 @@ import {
   EMPTY_LABEL,
   EMPTY_LIST_LABELS_RESPONSE,
   EMPTY_RESOURCE_LABELS_RESPONSE,
+  ProjectEnvironmentSchema,
+  ProjectEnvironmentRevealSchema,
+  ListProjectEnvironmentsResponseSchema,
+  EMPTY_PROJECT_ENVIRONMENT,
+  EMPTY_PROJECT_ENVIRONMENT_REVEAL,
+  EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -2217,6 +2227,82 @@ export class ApiClient {
     await this.fetch(`/api/projects/${projectId}/resources/${resourceId}`, {
       method: "DELETE",
     });
+  }
+
+  // Project environments
+  async listProjectEnvironments(
+    projectId: string,
+  ): Promise<ListProjectEnvironmentsResponse> {
+    const raw = await this.fetch<unknown>(`/api/projects/${projectId}/environments`);
+    return parseWithFallback(
+      raw,
+      ListProjectEnvironmentsResponseSchema,
+      EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE,
+      { endpoint: "GET /api/projects/:id/environments" },
+    );
+  }
+
+  async createProjectEnvironment(
+    projectId: string,
+    data: ProjectEnvironmentRequest,
+  ): Promise<ProjectEnvironment> {
+    const raw = await this.fetch<unknown>(`/api/projects/${projectId}/environments`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT, project_id: projectId },
+      { endpoint: "POST /api/projects/:id/environments" },
+    );
+  }
+
+  async updateProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+    data: Partial<ProjectEnvironmentRequest>,
+  ): Promise<ProjectEnvironment> {
+    const raw = await this.fetch<unknown>(
+      `/api/projects/${projectId}/environments/${environmentId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+    );
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT, project_id: projectId },
+      { endpoint: "PUT /api/projects/:id/environments/:environmentId" },
+    );
+  }
+
+  async deleteProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+  ): Promise<void> {
+    await this.fetch(`/api/projects/${projectId}/environments/${environmentId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async revealProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+  ): Promise<ProjectEnvironmentReveal> {
+    const raw = await this.fetch<unknown>(
+      `/api/projects/${projectId}/environments/${environmentId}/reveal`,
+    );
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentRevealSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT_REVEAL, project_id: projectId },
+      {
+        endpoint: "GET /api/projects/:id/environments/:environmentId/reveal",
+        redactReceived: true,
+      },
+    );
   }
 
   // Labels

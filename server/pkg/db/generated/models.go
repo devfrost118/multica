@@ -779,6 +779,25 @@ type Project struct {
 	DueDate     pgtype.Date        `json:"due_date"`
 }
 
+type ProjectEnvironment struct {
+	ID          pgtype.UUID        `json:"id"`
+	ProjectID   pgtype.UUID        `json:"project_id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Name        string             `json:"name"`
+	Description pgtype.Text        `json:"description"`
+	Config      []byte             `json:"config"`
+	Secrets     []byte             `json:"secrets"`
+	CreatedBy   pgtype.UUID        `json:"created_by"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ProjectEnvironmentDaemon struct {
+	EnvironmentID pgtype.UUID        `json:"environment_id"`
+	RuntimeID     pgtype.UUID        `json:"runtime_id"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
 type ProjectResource struct {
 	ID           pgtype.UUID        `json:"id"`
 	ProjectID    pgtype.UUID        `json:"project_id"`

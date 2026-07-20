@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -564,4 +566,66 @@ func (h *Handler) listProjectResourcesForProject(ctx context.Context, projectID 
 		return nil
 	}
 	return rows
+}
+
+func (h *Handler) listProjectEnvironmentsForClaim(ctx context.Context, projectID, runtimeID pgtype.UUID) ([]ProjectEnvironmentData, error) {
+	if !projectID.Valid || !runtimeID.Valid {
+		return nil, nil
+	}
+	rows, err := h.Queries.ListProjectEnvironmentsForRuntimeDelivery(ctx, runtimeID)
+	if err != nil {
+		slog.Warn("daemon claim: failed to load project environments",
+			"project_id", uuidToString(projectID),
+			"runtime_id", uuidToString(runtimeID),
+			"error", err,
+		)
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	out := make([]ProjectEnvironmentData, 0, len(rows))
+	for _, row := range rows {
+		if row.ProjectID != projectID {
+			continue
+		}
+		item, err := h.projectEnvironmentToClaimData(row)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, item)
+	}
+	return out, nil
+}
+
+func (h *Handler) projectEnvironmentToClaimData(env db.ProjectEnvironment) (ProjectEnvironmentData, error) {
+	var cfg struct {
+		Kind       string          `json:"kind"`
+		Connection json.RawMessage `json:"connection"`
+	}
+	if len(env.Config) > 0 {
+		if err := json.Unmarshal(env.Config, &cfg); err != nil {
+			slog.Warn("daemon claim: failed to decode project environment config",
+				"environment_id", uuidToString(env.ID),
+				"error", err,
+			)
+		}
+	}
+
+	connection := cfg.Connection
+	if len(bytes.TrimSpace(connection)) == 0 || bytes.Equal(bytes.TrimSpace(connection), []byte("null")) {
+		connection = json.RawMessage("{}")
+	}
+
+	secrets, err := h.projectEnvironmentSecrets(env)
+	if err != nil {
+		return ProjectEnvironmentData{}, err
+	}
+	return ProjectEnvironmentData{
+		Name:       env.Name,
+		Kind:       strings.TrimSpace(cfg.Kind),
+		Connection: connection,
+		Secrets:    secrets,
+	}, nil
 }

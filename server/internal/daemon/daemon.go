@@ -4080,6 +4080,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		ProjectTitle:                     task.ProjectTitle,
 		ProjectDescription:               task.ProjectDescription,
 		ProjectResources:                 convertProjectResourcesForEnv(task.ProjectResources),
+		ProjectEnvironments:              convertProjectEnvironmentsForEnv(task.ProjectEnvironments),
 		ChatSessionID:                    task.ChatSessionID,
 		ChatChannelType:                  task.ChatChannelType,
 		AutopilotRunID:                   task.AutopilotRunID,
@@ -4461,6 +4462,8 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	if err := configureCodexTaskShellEnvironment(provider, env.CodexHome, os.Environ(), agentEnv, agentCustomEnv, d.logger); err != nil {
 		return TaskResult{}, err
 	}
+	layerProjectEnvironmentSecrets(agentEnv, task.ProjectEnvironments, d.logger)
+
 	backend, err := agent.New(provider, agent.Config{
 		ExecutablePath: entry.Path,
 		CLIVersion:     resolvedVersion,
@@ -5284,6 +5287,25 @@ func convertProjectResourcesForEnv(resources []ProjectResourceData) []execenv.Pr
 	return result
 }
 
+func convertProjectEnvironmentsForEnv(envs []ProjectEnvironmentData) []execenv.ProjectEnvironmentForEnv {
+	if len(envs) == 0 {
+		return nil
+	}
+	result := make([]execenv.ProjectEnvironmentForEnv, len(envs))
+	for i, env := range envs {
+		connection := env.Connection
+		if len(connection) == 0 {
+			connection = json.RawMessage("{}")
+		}
+		result[i] = execenv.ProjectEnvironmentForEnv{
+			Name:       env.Name,
+			Kind:       env.Kind,
+			Connection: connection,
+		}
+	}
+	return result
+}
+
 // markActiveEnvRoot records that a task is currently using the given env root,
 // so the GC loop won't reclaim its artifacts mid-execution. Calls are
 // reference-counted so a reuse path marked twice (predicted + prior) only
@@ -5625,6 +5647,31 @@ func configureCodexTaskShellEnvironment(provider, codexHome string, inherited []
 		return fmt.Errorf("configure Codex shell environment: %w", err)
 	}
 	return nil
+}
+
+func layerProjectEnvironmentSecrets(agentEnv map[string]string, projectEnvironments []ProjectEnvironmentData, logger *slog.Logger) {
+	for _, env := range projectEnvironments {
+		for key, value := range env.Secrets {
+			if isBlockedProjectEnvironmentSecretKey(key) {
+				if logger != nil {
+					logger.Warn("project_environment: blocked key skipped", "key", key, "environment", env.Name)
+				}
+				continue
+			}
+			agentEnv[key] = value
+		}
+	}
+}
+
+func isBlockedProjectEnvironmentSecretKey(key string) bool {
+	trimmed := strings.TrimSpace(key)
+	if trimmed == "" {
+		return true
+	}
+	if strings.EqualFold(trimmed, "HERMES_HOME") {
+		return true
+	}
+	return isBlockedEnvKey(trimmed)
 }
 
 func defaultArgsForProvider(cfg Config, provider string) []string {

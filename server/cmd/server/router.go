@@ -31,6 +31,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/integrations/slack"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
+	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/storage"
@@ -217,6 +218,20 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		ServerVersion:            normalizeServerVersion(version),
 	}
 	h := handler.New(queries, pool, hub, bus, emailSvc, store, cfSigner, analyticsClient, signupConfig, daemonHub)
+	if strings.TrimSpace(os.Getenv("MULTICA_PROJECT_ENV_SECRET_KEY")) == "" {
+		slog.Warn("project environment secrets are stored in legacy plaintext; configure MULTICA_PROJECT_ENV_SECRET_KEY and backfill existing records")
+	} else {
+		key, err := secretbox.LoadKey("MULTICA_PROJECT_ENV_SECRET_KEY")
+		if err != nil {
+			panic("invalid MULTICA_PROJECT_ENV_SECRET_KEY: " + err.Error())
+		}
+		box, err := secretbox.New(key)
+		if err != nil {
+			panic("initialize MULTICA_PROJECT_ENV_SECRET_KEY: " + err.Error())
+		}
+		h.ProjectEnvironmentSecrets = projectenvsecrets.New(box)
+		slog.Info("project environment secret encryption enabled")
+	}
 	h.Metrics = opts.BusinessMetrics
 	h.FeatureFlags = opts.FeatureFlags
 	h.TaskService.FeatureFlags = opts.FeatureFlags
@@ -1115,6 +1130,11 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Post("/resources", h.CreateProjectResource)
 					r.Put("/resources/{resourceId}", h.UpdateProjectResource)
 					r.Delete("/resources/{resourceId}", h.DeleteProjectResource)
+					r.Get("/environments", h.ListProjectEnvironments)
+					r.Post("/environments", h.CreateProjectEnvironment)
+					r.Put("/environments/{envId}", h.UpdateProjectEnvironment)
+					r.Delete("/environments/{envId}", h.DeleteProjectEnvironment)
+					r.Get("/environments/{envId}/reveal", h.GetProjectEnvironmentReveal)
 				})
 			})
 

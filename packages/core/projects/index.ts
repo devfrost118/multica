@@ -19,3 +19,11 @@ export {
   useUpdateProjectResource,
   useDeleteProjectResource,
 } from "./resource-queries";
+export {
+  projectEnvironmentKeys,
+  projectEnvironmentsOptions,
+  useCreateProjectEnvironment,
+  useUpdateProjectEnvironment,
+  useDeleteProjectEnvironment,
+  useRevealProjectEnvironment,
+} from "./environment-queries";
