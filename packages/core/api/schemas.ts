@@ -310,6 +310,15 @@ const OptionalStringSchema = z.preprocess(
   z.string().optional(),
 );
 
+const OptionalNullableStringSchema = z.preprocess(
+  (value) => (typeof value === "string" || value === null ? value : undefined),
+  z.string().nullable().optional(),
+);
+
+const StringRecordSchema = z.record(z.string(), z.string());
+
+const JsonObjectSchema = z.record(z.string(), z.unknown());
+
 const BooleanWithDefaultSchema = (fallback: boolean) =>
   z.preprocess(
     (value) => (typeof value === "boolean" ? value : undefined),
