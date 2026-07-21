@@ -1,0 +1,3 @@
+-- No-op: dropping daemon_id here would break the following migration's
+-- index, which depends on the column regardless of which migration first
+-- created it.
