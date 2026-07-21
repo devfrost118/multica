@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, Clock3, Server, SlidersHorizontal } from "lucide-react";
+import { AlertCircle, Server, SlidersHorizontal } from "lucide-react";
+
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
 import { useProviderLimitSettingsStore } from "@multica/core/provider-limits";
 import type {
@@ -62,7 +63,7 @@ function remainingPercent(bucket: ProviderLimitSnapshot["buckets"][number]): num
   return null;
 }
 
-function sourceLabel(kind: string): string {
+export function sourceLabel(kind: string): string {
   const labels: Record<string, string> = {
     official_api: "Official API",
     local_auth_state: "Local auth state",
@@ -72,14 +73,14 @@ function sourceLabel(kind: string): string {
   return labels[kind] ?? titleCase(kind);
 }
 
-function formatFreshness(seconds: number): string {
+export function formatFreshness(seconds: number): string {
   if (seconds <= 0) return "—";
   if (seconds % 3_600 === 0) return `${seconds / 3_600}h`;
   if (seconds % 60 === 0) return `${seconds / 60}m`;
   return `${seconds}s`;
 }
 
-function lastGoodSnapshot(
+export function lastGoodSnapshot(
   history: ProviderLimitSnapshot[],
   record: ProviderLimitSnapshot,
 ): ProviderLimitSnapshot | undefined {
@@ -198,7 +199,6 @@ export function ProviderLimitsOverview({
                   history={history}
                   warningThreshold={warningThreshold}
                   criticalThreshold={criticalThreshold}
-                  locale={locale}
                 />
               ))}
             </div>
@@ -241,7 +241,6 @@ function ProviderLimitCard({
   history,
   warningThreshold,
   criticalThreshold,
-  locale,
 }: {
   record: ProviderLimitSnapshot;
   history: ProviderLimitSnapshot[];
@@ -251,8 +250,6 @@ function ProviderLimitCard({
 }) {
   const { t } = useT("usage");
   const status = effectiveStatus(record);
-  const lastGood = lastGoodSnapshot(history, record);
-  const checkedAt = record.checked_at ? new Date(record.checked_at).toLocaleString(locale) : t(($) => $.provider_limits.unknown);
   return (
     <article className="rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -275,18 +272,10 @@ function ProviderLimitCard({
           <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
         )}
       </div>
-      <div className="mt-3 space-y-1 border-t pt-2 text-xs text-muted-foreground">
-        <p>{sourceLabel(record.source.kind)} · {record.source.confidence || t(($) => $.provider_limits.unknown)}</p>
-        <p>{t(($) => $.provider_limits.freshness, { value: formatFreshness(record.source.freshness_seconds) })}</p>
-        <p className="flex items-center gap-1"><Clock3 className="size-3" />{t(($) => $.provider_limits.checked_at, { value: checkedAt })}</p>
-        {lastGood && lastGood.checked_at !== record.checked_at && (
-          <p>{t(($) => $.provider_limits.last_good, { value: new Date(lastGood.checked_at).toLocaleString(locale) })}</p>
-        )}
-        {record.error_note && <p>{t(($) => $.provider_limits.reason, { value: titleCase(record.error_note) })}</p>}
-      </div>
     </article>
   );
 }
+
 
 function BucketRow({
   bucket,

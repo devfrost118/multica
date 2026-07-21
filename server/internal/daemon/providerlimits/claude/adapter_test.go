@@ -255,7 +255,31 @@ func assertPercentBucket(t *testing.T, bucket providerlimits.Bucket, id, label s
 	}
 }
 
+func TestAdapter_FallsBackToLegacyOpusWhenWeeklyScopedMissingInLimits(t *testing.T) {
+	server := usageServer(t, http.StatusOK, `{
+		"five_hour":{"utilization":20,"resets_at":"2026-07-19T18:00:00Z"},
+		"seven_day":{"utilization":10,"resets_at":"2026-07-25T18:00:00Z"},
+		"seven_day_opus":{"utilization":15,"resets_at":"2026-07-25T18:00:00Z"},
+		"limits":[
+			{"kind":"session","percent":20,"resets_at":"2026-07-19T18:00:00Z"},
+			{"kind":"weekly_all","percent":10,"resets_at":"2026-07-25T18:00:00Z"}
+		]
+	}`)
+	defer server.Close()
+
+	configDir := writeCredentials(t, "token", time.Now().Add(time.Hour))
+	snapshots, err := NewAdapter(Config{ConfigDir: configDir, Endpoint: server.URL}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 || len(snapshots[0].Buckets) != 3 {
+		t.Fatalf("snapshots = %#v", snapshots)
+	}
+	assertPercentBucket(t, snapshots[0].Buckets[2], "weekly_scoped", "Limit weekly top model", 15, 85, "2026-07-25T18:00:00Z")
+}
+
 func quoteJSON(value string) string {
 	encoded, _ := json.Marshal(value)
 	return string(encoded)
 }
+

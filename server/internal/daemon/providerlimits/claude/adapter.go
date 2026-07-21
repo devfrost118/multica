@@ -179,7 +179,17 @@ func parseExpiry(raw json.RawMessage) (time.Time, bool) {
 // data and are not read; Anthropic already returns seven_day_opus and
 // seven_day_sonnet as null once "limits" carries weekly_scoped instead.
 type usageResponse struct {
-	Limits []usageLimit `json:"limits"`
+	FiveHour       *legacyUsageWindow `json:"five_hour"`
+	SevenDay       *legacyUsageWindow `json:"seven_day"`
+	SevenDayOpus   *legacyUsageWindow `json:"seven_day_opus"`
+	SevenDaySonnet *legacyUsageWindow `json:"seven_day_sonnet"`
+	SevenDayCowork *legacyUsageWindow `json:"seven_day_cowork"`
+	Limits         []usageLimit       `json:"limits"`
+}
+
+type legacyUsageWindow struct {
+	Utilization *float64        `json:"utilization"`
+	ResetsAt    json.RawMessage `json:"resets_at"`
 }
 
 type usageLimit struct {
@@ -203,6 +213,19 @@ func snapshotFromUsage(usage usageResponse, checkedAt time.Time, subscriptionTyp
 	byKind := make(map[string]usageLimit, len(usage.Limits))
 	for _, limit := range usage.Limits {
 		byKind[limit.Kind] = limit
+	}
+	if _, ok := byKind["weekly_scoped"]; !ok {
+		for _, legacy := range []*legacyUsageWindow{usage.SevenDayOpus, usage.SevenDaySonnet, usage.SevenDayCowork} {
+			if legacy != nil && legacy.Utilization != nil {
+				percentRaw, _ := json.Marshal(*legacy.Utilization)
+				byKind["weekly_scoped"] = usageLimit{
+					Kind:     "weekly_scoped",
+					Percent:  percentRaw,
+					ResetsAt: legacy.ResetsAt,
+				}
+				break
+			}
+		}
 	}
 	buckets := make([]providerlimits.Bucket, 0, len(claudeBucketOrder))
 	for _, entry := range claudeBucketOrder {

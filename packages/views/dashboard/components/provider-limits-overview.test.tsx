@@ -61,7 +61,7 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.queryAllByRole("article")).toHaveLength(0);
   });
 
-  it("renders every provider and bucket status with remaining/reset/source metadata", () => {
+  it("renders every provider and bucket status with remaining and reset info", () => {
     const statuses = [
       snapshot(),
       snapshot({ provider: "codex", account_key: "account-b", account_label: "Codex", stale: true }),
@@ -81,12 +81,14 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getByText("Error")).toBeTruthy();
     expect(screen.getAllByText("30% used").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Resets/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Official API · official").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Fresh for 15m").length).toBeGreaterThan(0);
-    expect(screen.getByText("Reason: Not Configured")).toBeTruthy();
+
+    // Metadata is now in Details dialog
+    fireEvent.click(screen.getAllByRole("button", { name: "Details" })[0]!);
+    expect(screen.getByText("Official API · official")).toBeTruthy();
+    expect(screen.getByText("Fresh for 15m")).toBeTruthy();
   });
 
-  it("uses history to surface the last good snapshot after an unavailable report", () => {
+  it("uses history to surface the last good snapshot after an unavailable report in Details", () => {
     const unavailable = snapshot({ status: "unavailable", buckets: [], error_note: "not_configured" });
     const lastGood = snapshot({ checked_at: "2026-07-19T09:00:00Z" });
 
@@ -94,6 +96,7 @@ describe("ProviderLimitsOverview", () => {
       <ProviderLimitsOverview overview={{ accounts: [unavailable], daemons: [] }} history={[lastGood]} isLoading={false} isError={false} />,
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
     expect(screen.getByText(/Last good:/)).toBeTruthy();
   });
 

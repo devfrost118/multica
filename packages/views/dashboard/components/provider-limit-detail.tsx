@@ -20,7 +20,14 @@ import {
 } from "@multica/core/provider-limits";
 import type { ProviderLimitSnapshot } from "@multica/core/types";
 import { useT } from "../../i18n";
-import { subscriptionLabel, titleCase } from "./provider-limits-overview";
+import { Clock3 } from "lucide-react";
+import {
+  formatFreshness,
+  lastGoodSnapshot,
+  sourceLabel,
+  subscriptionLabel,
+  titleCase,
+} from "./provider-limits-overview";
 import { ProviderLimitHistoryChart } from "./provider-limit-history-chart";
 
 // Compact number formatting so a token/credit rate like 1234.5/hour reads
@@ -80,7 +87,10 @@ export function ProviderLimitDetail({
           </DialogHeader>
 
           {bucketOptions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
+              <ProviderLimitMetadata record={record} history={history} />
+            </div>
           ) : (
             <div className="space-y-4">
               {bucketOptions.length > 1 && activeBucketId && (
@@ -102,11 +112,38 @@ export function ProviderLimitDetail({
               )}
 
               <PaceSummary pace={pace} unit={activeBucket?.unit ?? ""} />
+
+              <ProviderLimitMetadata record={record} history={history} />
             </div>
           )}
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function ProviderLimitMetadata({
+  record,
+  history,
+}: {
+  record: ProviderLimitSnapshot;
+  history: ProviderLimitSnapshot[];
+}) {
+  const { t, i18n } = useT("usage");
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const lastGood = lastGoodSnapshot(history, record);
+  const checkedAt = record.checked_at ? new Date(record.checked_at).toLocaleString(locale) : t(($) => $.provider_limits.unknown);
+
+  return (
+    <div className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
+      <p>{sourceLabel(record.source.kind)} · {record.source.confidence || t(($) => $.provider_limits.unknown)}</p>
+      <p>{t(($) => $.provider_limits.freshness, { value: formatFreshness(record.source.freshness_seconds) })}</p>
+      <p className="flex items-center gap-1"><Clock3 className="size-3" />{t(($) => $.provider_limits.checked_at, { value: checkedAt })}</p>
+      {lastGood && lastGood.checked_at !== record.checked_at && (
+        <p>{t(($) => $.provider_limits.last_good, { value: new Date(lastGood.checked_at).toLocaleString(locale) })}</p>
+      )}
+      {record.error_note && <p>{t(($) => $.provider_limits.reason, { value: titleCase(record.error_note) })}</p>}
+    </div>
   );
 }
 
@@ -150,3 +187,4 @@ function PaceSummary({ pace, unit }: { pace: PaceResult; unit: string }) {
     </div>
   );
 }
+

@@ -106,16 +106,18 @@ describe("ProviderLimitDetail", () => {
     expect(screen.queryByText("Estimated")).toBeNull();
   });
 
-  it("shows the stale-data reason when the latest snapshot is stale", () => {
-    const history = [
-      snapshot({ checked_at: "2026-07-19T08:00:00Z", buckets: [{ ...snapshot().buckets[0]!, remaining_value: 90 }] }),
-      snapshot({ checked_at: "2026-07-19T10:00:00Z", stale: true }),
-    ];
+  it("shows source, freshness, checked_at, and error metadata inside the detail dialog", () => {
+    openDetail(
+      snapshot({
+        source: { kind: "official_api", freshness_seconds: 900, confidence: "official" },
+        error_note: "rate_limited",
+      }),
+      [],
+    );
 
-    openDetail(snapshot({ checked_at: "2026-07-19T10:00:00Z", stale: true }), history);
-
-    expect(
-      screen.getByText("Latest snapshot is stale — refresh before trusting a projection."),
-    ).toBeTruthy();
+    expect(screen.getByText("Official API · official")).toBeTruthy();
+    expect(screen.getByText("Fresh for 15m")).toBeTruthy();
+    expect(screen.getByText("Reason: Rate Limited")).toBeTruthy();
   });
 });
+
