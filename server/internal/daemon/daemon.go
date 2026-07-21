@@ -3663,7 +3663,7 @@ func providerDisplayName(name string) string {
 
 func providerNeedsInlineSystemPrompt(provider string) bool {
 	switch provider {
-	case "openclaw", "kimi", "traecli", "droid":
+	case "openclaw", "kimi", "traecli":
 		return true
 	default:
 		return false
