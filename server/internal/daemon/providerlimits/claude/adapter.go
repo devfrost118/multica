@@ -169,35 +169,51 @@ func parseExpiry(raw json.RawMessage) (time.Time, bool) {
 }
 
 // usageResponse mirrors the real shape of Anthropic's official usage
-// endpoint: four independent windows, each already percent-scale via
-// utilization. There is no generic "limits" list or spend/extra-usage field.
+// endpoint. The authoritative source for session/weekly/weekly-top-model
+// quota is the "limits" array: each entry's "kind" is a stable identifier
+// ("session", "weekly_all", "weekly_scoped") that Anthropic keeps populated
+// regardless of which model is currently "top" — the model name itself only
+// ever shows up in a "weekly_scoped" entry's scope.model.display_name, which
+// this adapter intentionally does not depend on. The top-level five_hour /
+// seven_day / seven_day_<model> fields are legacy duplicates of the same
+// data and are not read; Anthropic already returns seven_day_opus and
+// seven_day_sonnet as null once "limits" carries weekly_scoped instead.
 type usageResponse struct {
-	FiveHour       *usageWindow `json:"five_hour"`
-	SevenDay       *usageWindow `json:"seven_day"`
-	SevenDayOpus   *usageWindow `json:"seven_day_opus"`
-	SevenDaySonnet *usageWindow `json:"seven_day_sonnet"`
+	Limits []usageLimit `json:"limits"`
 }
 
-type usageWindow struct {
-	Utilization json.RawMessage `json:"utilization"`
-	Percent     json.RawMessage `json:"percent"`
-	ResetsAt    json.RawMessage `json:"resets_at"`
+type usageLimit struct {
+	Kind     string          `json:"kind"`
+	Percent  json.RawMessage `json:"percent"`
+	ResetsAt json.RawMessage `json:"resets_at"`
+}
+
+// claudeBucketLabels maps the stable "kind" values from the limits array to
+// the labels this feature displays. Order controls display order.
+var claudeBucketOrder = []struct {
+	kind  string
+	label string
+}{
+	{kind: "session", label: "Limit session"},
+	{kind: "weekly_all", label: "Limit weekly all"},
+	{kind: "weekly_scoped", label: "Limit weekly top model"},
 }
 
 func snapshotFromUsage(usage usageResponse, checkedAt time.Time, subscriptionType string) providerlimits.AccountSnapshot {
-	buckets := make([]providerlimits.Bucket, 0, 3)
-	if bucket, ok := bucketFromWindow("session", "Limit session", usage.FiveHour); ok {
-		buckets = append(buckets, bucket)
+	byKind := make(map[string]usageLimit, len(usage.Limits))
+	for _, limit := range usage.Limits {
+		byKind[limit.Kind] = limit
 	}
-	if bucket, ok := bucketFromWindow("weekly_all", "Limit weekly all", usage.SevenDay); ok {
-		buckets = append(buckets, bucket)
-	}
-	scopedWindow := usage.SevenDayOpus
-	if scopedWindow == nil {
-		scopedWindow = usage.SevenDaySonnet
-	}
-	if bucket, ok := bucketFromWindow("weekly_scoped", "Limit weekly scoped", scopedWindow); ok {
-		buckets = append(buckets, bucket)
+	buckets := make([]providerlimits.Bucket, 0, len(claudeBucketOrder))
+	for _, entry := range claudeBucketOrder {
+		limit, ok := byKind[entry.kind]
+		if !ok {
+			continue
+		}
+		bucket, ok := percentBucket(entry.kind, entry.label, limit.Percent, limit.ResetsAt)
+		if ok {
+			buckets = append(buckets, bucket)
+		}
 	}
 	return providerlimits.AccountSnapshot{
 		Provider:     "claude",
@@ -212,17 +228,6 @@ func snapshotFromUsage(usage usageResponse, checkedAt time.Time, subscriptionTyp
 		},
 		Buckets: buckets,
 	}
-}
-
-func bucketFromWindow(id, label string, window *usageWindow) (providerlimits.Bucket, bool) {
-	if window == nil {
-		return providerlimits.Bucket{}, false
-	}
-	percent := window.Utilization
-	if len(percent) == 0 {
-		percent = window.Percent
-	}
-	return percentBucket(id, label, percent, window.ResetsAt)
 }
 
 func percentBucket(id, label string, percentRaw, resetRaw json.RawMessage) (providerlimits.Bucket, bool) {

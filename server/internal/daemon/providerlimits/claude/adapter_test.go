@@ -26,10 +26,15 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{
-			"five_hour":{"utilization":25,"resets_at":"2026-07-19T18:00:00Z","unknown":true},
-			"seven_day":{"utilization":"40","resets_at":"2026-07-25T18:00:00Z"},
-			"seven_day_opus":{"utilization":35,"resets_at":"2026-07-25T18:00:00Z"},
-			"seven_day_sonnet":{"utilization":10,"resets_at":"2026-07-25T18:00:00Z"},
+			"five_hour":{"utilization":25,"resets_at":"2026-07-19T18:00:00Z"},
+			"seven_day_opus":null,
+			"seven_day_sonnet":null,
+			"limits":[
+				{"kind":"session","group":"session","percent":25,"severity":"warning","resets_at":"2026-07-19T18:00:00Z","scope":null,"is_active":true,"unknown":true},
+				{"kind":"weekly_all","group":"weekly","percent":"40","resets_at":"2026-07-25T18:00:00Z","scope":null,"is_active":false},
+				{"kind":"weekly_scoped","group":"weekly","percent":35,"severity":"normal","resets_at":"2026-07-25T18:00:00Z","scope":{"model":{"id":null,"display_name":"Fable"}},"is_active":false},
+				{"kind":"unknown_future_kind","percent":99,"resets_at":"2026-07-25T18:00:00Z"}
+			],
 			"future_field":"sk-response-token-must-not-leak"
 		}`))
 	}))
@@ -66,7 +71,7 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 	}
 	assertPercentBucket(t, snapshot.Buckets[0], "session", "Limit session", 25, 75, "2026-07-19T18:00:00Z")
 	assertPercentBucket(t, snapshot.Buckets[1], "weekly_all", "Limit weekly all", 40, 60, "2026-07-25T18:00:00Z")
-	assertPercentBucket(t, snapshot.Buckets[2], "weekly_scoped", "Limit weekly scoped", 35, 65, "2026-07-25T18:00:00Z")
+	assertPercentBucket(t, snapshot.Buckets[2], "weekly_scoped", "Limit weekly top model", 35, 65, "2026-07-25T18:00:00Z")
 
 	encoded, marshalErr := json.Marshal(snapshots)
 	if marshalErr != nil {
@@ -83,12 +88,29 @@ func TestAdapter_CollectsOfficialUsageAndIgnoresUnknownFields(t *testing.T) {
 	}
 }
 
+// TestAdapter_OmitsWeeklyScopedBucketWhenNotInLimits reproduces an account
+// with no per-model weekly limit reported yet: only session and weekly_all
+// should appear, and the third bucket must not be fabricated.
+func TestAdapter_OmitsWeeklyScopedBucketWhenNotInLimits(t *testing.T) {
+	server := usageServer(t, http.StatusOK, `{"limits":[{"kind":"session","percent":10},{"kind":"weekly_all","percent":5}]}`)
+	defer server.Close()
+
+	configDir := writeCredentials(t, "token", time.Now().Add(time.Hour))
+	snapshots, err := NewAdapter(Config{ConfigDir: configDir, Endpoint: server.URL}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 || len(snapshots[0].Buckets) != 2 {
+		t.Fatalf("snapshots = %#v", snapshots)
+	}
+}
+
 func TestAdapter_UsesClaudeConfigDirIncludingCyrillicWindowsPath(t *testing.T) {
 	configDir := filepath.Join(t.TempDir(), "Клод", "профиль")
 	t.Setenv("CLAUDE_CONFIG_DIR", configDir)
 	writeCredentialsAt(t, configDir, "token", time.Now().Add(time.Hour))
 
-	server := usageServer(t, http.StatusOK, `{"five_hour":{"utilization":1}}`)
+	server := usageServer(t, http.StatusOK, `{"limits":[{"kind":"session","percent":1}]}`)
 	defer server.Close()
 	snapshots, err := NewAdapter(Config{Endpoint: server.URL}).Collect(context.Background())
 	if err != nil {
@@ -137,7 +159,7 @@ func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if calls.Add(1) == 1 {
-			_, _ = w.Write([]byte(`{"five_hour":{"utilization":20}}`))
+			_, _ = w.Write([]byte(`{"limits":[{"kind":"session","percent":20}]}`))
 			return
 		}
 		w.WriteHeader(http.StatusTooManyRequests)

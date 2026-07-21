@@ -153,8 +153,11 @@ func (a *Adapter) loadAccessToken() (string, bool) {
 
 // usageResponse mirrors the real shape of the ChatGPT backend usage endpoint
 // (GET /backend-api/wham/usage), the same endpoint the Codex CLI's usage
-// screen queries. primary_window is the short session window; secondary_window
-// is the weekly window.
+// screen queries. primary_window and secondary_window are NOT fixed to
+// session/weekly: the API assigns "primary" to whichever window is currently
+// the binding constraint, so a fully-weekly-limited account can report its
+// 7-day window as primary_window with secondary_window absent. Each window is
+// classified by its own limit_window_seconds instead.
 type usageResponse struct {
 	AccountID string          `json:"account_id"`
 	Email     string          `json:"email"`
@@ -168,18 +171,48 @@ type usageRateLimit struct {
 }
 
 type usageWindow struct {
-	UsedPercent json.RawMessage `json:"used_percent"`
-	ResetAt     json.RawMessage `json:"reset_at"`
+	UsedPercent        json.RawMessage `json:"used_percent"`
+	LimitWindowSeconds json.RawMessage `json:"limit_window_seconds"`
+	ResetAt            json.RawMessage `json:"reset_at"`
+}
+
+const (
+	sessionMaxSeconds = 6 * 60 * 60      // windows at or below this are a session limit
+	weeklyMinSeconds  = 6 * 24 * 60 * 60 // windows at or above this are a weekly limit
+)
+
+// classifyWindowKind buckets a window by its own duration rather than its
+// primary/secondary position, since the endpoint reassigns which slot is
+// "primary" based on which limit is currently binding.
+func classifyWindowKind(seconds float64) (id, label string, ok bool) {
+	switch {
+	case seconds > 0 && seconds <= sessionMaxSeconds:
+		return "session", "Limit session", true
+	case seconds >= weeklyMinSeconds:
+		return "weekly", "Limit weekly", true
+	default:
+		return "", "", false
+	}
 }
 
 func snapshotFromUsage(usage usageResponse, checkedAt time.Time) providerlimits.AccountSnapshot {
 	buckets := make([]providerlimits.Bucket, 0, 2)
+	seenKinds := make(map[string]bool, 2)
 	if usage.RateLimit != nil {
-		if bucket, ok := bucketFromWindow("session", "Limit session", usage.RateLimit.PrimaryWindow); ok {
-			buckets = append(buckets, bucket)
-		}
-		if bucket, ok := bucketFromWindow("weekly", "Limit weekly", usage.RateLimit.SecondaryWindow); ok {
-			buckets = append(buckets, bucket)
+		for _, window := range []*usageWindow{usage.RateLimit.PrimaryWindow, usage.RateLimit.SecondaryWindow} {
+			if window == nil {
+				continue
+			}
+			seconds, _ := numberFromJSON(window.LimitWindowSeconds)
+			id, label, ok := classifyWindowKind(seconds)
+			if !ok || seenKinds[id] {
+				continue
+			}
+			bucket, ok := bucketFromWindow(id, label, window)
+			if ok {
+				buckets = append(buckets, bucket)
+				seenKinds[id] = true
+			}
 		}
 	}
 	return providerlimits.AccountSnapshot{

@@ -29,8 +29,8 @@ func TestAdapter_CollectsUsageAndIgnoresUnknownFields(t *testing.T) {
 			"email":"demo@gmail.com",
 			"plan_type":"plus",
 			"rate_limit":{
-				"primary_window":{"used_percent":4,"reset_at":1772962692,"unknown":true},
-				"secondary_window":{"used_percent":1,"reset_at":1773549492}
+				"primary_window":{"used_percent":4,"limit_window_seconds":18000,"reset_at":1772962692,"unknown":true},
+				"secondary_window":{"used_percent":1,"limit_window_seconds":604800,"reset_at":1773549492}
 			},
 			"future_field":"sk-response-token-must-not-leak"
 		}`))
@@ -86,7 +86,7 @@ func TestAdapter_CollectsUsageAndIgnoresUnknownFields(t *testing.T) {
 }
 
 func TestAdapter_ProducesStableAccountKeyForSameIdentity(t *testing.T) {
-	server := usageServer(t, http.StatusOK, `{"account_id":"acct-123","plan_type":"pro","rate_limit":{"primary_window":{"used_percent":1,"reset_at":1}}}`)
+	server := usageServer(t, http.StatusOK, `{"account_id":"acct-123","plan_type":"pro","rate_limit":{"primary_window":{"used_percent":1,"limit_window_seconds":18000,"reset_at":1}}}`)
 	defer server.Close()
 
 	home := writeAuth(t, "token")
@@ -109,7 +109,7 @@ func TestAdapter_UsesCodexHomeAndHandlesCyrillicWindowsPath(t *testing.T) {
 	t.Setenv("CODEX_HOME", home)
 	writeAuthAt(t, home, "token")
 
-	server := usageServer(t, http.StatusOK, `{"plan_type":"free","rate_limit":{"primary_window":{"used_percent":1,"reset_at":1}}}`)
+	server := usageServer(t, http.StatusOK, `{"plan_type":"free","rate_limit":{"primary_window":{"used_percent":1,"limit_window_seconds":18000,"reset_at":1}}}`)
 	defer server.Close()
 
 	snapshots, err := NewAdapter(Config{Endpoint: server.URL}).Collect(context.Background())
@@ -118,6 +118,48 @@ func TestAdapter_UsesCodexHomeAndHandlesCyrillicWindowsPath(t *testing.T) {
 	}
 	if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusOK || snapshots[0].AccountLabel != "profile-free" {
 		t.Fatalf("snapshots = %#v", snapshots)
+	}
+}
+
+// TestAdapter_ClassifiesPrimaryWindowByDurationNotPosition reproduces a real
+// observed response shape: once an account is fully limited on its weekly
+// quota, the endpoint reports that 7-day window as primary_window and omits
+// secondary_window entirely. The bucket must still be labeled "Limit weekly",
+// not "Limit session", because classification depends on limit_window_seconds
+// rather than which JSON slot the window arrived in.
+func TestAdapter_ClassifiesPrimaryWindowByDurationNotPosition(t *testing.T) {
+	server := usageServer(t, http.StatusOK, `{"account_id":"acct-1","plan_type":"plus","rate_limit":{"allowed":false,"limit_reached":true,"primary_window":{"used_percent":100,"limit_window_seconds":604800,"reset_after_seconds":313204,"reset_at":1784965393},"secondary_window":null}}`)
+	defer server.Close()
+
+	home := writeAuth(t, "token")
+	snapshots, err := NewAdapter(Config{Home: home, Endpoint: server.URL}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 {
+		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
+	}
+	if len(snapshots[0].Buckets) != 1 {
+		t.Fatalf("bucket count = %d, want 1: %#v", len(snapshots[0].Buckets), snapshots[0].Buckets)
+	}
+	assertPercentBucket(t, snapshots[0].Buckets[0], "weekly", "Limit weekly", 100, 0, time.Unix(1784965393, 0).UTC())
+}
+
+// TestAdapter_IgnoresWindowsThatDoNotMatchEitherDuration guards against a
+// window whose limit_window_seconds falls outside both the session (<=6h)
+// and weekly (>=6d) ranges (e.g. a 2-day promo window) silently masquerading
+// as one or the other.
+func TestAdapter_IgnoresWindowsThatDoNotMatchEitherDuration(t *testing.T) {
+	server := usageServer(t, http.StatusOK, `{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":50,"limit_window_seconds":172800,"reset_at":1}}}`)
+	defer server.Close()
+
+	home := writeAuth(t, "token")
+	snapshots, err := NewAdapter(Config{Home: home, Endpoint: server.URL}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusUnavailable {
+		t.Fatalf("snapshots = %#v, want unavailable since no window classified", snapshots)
 	}
 }
 
@@ -155,7 +197,7 @@ func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if calls.Add(1) == 1 {
-			_, _ = w.Write([]byte(`{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":20,"reset_at":1}}}`))
+			_, _ = w.Write([]byte(`{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":20,"limit_window_seconds":18000,"reset_at":1}}}`))
 			return
 		}
 		w.WriteHeader(http.StatusTooManyRequests)
