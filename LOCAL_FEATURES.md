@@ -1,4 +1,4 @@
-﻿# LOCAL_FEATURES.md - локальные доработки поверх upstream/main
+# LOCAL_FEATURES.md - локальные доработки поверх upstream/main
 
 Этот файл - легенда локальных (не в апстриме) функциональностей.
 Живёт только в твоём форке, НЕ пушится в апстрим.
@@ -30,9 +30,10 @@
 - rule-groups x droid-integration пересекаются по Go (droid.go, daemon/*.go, handler/agent.go).
   В droid.go берётся версия droid-integration (temp-file, фиксит too long path).
   В types.go/execenv.go/agent.go/daemon.go поля ОБЪЕДИНЯЮТСЯ (ProjectEnvironments + EffectiveRules).
-- ru-locale add/add решается резолвером prefer-ours + append-theirs (см. update.ps1).
+- ru-locale add/add решается резолвером prefer-ours + append-theirs.
 
 ## Сборка
 
-update.ps1 переписан под вариант А: $FeatureBranches удалён, сборка с main,
-local/build не создаётся как integration-ветка.
+Сборка идёт прямо с `main` (без промежуточной integration-ветки). Логика
+синхронизации, локализации и docker-build описана в промпте автопилота
+«Обновление Multica» — отдельных скриптов в репозитории нет.
