@@ -5348,6 +5348,11 @@ func convertProjectEnvironmentsForEnv(envs []ProjectEnvironmentData) []execenv.P
 			Name:       env.Name,
 			Kind:       env.Kind,
 			Connection: connection,
+		}
+	}
+	return result
+}
+
 func convertEffectiveRulesForEnv(rules []EffectiveRuleData) []execenv.EffectiveRuleForEnv {
 	if len(rules) == 0 {
 		return nil
