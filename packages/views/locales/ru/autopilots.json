@@ -282,7 +282,6 @@
     "event_filter_actions_placeholder": "completed, failed",
     "event_filter_hint": "Обрабатывать только webhooks, совпадающие с этими событиями. Оставьте пустым, чтобы принимать все.",
     "schedule_disabled_reason": "У этого автопилота несколько расписаний — редактируйте их на странице автопилота.",
-    "next_run_label": "Следующий запуск:",
     "output_modes": {
       "create_issue": {
         "label": "Создавать задачи",
@@ -292,22 +291,6 @@
         "label": "Только запуск",
         "description": "Тихий запуск, задача не создаётся"
       }
-    },
-    "frequency_long": {
-      "hourly": "Каждый час",
-      "daily": "Каждый день",
-      "weekdays": "Каждый будний день",
-      "weekly": "Каждую неделю",
-      "custom": "Свой cron"
-    },
-    "days": {
-      "sunday": "Воскресенье",
-      "monday": "Понедельник",
-      "tuesday": "Вторник",
-      "wednesday": "Среда",
-      "thursday": "Четверг",
-      "friday": "Пятница",
-      "saturday": "Суббота"
     },
     "section_subscribers": "Подписчики",
     "subscribers_hint": "Автоматически подписаны на каждую issue, созданную этим автопилотом",
@@ -401,51 +384,6 @@
         "fri": "Пятница",
         "sat": "Суббота"
       }
-    }
-  },
-  "trigger_config": {
-    "frequencies": {
-      "hourly": "Ежечасно",
-      "daily": "Ежедневно",
-      "weekdays": "По будням",
-      "weekly": "По дням",
-      "custom": "Свой"
-    },
-    "days_short": {
-      "sun": "Вс",
-      "mon": "Пн",
-      "tue": "Вт",
-      "wed": "Ср",
-      "thu": "Чт",
-      "fri": "Пт",
-      "sat": "Сб"
-    },
-    "cron_label": "Cron-выражение",
-    "cron_hint": "Стандартный cron из 5 полей (мин час день месяц день_недели)",
-    "minute_label": "Минута",
-    "time_label": "Время",
-    "timezone_label": "Часовой пояс",
-    "days_label": "Дни",
-    "summary": {
-      "hourly": "Ежечасно · :{{min}}",
-      "daily": "Ежедневно {{time}}",
-      "weekdays": "По будням {{time}}",
-      "weekly": "{{days}} {{time}}",
-      "custom": "Свой cron",
-      "no_days": "—"
-    },
-    "describe": {
-      "hourly": "Запускается каждый час в :{{min}}",
-      "daily": "Запускается ежедневно в {{time}} {{offset}}",
-      "weekdays": "Запускается по будням в {{time}} {{offset}}",
-      "weekly": "Запускается каждый {{days}} в {{time}} {{offset}}",
-      "custom": "Своё расписание: {{cron}}"
-    },
-    "countdown": {
-      "days_hours": "{{days}} д {{hours}} ч",
-      "hours_minutes": "{{hours}} ч {{minutes}} мин",
-      "minutes": "{{minutes}} мин",
-      "less_than_minute": "<1 мин"
     }
   },
   "agent_picker": {

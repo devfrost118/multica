@@ -62,8 +62,7 @@
     "source_skills_sh": "Из Skills.sh",
     "source_github": "Из GitHub",
     "created_by": "Добавлено",
-    "created": "Создан",
-    "no_description": "Без описания"
+    "created": "Создан"
   },
   "detail": {
     "all_skills": "Все навыки",

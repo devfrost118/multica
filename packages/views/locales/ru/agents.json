@@ -363,8 +363,6 @@
     },
     "custom_args": {
       "intro": "Дополнительные аргументы CLI, добавляемые к команде агента при запуске. Флаги из нескольких токенов могут быть в одной строке — они разбиваются по пробелам перед передачей в CLI.",
-      "launch_mode_prefix": "Режим запуска: ",
-      "launch_mode_args_placeholder": "<ваши аргументы>",
       "input_placeholder": "--flag value",
       "remove_aria": "Убрать аргумент",
       "saved_toast": "Свои аргументы сохранены",
@@ -384,12 +382,7 @@
     },
     "mcp_config": {
       "intro": "Конфигурация MCP-сервера, передаваемая в CLI среды выполнения (Claude через --mcp-config, Codex через $CODEX_HOME/config.toml, Hermes/Kimi/Kiro через ACP mcpServers, OpenCode через OPENCODE_CONFIG_CONTENT, OpenClaw через обёртку конфига для каждой task). Хранится дословно и может содержать секреты — читать её могут только владелец агента и администраторы рабочей области. Оставьте пустым, чтобы использовать значение CLI по умолчанию. Для HTTP/SSE-записей OpenClaw используйте собственное имя поля OpenClaw (например, \"transport\": \"streamable-http\") вместо \"type\" из Claude.",
-      "placeholder": "{\n  \"mcpServers\": {\n    \"fetch\": {\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-server-fetch\"]\n    }\n  }\n}",
-      "editor_aria": "Редактор JSON-конфига MCP",
-      "clear_action": "Очистить",
       "invalid_json": "Некорректный JSON: {{error}}",
-      "invalid_not_object": "Конфиг MCP должен быть JSON-объектом (например, {\"mcpServers\": …}).",
-      "saved_toast": "Конфиг MCP сохранён",
       "save_failed_toast": "Не удалось сохранить конфиг MCP",
       "redacted_title": "Настроено — скрыто от вашего просмотра",
       "redacted_hint": "Читать этот конфиг может только владелец агента или администратор рабочей области.",
