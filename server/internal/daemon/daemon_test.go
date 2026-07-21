@@ -518,6 +518,8 @@ func TestProviderNeedsInlineSystemPrompt(t *testing.T) {
 		// Inlining the same runtime brief duplicates the context and can make
 		// Windows process creation exceed the command-line limit.
 		{provider: "droid", want: false},
+		// Qwen Code loads the per-task QWEN.md file natively.
+		{provider: "qwen", want: false},
 		{provider: "codex", want: false},
 		{provider: "claude", want: false},
 	}

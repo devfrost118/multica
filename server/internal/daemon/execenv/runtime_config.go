@@ -189,6 +189,7 @@ func formatProjectEnvironment(env ProjectEnvironmentForEnv) string {
 // For Traecli:     writes {workDir}/AGENTS.md  (traecli reads .trae/rules/ not AGENTS.md, so the brief is delivered inline via providerNeedsInlineSystemPrompt; the file is written for parity/visibility only)
 // For Grok:        writes {workDir}/AGENTS.md  (Grok Build CLI reads AGENTS.md natively from the workdir)
 // For Droid:       writes {workDir}/AGENTS.md  (Factory.ai droid CLI reads AGENTS.md natively)
+// For Qwen:        writes {workDir}/QWEN.md (Qwen Code's native context file; it also reads AGENTS.md, but QWEN.md avoids cross-runtime ambiguity)
 func InjectRuntimeConfig(workDir, provider string, ctx TaskContextForEnv) (string, error) {
 	content := buildMetaSkillContent(provider, ctx)
 	path := runtimeConfigPath(workDir, provider)
@@ -215,6 +216,8 @@ func runtimeConfigPath(workDir, provider string) string {
 		// file"). CodeBuddy only reads CLAUDE.md if the user manually
 		// migrates/symlinks it in.
 		return filepath.Join(workDir, "CODEBUDDY.md")
+	case "qwen":
+		return filepath.Join(workDir, "QWEN.md")
 	case "codex", "copilot", "opencode", "deveco", "openclaw", "hermes", "pi", "cursor", "kimi", "kiro", "antigravity", "qoder", "traecli", "grok", "droid":
 		return filepath.Join(workDir, "AGENTS.md")
 	default:
