@@ -64,13 +64,6 @@ func codexSandboxPolicyFor(goos, detectedVersion string) codexSandboxPolicy {
 	if goos == "" {
 		goos = runtime.GOOS
 	}
-	if goos == "windows" {
-		return codexSandboxPolicy{
-			Mode:          "danger-full-access",
-			NetworkAccess: false,
-			Reason:        "windows restricted-token sandbox cannot enforce split writable root sets (openai/codex#30009)",
-		}
-	}
 	if goos != "darwin" {
 		return codexSandboxPolicy{
 			Mode:          "workspace-write",
