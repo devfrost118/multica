@@ -45,6 +45,13 @@ var legacyDuplicateMigrationStems = map[string][]string{
 	"124": {"124_autopilot_run_planned_at", "124_channel_generalization", "124_task_prepare_lease"},
 	"127": {"127_issue_pull_request_reference_only", "127_task_squad_id", "127_user_composio_connection"},
 	"128": {"128_agent_task_queue_runtime_mcp_overlay", "128_autopilot_collaborator", "128_comment_routing_escalation"},
+	// Fork-local topic merges collided with upstream numbering. These stems are
+	// already applied (version-keyed by full stem, mutually independent), and
+	// the local ones are not idempotent, so renaming them would re-run CREATE
+	// TABLE on existing databases. Frozen here instead.
+	"117": {"117_agent_task_queue_initiator_user_id", "117_rule_groups"},
+	"179": {"179_project_environment", "179_runtime_profile_add_grok"},
+	"180": {"180_provider_limit_snapshots", "180_task_chat_finalize_deferred"},
 }
 
 var migrationPrefixPattern = regexp.MustCompile(`^(\d+)_`)
