@@ -1,12 +1,5 @@
 {
-  "auto_save": {
-    "saving": "保存中…",
-    "saved": "保存済み",
-    "failed": "保存できませんでした",
-    "toast_saved": "変更を保存しました"
-  },
   "preferences": {
-    "general_title": "一般",
     "theme": {
       "title": "テーマ",
       "light": "ライト",
@@ -14,6 +7,7 @@
       "system": "システム"
     },
     "language": {
+      "russian": "ロシア語",
       "title": "言語",
       "english": "English",
       "chinese": "中文",
@@ -28,6 +22,7 @@
       "hint": "ダッシュボード、チャート、表示される「今日」ラベルに使用されます。すべてのワークスペースに適用される個人設定です。",
       "sync_failed": "タイムゾーン設定を保存できませんでした。"
     },
+    "general_title": "一般",
     "sticky_comment_bar": {
       "title": "コメントバーを固定",
       "hint": "イシューのページをスクロールしても、コメントバーを常に下部に固定します。"
@@ -132,7 +127,8 @@
       "labs": "ラボ",
       "members": "メンバー",
       "labels": "ラベル",
-      "properties": "プロパティ"
+      "properties": "プロパティ",
+      "rule_groups": "ルールグループ"
     }
   },
   "properties": {
@@ -244,8 +240,7 @@
     }
   },
   "account": {
-    "section_profile": "個人情報",
-    "avatar_label": "アバター",
+    "section_profile": "プロフィール",
     "click_avatar_hint": "クリックしてアバターをアップロード",
     "name_label": "名前",
     "profile_description_label": "自己紹介",
@@ -257,7 +252,8 @@
     "toast_avatar_updated": "アバターを更新しました",
     "toast_avatar_failed": "アバターをアップロードできませんでした",
     "toast_profile_updated": "プロフィールを更新しました",
-    "toast_profile_failed": "プロフィールを更新できませんでした"
+    "toast_profile_failed": "プロフィールを更新できませんでした",
+    "avatar_label": "アバター"
   },
   "notifications": {
     "title": "インボックス通知",
@@ -302,10 +298,7 @@
   },
   "tokens": {
     "title": "API トークン",
-    "description": "個人アクセストークンを使うと、CLI や外部連携があなたのアカウントで認証できます。multica login --token で使用するか、API 呼び出し時に Bearer トークンとして送信します。",
-    "security_note": "トークンはアカウントへのフルアクセスを付与します。パスワードと同じように厳重に管理してください。",
-    "empty": "API トークンはまだありません。上のフォームから作成できます。",
-    "load_failed": "API トークンを読み込めませんでした。ページを再読み込みしてもう一度お試しください。",
+    "description": "個人アクセストークンを使うと、CLI や外部連携があなたのアカウントで認証できます。",
     "name_placeholder": "トークン名（例: My CLI）",
     "expiry": {
       "30": "30 日",
@@ -332,20 +325,23 @@
       "confirm": "失効"
     },
     "created_dialog": {
-      "title": "個人アクセストークンを作成しました",
+      "title": "トークンを作成しました",
+      "description": "今すぐ個人アクセストークンをコピーしてください。再表示はできません。",
+      "copy_tooltip": "トークンをコピー",
+      "done": "完了",
       "warning_prefix": "新しい個人アクセストークンを作成しました。セキュリティ上の理由により、表示されるのは",
       "warning_emphasis": "今回の一度だけ",
       "warning_suffix": "です。安全に保管し、共有しないでください。紛失したトークンは復元できないため、失効して新しく作成してください。",
       "confirm_stored": "このトークンを安全に保管しました。",
-      "copy_tooltip": "トークンをコピー",
       "cli_hint": "次のコマンドで CLI にログインできます:",
-      "copy_command_tooltip": "コマンドをコピー",
-      "done": "完了"
-    }
+      "copy_command_tooltip": "コマンドをコピー"
+    },
+    "security_note": "トークンはアカウントへのフルアクセスを付与します。パスワードと同じように厳重に管理してください。",
+    "empty": "API トークンはまだありません。上のフォームから作成できます。",
+    "load_failed": "API トークンを読み込めませんでした。ページを再読み込みしてもう一度お試しください。"
   },
   "workspace": {
-    "section_general": "ワークスペース情報",
-    "logo_label": "ワークスペースロゴ",
+    "section_general": "一般",
     "name_label": "名前",
     "description_label": "説明",
     "description_placeholder": "このワークスペースは何に注力していますか？",
@@ -381,7 +377,8 @@
     "change_logo_aria": "ワークスペースのロゴを変更",
     "click_logo_hint": "ロゴをクリックして新しい画像をアップロード",
     "toast_logo_updated": "ワークスペースのロゴを更新しました",
-    "toast_logo_failed": "ワークスペースのロゴをアップロードできませんでした"
+    "toast_logo_failed": "ワークスペースのロゴをアップロードできませんでした",
+    "logo_label": "ワークスペースロゴ"
   },
   "delete_workspace_dialog": {
     "title": "ワークスペースを削除",
@@ -602,13 +599,13 @@
     "edit_aria": "リポジトリを編集",
     "cancel_aria": "編集をキャンセル",
     "delete_aria": "リポジトリを削除",
+    "manage_hint": "リポジトリを管理できるのは admin と owner のみです。",
+    "toast_saved": "リポジトリを保存しました",
+    "toast_save_failed": "リポジトリを保存できませんでした",
     "delete_confirm_title": "リポジトリを削除しますか？",
     "delete_confirm_description": "このリポジトリはワークスペースから直ちに削除されます。",
     "delete_confirm_cancel": "キャンセル",
-    "delete_confirm_action": "リポジトリを削除",
-    "manage_hint": "リポジトリを管理できるのは admin と owner のみです。",
-    "toast_saved": "リポジトリを保存しました",
-    "toast_save_failed": "リポジトリを保存できませんでした"
+    "delete_confirm_action": "リポジトリを削除"
   },
   "desktop": {
     "tabs": {
@@ -670,6 +667,252 @@
         "label": "メンバー",
         "description": "イシューの作成と作業"
       }
+    }
+  },
+  "rule_groups": {
+    "title": "ルールグループ",
+    "description": "プロジェクト・スクワッド・エージェントに割り当てられる、再利用可能な Markdown ルールのセットです。有効なルールはワークスペース → プロジェクト → スクワッド → エージェントの順に重ねて適用されます。",
+    "create": "グループを作成",
+    "empty": "ルールグループはまだありません。",
+    "manage_hint": "ルールグループを管理できるのは管理者とオーナーのみです。",
+    "builtin_badge": "ビルトイン",
+    "disabled_badge": "無効",
+    "rule_count": "{{count}} 件のルール",
+    "binding_count": "{{count}} 件の割り当て",
+    "manage_rules": "ルールを管理",
+    "page": {
+      "title": "ルール",
+      "groups_label": "ルールグループ",
+      "search_placeholder": "ルールグループを検索…",
+      "select_group": "ルールを表示するルールグループを選択してください。",
+      "no_results": "検索に一致するルールグループはありません。"
+    },
+    "toast_created": "ルールグループを作成しました",
+    "toast_create_failed": "ルールグループの作成に失敗しました",
+    "toast_updated": "ルールグループを更新しました",
+    "toast_update_failed": "ルールグループの更新に失敗しました",
+    "toast_deleted": "ルールグループを削除しました",
+    "toast_delete_failed": "ルールグループの削除に失敗しました",
+    "name_label": "名前",
+    "name_placeholder": "例：ランタイム衛生",
+    "description_label": "説明",
+    "description_placeholder": "これらのルールは何を強制しますか？",
+    "enabled_label": "有効",
+    "create_dialog_title": "ルールグループを作成",
+    "edit_dialog_title": "ルールグループを編集",
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "delete_dialog_title": "ルールグループを削除",
+    "delete_dialog_description": "「{{name}}」を削除しますか？ルールと、プロジェクト・スクワッド・エージェントへのすべての割り当てが削除されます。この操作は取り消せません。",
+    "rules": {
+      "title": "ルール",
+      "add": "ルールを追加",
+      "empty": "このグループにはまだルールがありません。",
+      "name_label": "名前",
+      "name_placeholder": "例：完了を宣言する前に必ずテストを実行する",
+      "content_label": "内容（Markdown）",
+      "content_placeholder": "Markdown でルールを記述…",
+      "file_name_label": "ファイル名（任意）",
+      "file_name_placeholder": "例：completion-evidence.md",
+      "create_dialog_title": "ルールを追加",
+      "edit_dialog_title": "ルールを編集",
+      "delete_dialog_title": "ルールを削除",
+      "delete_dialog_description": "ルール「{{name}}」を削除しますか？この操作は取り消せません。",
+      "toast_saved": "ルールを保存しました",
+      "toast_save_failed": "ルールの保存に失敗しました",
+      "toast_deleted": "ルールを削除しました",
+      "toast_delete_failed": "ルールの削除に失敗しました"
+    },
+    "bindings": {
+      "section_title": "ルールグループ",
+      "empty": "ルールグループが割り当てられていません。",
+      "attach": "ルールグループを割り当て",
+      "attach_dialog_title": "ルールグループを割り当て",
+      "none_available": "すべてのルールグループが既に割り当て済みです。",
+      "no_groups": "ルールグループがまだありません。「ルール」ページで作成してください。",
+      "detach_tooltip": "解除",
+      "detach_dialog_title": "ルールグループを解除",
+      "detach_dialog_description": "この{{scope}}から「{{name}}」を解除しますか？グループ自体は削除されません。",
+      "toast_attached": "ルールグループを割り当てました",
+      "toast_attach_failed": "ルールグループの割り当てに失敗しました",
+      "toast_detached": "ルールグループを解除しました",
+      "toast_detach_failed": "ルールグループの解除に失敗しました",
+      "toast_toggle_failed": "割り当ての更新に失敗しました",
+      "scope_project": "プロジェクト",
+      "scope_squad": "スクワッド",
+      "scope_agent": "エージェント",
+      "preview": "有効なルールをプレビュー",
+      "preview_title": "有効なルール",
+      "preview_empty": "ここで有効なルールはありません。",
+      "layer_workspace": "ワークスペース",
+      "layer_project": "プロジェクト",
+      "layer_squad": "スクワッド",
+      "layer_agent": "エージェント"
+    }
+  },
+  "auto_save": {
+    "saving": "保存中…",
+    "saved": "保存済み",
+    "failed": "保存できませんでした",
+    "toast_saved": "変更を保存しました"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "description": "このデバイスで製品操作のショートカットをカスタマイズします。ショートカットをクリックして、新しいキーの組み合わせを押してください。",
+    "search_placeholder": "操作を検索...",
+    "reset_all": "デフォルトに戻す",
+    "reset_confirm": {
+      "title": "すべてのショートカットをデフォルトに戻しますか？",
+      "description": "このデバイスのカスタムショートカットをすべて削除し、デフォルト設定に戻します。",
+      "cancel": "キャンセル",
+      "confirm": "すべてデフォルトに戻す"
+    },
+    "reset": "リセット",
+    "disable": "無効にする",
+    "reset_action": "{{action}}をリセット",
+    "disable_action": "{{action}}のショートカットを無効にする",
+    "record_aria": "{{action}}のショートカットを変更",
+    "recording": "キーを入力",
+    "record_hint": "Esc でキャンセル · Delete でクリア",
+    "unassigned": "未設定",
+    "no_results": "一致するショートカット操作はありません。",
+    "conflict_error": "すでに{{action}}で使用されています。",
+    "reserved_error": "ブラウザまたはデスクトップウィンドウで予約されています。",
+    "send_error": "送信には Enter または Mod+Enter のみ使用できます。",
+    "unsafe_error": "このキーは文字入力や基本的なキーボード操作と競合します。",
+    "send_enter_hint": "Shift+Enterで段落の挿入、リストの継続、コードブロック内の改行ができます。",
+    "categories": {
+      "general": "一般",
+      "navigation": "ナビゲーション"
+    },
+    "actions": {
+      "openSearch": {
+        "label": "検索を開く",
+        "description": "どこからでも検索やコマンドを実行します。"
+      },
+      "createIssue": {
+        "label": "Issueを作成",
+        "description": "優先するissue作成フローを開きます。"
+      },
+      "toggleSidebar": {
+        "label": "サイドバーを切り替え",
+        "description": "メインサイドバーの表示を切り替えます。"
+      },
+      "findInIssue": {
+        "label": "Issue内を検索",
+        "description": "開いているissueの詳細を検索します。"
+      },
+      "send": {
+        "label": "送信",
+        "description": "チャット、コメント、返信、フィードバック、プロンプトを送信します。"
+      },
+      "goInbox": {
+        "label": "受信トレイへ移動",
+        "description": "ワークスペースの受信トレイを開きます。"
+      },
+      "goChat": {
+        "label": "チャットへ移動",
+        "description": "ワークスペースのチャットを開きます。"
+      },
+      "goMyIssues": {
+        "label": "自分のIssuesへ移動",
+        "description": "自分に割り当てられたissueを開きます。"
+      },
+      "goIssues": {
+        "label": "Issuesへ移動",
+        "description": "Issue一覧を開きます。"
+      },
+      "goProjects": {
+        "label": "プロジェクトへ移動",
+        "description": "プロジェクト一覧を開きます。"
+      },
+      "goAutopilots": {
+        "label": "自動化へ移動",
+        "description": "ワークスペースの自動化を開きます。"
+      },
+      "goAgents": {
+        "label": "エージェントへ移動",
+        "description": "エージェント一覧を開きます。"
+      },
+      "goSquads": {
+        "label": "Squadsへ移動",
+        "description": "Squad一覧を開きます。"
+      },
+      "goUsage": {
+        "label": "使用量へ移動",
+        "description": "使用量分析を開きます。"
+      },
+      "goRuntimes": {
+        "label": "ランタイムへ移動",
+        "description": "ランタイム設定を開きます。"
+      },
+      "goSkills": {
+        "label": "Skillsへ移動",
+        "description": "Skillライブラリを開きます。"
+      },
+      "goSettings": {
+        "label": "設定へ移動",
+        "description": "ワークスペース設定を開きます。"
+      }
+    },
+    "fixed": {
+      "title": "固定のシステムショートカット",
+      "description": "ウィンドウとアクセシビリティのショートカットは信頼性のため固定されています。ズームとタブ操作はデスクトップアプリに適用されます。",
+      "close_tab": "アクティブなタブを閉じる",
+      "zoom_in": "拡大",
+      "zoom_out": "縮小",
+      "reset_zoom": "ズームをリセット",
+      "close_dialog": "ダイアログまたはメニューを閉じる"
+    }
+  },
+  "labels": {
+    "title": "ラベル",
+    "description": "このワークスペースの Issue、エージェント、Skill 用ラベルを個別に管理します。",
+    "scopes": {
+      "issue": "Issue",
+      "agent": "エージェント",
+      "skill": "Skill"
+    },
+    "search_placeholder": "名前または説明で絞り込み...",
+    "new_label": "新しいラベル",
+    "columns": {
+      "name": "名前",
+      "description": "説明",
+      "usage": "使用数",
+      "updated": "更新日"
+    },
+    "usage_count": "{{count}} 件で使用",
+    "loading": "ラベルを読み込み中...",
+    "empty": "{{scope}} ラベルはまだありません",
+    "no_results": "一致するラベルがありません",
+    "save_failed": "ラベルを保存できませんでした",
+    "actions": {
+      "open": "{{name}} の操作",
+      "edit": "編集",
+      "delete": "削除"
+    },
+    "editor": {
+      "create_title": "新しいラベル",
+      "edit_title": "ラベルを編集",
+      "scope_hint": "このラベルは {{scope}} カタログ専用です。",
+      "name": "名前",
+      "name_placeholder": "例: Bug",
+      "description": "説明",
+      "description_placeholder": "このラベルを使用する条件を説明",
+      "color": "色",
+      "custom_color": "カスタム色を選択",
+      "cancel": "キャンセル",
+      "save": "ラベルを保存",
+      "saving": "保存中..."
+    },
+    "delete_dialog": {
+      "title": "ラベルを削除しますか？",
+      "description": "「{{name}}」を削除しますか？{{count}} 件のリソースから削除されます。この操作は元に戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "ラベルを削除",
+      "failed": "ラベルを削除できませんでした"
     }
   }
 }

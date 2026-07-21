@@ -3662,7 +3662,7 @@ func providerDisplayName(name string) string {
 
 func providerNeedsInlineSystemPrompt(provider string) bool {
 	switch provider {
-	case "openclaw", "kimi", "traecli":
+	case "openclaw", "kimi", "traecli", "droid":
 		return true
 	default:
 		return false
@@ -4111,6 +4111,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		ProjectDescription:               task.ProjectDescription,
 		ProjectResources:                 convertProjectResourcesForEnv(task.ProjectResources),
 		ProjectEnvironments:              convertProjectEnvironmentsForEnv(task.ProjectEnvironments),
+		EffectiveRules:                   convertEffectiveRulesForEnv(task.EffectiveRules),
 		ChatSessionID:                    task.ChatSessionID,
 		ChatChannelType:                  task.ChatChannelType,
 		AutopilotRunID:                   task.AutopilotRunID,
@@ -4615,8 +4616,8 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	//     as a belt-and-suspenders for older openclaw releases until that load
 	//     path stabilises in production; remove this once a release tracks the
 	//     workdir bootstrap reliably end-to-end.
-	//   - kimi is wrapped through its own CLI whose cwd handling is opaque
-	//     enough that we can't trust the file-based path either.
+	//   - kimi and droid are wrapped through their own CLIs whose cwd handling
+	//     is opaque enough that we can't trust the file-based path either.
 	// Pass the full runtime brief inline (CLI catalog + workflow steps + agent
 	// identity/persona + skills + project context) so the backend prepends the
 	// same payload that file-based runtimes pick up from disk. Without this,
@@ -5331,6 +5332,19 @@ func convertProjectEnvironmentsForEnv(envs []ProjectEnvironmentData) []execenv.P
 			Name:       env.Name,
 			Kind:       env.Kind,
 			Connection: connection,
+func convertEffectiveRulesForEnv(rules []EffectiveRuleData) []execenv.EffectiveRuleForEnv {
+	if len(rules) == 0 {
+		return nil
+	}
+	result := make([]execenv.EffectiveRuleForEnv, len(rules))
+	for i, r := range rules {
+		result[i] = execenv.EffectiveRuleForEnv{
+			ScopeType:     r.ScopeType,
+			RuleGroupName: r.RuleGroupName,
+			RuleName:      r.RuleName,
+			Description:   r.Description,
+			Content:       r.Content,
+			FileName:      r.FileName,
 		}
 	}
 	return result

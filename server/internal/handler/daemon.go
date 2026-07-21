@@ -2433,6 +2433,27 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 		)
 	}
 
+	if resp.Agent != nil {
+		var projectID, squadID pgtype.UUID
+		if resp.ProjectID != "" {
+			projectID = parseUUID(resp.ProjectID)
+		}
+		if resp.SquadID != "" {
+			squadID = parseUUID(resp.SquadID)
+		}
+		rules, err := h.Queries.ListEffectiveRules(r.Context(), db.ListEffectiveRulesParams{
+			WorkspaceID: parseUUID(resp.WorkspaceID),
+			ProjectID: projectID,
+			SquadID: squadID,
+			AgentID: task.AgentID,
+		})
+		if err != nil {
+			slog.Warn("task claim: failed to load effective rule groups", "task_id", uuidToString(task.ID), "error", err)
+		} else if len(rules) > 0 {
+			resp.EffectiveRules = effectiveRulesToResponse(rules)
+		}
+	}
+
 	return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, nil
 }
 
@@ -2672,6 +2693,22 @@ func (h *Handler) ResolveTaskSkillBundles(w http.ResponseWriter, r *http.Request
 // these, not just the latest. Every completed or failed run writes an
 // assistant row, so the anchor advances one turn at a time; the result is the
 // whole slice on the first turn and exactly the new message(s) thereafter.
+func effectiveRulesToResponse(rows []db.ListEffectiveRulesRow) []EffectiveRuleData {
+	out := make([]EffectiveRuleData, 0, len(rows))
+	for _, row := range rows {
+		hints := json.RawMessage(row.RuleRuntimeHints)
+		if len(hints) == 0 {
+			hints = nil
+		}
+		fileName := ""
+		if row.RuleFileName.Valid {
+			fileName = row.RuleFileName.String
+		}
+		out = append(out, EffectiveRuleData{ScopeType: row.ScopeType, RuleGroupID: uuidToString(row.RuleGroupID), RuleGroupName: row.RuleGroupName, RuleID: uuidToString(row.RuleID), RuleName: row.RuleName, Description: row.RuleDescription, Content: row.RuleContent, FileName: fileName, RuntimeHints: hints, RuleSortOrder: row.RuleSortOrder, BindingID: uuidToString(row.BindingID), BindingSortKey: row.BindingSortOrder})
+	}
+	return out
+}
+
 func trailingUserMessages(msgs []db.ChatMessage) []db.ChatMessage {
 	start := 0
 	for i := len(msgs) - 1; i >= 0; i-- {

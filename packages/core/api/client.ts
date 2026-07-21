@@ -46,6 +46,7 @@ import type {
   SkillSummary,
   CreateSkillRequest,
   UpdateSkillRequest,
+  SkillDiscoveryResult,
   SetAgentSkillsRequest,
   PersonalAccessToken,
   CreatePersonalAccessTokenRequest,
@@ -152,6 +153,18 @@ import type {
   ProviderLimitHistoryResponse,
   ProviderLimitsOverviewResponse,
   CreateBillingPortalSessionResponse,
+  RuleGroupSummary,
+  RuleGroupWithRules,
+  RuleGroupRule,
+  RuleGroupBinding,
+  RuleGroup,
+  EffectiveRulesResponse,
+  CreateRuleGroupRequest,
+  UpdateRuleGroupRequest,
+  CreateRuleGroupRuleRequest,
+  UpdateRuleGroupRuleRequest,
+  CreateRuleGroupBindingRequest,
+  UpdateRuleGroupBindingRequest,
 } from "../types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import type { CreateFeedbackResponse, FeedbackKind } from "../feedback/types";
@@ -1894,6 +1907,13 @@ export class ApiClient {
     });
   }
 
+  async discoverSkills(data: { url: string }): Promise<SkillDiscoveryResult> {
+    return this.fetch("/api/skills/discover", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   async listAgentSkills(agentId: string): Promise<SkillSummary[]> {
     return this.fetch(`/api/agents/${agentId}/skills`);
   }
@@ -1915,18 +1935,18 @@ export class ApiClient {
     });
   }
 
-	async setAgentSkillEnabled(agentId: string, skillId: string, enabled: boolean): Promise<void> {
-		await this.fetch(`/api/agents/${agentId}/skills/${skillId}/enabled`, {
-			method: "PUT",
-			body: JSON.stringify({ enabled }),
-		});
-	}
+  async setAgentSkillEnabled(agentId: string, skillId: string, enabled: boolean): Promise<void> {
+    await this.fetch(`/api/agents/${agentId}/skills/${skillId}/enabled`, {
+      method: "PUT",
+      body: JSON.stringify({ enabled }),
+    });
+  }
 
-	async removeAgentSkill(agentId: string, skillId: string): Promise<void> {
-		await this.fetch(`/api/agents/${agentId}/skills/${skillId}`, {
-			method: "DELETE",
-		});
-	}
+  async removeAgentSkill(agentId: string, skillId: string): Promise<void> {
+    await this.fetch(`/api/agents/${agentId}/skills/${skillId}`, {
+      method: "DELETE",
+    });
+  }
 
   // Personal Access Tokens
   async listPersonalAccessTokens(): Promise<PersonalAccessToken[]> {
@@ -2438,67 +2458,181 @@ export class ApiClient {
     });
   }
 
+  // Rule Groups — workspace resolved server-side from the X-Workspace-Slug
+  // header (see server router /api/rule-groups). List/read responses run
+  // through schemas so a contract drift degrades instead of white-screening.
+  async listRuleGroups(): Promise<RuleGroupSummary[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups`);
+    return parseWithFallback(raw, RuleGroupSummaryListSchema, EMPTY_RULE_GROUP_SUMMARY_LIST, {
+      endpoint: "GET /api/rule-groups",
+    }) as RuleGroupSummary[];
+  }
+
+  async getRuleGroup(id: string): Promise<RuleGroupWithRules> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${id}`);
+    return parseWithFallback(raw, RuleGroupWithRulesSchema, EMPTY_RULE_GROUP_WITH_RULES, {
+      endpoint: "GET /api/rule-groups/:id",
+    }) as RuleGroupWithRules;
+  }
+
+  async createRuleGroup(data: CreateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroup(id: string, data: UpdateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroup(id: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${id}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupRules(groupId: string): Promise<RuleGroupRule[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${groupId}/rules`);
+    return parseWithFallback(raw, RuleGroupRuleListSchema, EMPTY_RULE_GROUP_RULE_LIST, {
+      endpoint: "GET /api/rule-groups/:id/rules",
+    }) as RuleGroupRule[];
+  }
+
+  async createRuleGroupRule(
+    groupId: string,
+    data: CreateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupRule(
+    groupId: string,
+    ruleId: string,
+    data: UpdateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupRule(groupId: string, ruleId: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupBindings(
+    scopeType?: string,
+    scopeId?: string,
+  ): Promise<RuleGroupBinding[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set("scope_type", scopeType);
+    if (scopeId) params.set("scope_id", scopeId);
+    const q = params.toString() ? `?${params.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rule-group-bindings${q}`);
+    return parseWithFallback(raw, RuleGroupBindingListSchema, EMPTY_RULE_GROUP_BINDING_LIST, {
+      endpoint: "GET /api/rule-group-bindings",
+    }) as RuleGroupBinding[];
+  }
+
+  async createRuleGroupBinding(data: CreateRuleGroupBindingRequest): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupBinding(
+    id: string,
+    data: UpdateRuleGroupBindingRequest,
+  ): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupBinding(id: string): Promise<void> {
+    await this.fetch(`/api/rule-group-bindings/${id}`, { method: "DELETE" });
+  }
+
+  async getEffectiveRules(params: {
+    projectId?: string;
+    squadId?: string;
+    agentId?: string;
+  }): Promise<EffectiveRulesResponse> {
+    const search = new URLSearchParams();
+    if (params.projectId) search.set("project_id", params.projectId);
+    if (params.squadId) search.set("squad_id", params.squadId);
+    if (params.agentId) search.set("agent_id", params.agentId);
+    const q = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rules/effective${q}`);
+    return parseWithFallback(raw, EffectiveRulesResponseSchema, EMPTY_EFFECTIVE_RULES, {
+      endpoint: "GET /api/rules/effective",
+    }) as EffectiveRulesResponse;
+  }
+
+  async listLabels(scope: LabelResourceType): Promise<ListLabelsResponse> {
+    const raw = await this.fetch<unknown>(`/api/labels?scope=${scope}`);
+    return parseWithFallback(raw, ListLabelsResponseSchema, EMPTY_LIST_LABELS_RESPONSE, {
+      endpoint: "GET /api/labels",
+    });
+  }
+
+  async getLabel(id: string): Promise<Label> {
+    const raw = await this.fetch<unknown>(`/api/labels/${id}`);
+    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "GET /api/labels/{id}" });
+  }
+
+  async createLabel(data: CreateLabelRequest): Promise<Label> {
+    const raw = await this.fetch<unknown>(`/api/labels`, { method: "POST", body: JSON.stringify(data) });
+    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "POST /api/labels" });
+  }
+
+  async updateLabel(id: string, data: UpdateLabelRequest): Promise<Label> {
+    const raw = await this.fetch<unknown>(`/api/labels/${id}`, { method: "PUT", body: JSON.stringify(data) });
+    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "PUT /api/labels/{id}" });
+  }
+
+  async deleteLabel(id: string): Promise<void> {
+    await this.fetch(`/api/labels/${id}`, { method: "DELETE" });
+  }
+
   async listLabelsForIssue(issueId: string): Promise<IssueLabelsResponse> {
     const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`);
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "GET /api/issues/{id}/labels",
-    });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "GET /api/issues/{id}/labels" });
   }
 
   async attachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ label_id: labelId }),
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "POST /api/issues/{id}/labels",
-    });
+    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`, { method: "POST", body: JSON.stringify({ label_id: labelId }) });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "POST /api/issues/{id}/labels" });
   }
 
   async detachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels/${labelId}`, {
-      method: "DELETE",
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "DELETE /api/issues/{id}/labels/{labelId}",
-    });
+    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels/${labelId}`, { method: "DELETE" });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "DELETE /api/issues/{id}/labels/{labelId}" });
   }
 
-  async listLabelsForResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels`);
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `GET /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels`,
-    });
+  async listLabelsForResource(resourceType: "agent" | "skill", resourceId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels`);
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `GET /api/${path}/{id}/labels` });
   }
 
-  async attachLabelToResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-    labelId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ label_id: labelId }),
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `POST /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels`,
-    });
+  async attachLabelToResource(resourceType: "agent" | "skill", resourceId: string, labelId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels`, { method: "POST", body: JSON.stringify({ label_id: labelId }) });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `POST /api/${path}/{id}/labels` });
   }
 
-  async detachLabelFromResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-    labelId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels/${labelId}`, {
-      method: "DELETE",
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `DELETE /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels/{labelId}`,
-    });
+  async detachLabelFromResource(resourceType: "agent" | "skill", resourceId: string, labelId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels/${labelId}`, { method: "DELETE" });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `DELETE /api/${path}/{id}/labels/{labelId}` });
   }
 
   // Pins

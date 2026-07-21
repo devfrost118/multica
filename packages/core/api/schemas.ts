@@ -38,6 +38,11 @@ import type {
   TimelineEntry,
   User,
   WebhookDelivery,
+  RuleGroupSummary,
+  RuleGroupRule,
+  RuleGroupWithRules,
+  RuleGroupBinding,
+  EffectiveRulesResponse,
 } from "../types";
 import type {
   ListProjectEnvironmentsResponse,
@@ -1661,4 +1666,134 @@ export const CreateBillingPortalSessionResponseSchema = z.object({
 
 export const EMPTY_CREATE_BILLING_PORTAL_SESSION_RESPONSE: CreateBillingPortalSessionResponse = {
   url: "",
+};
+
+// ---------------------------------------------------------------------------
+// Rule Groups — see server/internal/handler/rule_group.go. Schemas are lenient
+// (string enums, .loose()) so an unknown source_type/scope_type still parses;
+// the typed fallbacks anchor the call-site type via parseWithFallback.
+// ---------------------------------------------------------------------------
+
+const RuleGroupBaseSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  enabled: z.boolean().default(true),
+  source_type: z.string().default("manual"),
+  source_ref: z.record(z.string(), z.unknown()).default({}),
+  version: z.string().nullable().default(null),
+  created_by: z.string().nullable().default(null),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+});
+
+export const RuleGroupSummarySchema = RuleGroupBaseSchema.extend({
+  rule_count: z.number().default(0),
+  binding_count: z.number().default(0),
+}).loose();
+
+export const RuleGroupSummaryListSchema = z.array(RuleGroupSummarySchema);
+
+export const EMPTY_RULE_GROUP_SUMMARY_LIST: RuleGroupSummary[] = [];
+
+export const RuleGroupRuleSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  rule_group_id: z.string(),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  content: z.string().default(""),
+  sort_order: z.number().default(0),
+  enabled: z.boolean().default(true),
+  file_name: z.string().nullable().default(null),
+  tags: z.array(z.string()).default([]),
+  runtime_hints: z.record(z.string(), z.unknown()).default({}),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const RuleGroupRuleListSchema = z.array(RuleGroupRuleSchema);
+
+export const EMPTY_RULE_GROUP_RULE_LIST: RuleGroupRule[] = [];
+
+export const RuleGroupWithRulesSchema = RuleGroupBaseSchema.extend({
+  rules: z.array(RuleGroupRuleSchema).default([]),
+}).loose();
+
+export const EMPTY_RULE_GROUP_WITH_RULES: RuleGroupWithRules = {
+  id: "",
+  workspace_id: "",
+  name: "",
+  description: "",
+  enabled: true,
+  source_type: "manual",
+  source_ref: {},
+  version: null,
+  created_by: null,
+  created_at: "",
+  updated_at: "",
+  rules: [],
+};
+
+export const RuleGroupBindingSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  rule_group_id: z.string(),
+  rule_group_name: z.string().optional(),
+  scope_type: z.string().default("workspace"),
+  scope_id: z.string().nullable().default(null),
+  enabled: z.boolean().default(true),
+  sort_order: z.number().default(0),
+  created_by: z.string().nullable().default(null),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const RuleGroupBindingListSchema = z.array(RuleGroupBindingSchema);
+
+export const EMPTY_RULE_GROUP_BINDING_LIST: RuleGroupBinding[] = [];
+
+const EffectiveRuleLayerGroupSchema = z.object({
+  binding_id: z.string(),
+  rule_group_id: z.string(),
+  name: z.string().default(""),
+  rule_count: z.number().default(0),
+}).loose();
+
+const EffectiveRuleLayerSchema = z.object({
+  scope_type: z.string().default("workspace"),
+  scope_id: z.string().nullable().default(null),
+  groups: z.array(EffectiveRuleLayerGroupSchema).default([]),
+}).loose();
+
+const EffectiveRuleSchema = z.object({
+  id: z.string(),
+  rule_group_id: z.string(),
+  rule_group_name: z.string().default(""),
+  scope_type: z.string().default("workspace"),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  content: z.string().default(""),
+  sort_order: z.number().default(0),
+  file_name: z.string().nullable().default(null),
+  runtime_hints: z.record(z.string(), z.unknown()).default({}),
+}).loose();
+
+export const EffectiveRulesResponseSchema = z.object({
+  workspace_id: z.string().default(""),
+  inputs: z.object({
+    project_id: z.string().nullable().default(null),
+    squad_id: z.string().nullable().default(null),
+    agent_id: z.string().nullable().default(null),
+  }).loose().default({ project_id: null, squad_id: null, agent_id: null }),
+  layers: z.array(EffectiveRuleLayerSchema).default([]),
+  rules: z.array(EffectiveRuleSchema).default([]),
+}).loose();
+
+export const EMPTY_EFFECTIVE_RULES: EffectiveRulesResponse = {
+  workspace_id: "",
+  inputs: { project_id: null, squad_id: null, agent_id: null },
+  layers: [],
+  rules: [],
 };

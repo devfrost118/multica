@@ -559,6 +559,40 @@ func writeOutput(b *strings.Builder, kind taskKind, ctx TaskContextForEnv) {
 	writeDeliveryInvariant(b)
 }
 
+// writeRuleGroups emits the Rule Groups section: workspace rule-group rules
+// resolved at task claim time. Ported from the legacy verbose brief when the
+// `runtime_brief_slim` flag was retired upstream (MUL-4297); emitted for every
+// task kind, gated only by the presence of resolved rules (△ pattern, like
+// Connected Apps).
+func writeRuleGroups(b *strings.Builder, ctx TaskContextForEnv) {
+	if len(ctx.EffectiveRules) == 0 {
+		return
+	}
+	b.WriteString("## Rule Groups\n\n")
+	b.WriteString("The following workspace rule-group rules were resolved at task claim time. Follow them unless a more specific task instruction conflicts. They are ordered by scope precedence (workspace, project, squad, agent) and configured sort order.\n\n")
+	for _, rule := range ctx.EffectiveRules {
+		content := strings.TrimRight(rule.Content, " \t\r\n")
+		if strings.TrimSpace(content) == "" {
+			continue
+		}
+		scope := rule.ScopeType
+		if scope == "" {
+			scope = "workspace"
+		}
+		if rule.RuleGroupName != "" {
+			fmt.Fprintf(b, "### [%s] %s / %s\n\n", scope, rule.RuleGroupName, rule.RuleName)
+		} else {
+			fmt.Fprintf(b, "### [%s] %s\n\n", scope, rule.RuleName)
+		}
+		if strings.TrimSpace(rule.Description) != "" {
+			b.WriteString(strings.TrimRight(rule.Description, " \t\r\n"))
+			b.WriteString("\n\n")
+		}
+		b.WriteString(content)
+		b.WriteString("\n\n")
+	}
+}
+
 // buildMetaSkillContentSlim is the post-MUL-3560 brief assembler.
 // Called from buildMetaSkillContent (runtime_config.go). The
 // `runtime_brief_slim` flag that once gated it was retired in MUL-4297.
@@ -595,6 +629,7 @@ func buildMetaSkillContentSlim(provider string, ctx TaskContextForEnv) string {
 	writeTaskInitiator(&b, ctx)
 	writeWorkspaceContext(&b, ctx)
 	writeConnectedApps(&b, ctx)
+	writeRuleGroups(&b, ctx)
 
 	switch kind {
 	case kindQuickCreate:

@@ -28,6 +28,7 @@ import { ProjectResourcesSection } from "./project-resources-section";
 import { ProjectStartDatePicker } from "./project-start-date-picker";
 import { ProjectDueDatePicker } from "./project-due-date-picker";
 import { IssueSurface } from "../../issues/surface/issue-surface";
+import { RuleGroupsBindingSection } from "../../rule-groups/components/rule-groups-binding-section";
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
 import { Button } from "@multica/ui/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@multica/ui/components/ui/resizable";
@@ -464,6 +465,9 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
 
       {/* Resources */}
       <ProjectResourcesSection projectId={projectId} />
+
+      {/* Rule Groups */}
+      <RuleGroupsBindingSection scopeType="project" scopeId={projectId} />
     </div>
   );
 
