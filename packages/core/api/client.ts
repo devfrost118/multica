@@ -288,6 +288,16 @@ import {
   ProviderLimitsOverviewResponseSchema,
   EMPTY_PROVIDER_LIMIT_HISTORY,
   EMPTY_PROVIDER_LIMITS_OVERVIEW,
+  RuleGroupSummaryListSchema,
+  EMPTY_RULE_GROUP_SUMMARY_LIST,
+  RuleGroupWithRulesSchema,
+  EMPTY_RULE_GROUP_WITH_RULES,
+  RuleGroupRuleListSchema,
+  EMPTY_RULE_GROUP_RULE_LIST,
+  RuleGroupBindingListSchema,
+  EMPTY_RULE_GROUP_BINDING_LIST,
+  EffectiveRulesResponseSchema,
+  EMPTY_EFFECTIVE_RULES,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -2574,32 +2584,6 @@ export class ApiClient {
     return parseWithFallback(raw, EffectiveRulesResponseSchema, EMPTY_EFFECTIVE_RULES, {
       endpoint: "GET /api/rules/effective",
     }) as EffectiveRulesResponse;
-  }
-
-  async listLabels(scope: LabelResourceType): Promise<ListLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/labels?scope=${scope}`);
-    return parseWithFallback(raw, ListLabelsResponseSchema, EMPTY_LIST_LABELS_RESPONSE, {
-      endpoint: "GET /api/labels",
-    });
-  }
-
-  async getLabel(id: string): Promise<Label> {
-    const raw = await this.fetch<unknown>(`/api/labels/${id}`);
-    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "GET /api/labels/{id}" });
-  }
-
-  async createLabel(data: CreateLabelRequest): Promise<Label> {
-    const raw = await this.fetch<unknown>(`/api/labels`, { method: "POST", body: JSON.stringify(data) });
-    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "POST /api/labels" });
-  }
-
-  async updateLabel(id: string, data: UpdateLabelRequest): Promise<Label> {
-    const raw = await this.fetch<unknown>(`/api/labels/${id}`, { method: "PUT", body: JSON.stringify(data) });
-    return parseWithFallback(raw, LabelSchema, EMPTY_LABEL, { endpoint: "PUT /api/labels/{id}" });
-  }
-
-  async deleteLabel(id: string): Promise<void> {
-    await this.fetch(`/api/labels/${id}`, { method: "DELETE" });
   }
 
   async listLabelsForIssue(issueId: string): Promise<IssueLabelsResponse> {
