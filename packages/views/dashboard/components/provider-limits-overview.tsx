@@ -108,7 +108,7 @@ export function ProviderLimitsOverview({
   isError: boolean;
   onRefresh?: (runtimeId: string) => Promise<void>;
 }) {
-  const { t, i18n } = useT("usage");
+  const { t } = useT("usage");
   const [view, setView] = useState<ViewMode>("accounts");
   const warningThreshold = useProviderLimitSettingsStore((state) => state.warningThreshold);
   const criticalThreshold = useProviderLimitSettingsStore((state) => state.criticalThreshold);
@@ -120,7 +120,6 @@ export function ProviderLimitsOverview({
   const hasReportedRecords = view === "accounts"
     ? overview.accounts.length > 0
     : overview.daemons.length > 0;
-  const locale = i18n.resolvedLanguage ?? i18n.language;
   const refreshRuntimeID = records.find((record) => record.runtime_id)?.runtime_id;
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -246,7 +245,6 @@ function ProviderLimitCard({
   history: ProviderLimitSnapshot[];
   warningThreshold: number;
   criticalThreshold: number;
-  locale: string;
 }) {
   const { t } = useT("usage");
   const status = effectiveStatus(record);
