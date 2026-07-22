@@ -116,6 +116,81 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getAllByRole("article")).toHaveLength(2);
   });
 
+  it("shows only the latest state when a legacy unkeyed snapshot matches an identified account", () => {
+    const legacy = snapshot({
+      account_key: "unavailable",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T10:00:00Z",
+      buckets: [
+        {
+          id: "primary",
+          label: "Primary 7d",
+          unit: "percent",
+          limit_value: 100,
+          used_value: 88,
+          remaining_value: 12,
+          resets_at: "2026-07-25T11:43:13Z",
+          status: "ok",
+          note: "",
+        },
+      ],
+    });
+    const current = snapshot({
+      account_key: "0123456789abcdef",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T11:00:00Z",
+    });
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [legacy, current], daemons: [] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(screen.getByText("5-hour window")).toBeTruthy();
+    expect(screen.queryByText("Primary 7d")).toBeNull();
+  });
+
+  it("collapses a legacy snapshot within one daemon without merging different daemons", () => {
+    const legacy = snapshot({
+      daemon_id: "daemon-1",
+      runtime_id: "runtime-1",
+      account_key: "unavailable",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T10:00:00Z",
+    });
+    const current = snapshot({
+      daemon_id: "daemon-1",
+      runtime_id: "runtime-1",
+      account_key: "0123456789abcdef",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T11:00:00Z",
+    });
+    const otherDaemon = snapshot({
+      daemon_id: "daemon-2",
+      runtime_id: "runtime-2",
+      account_key: "fedcba9876543210",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T10:30:00Z",
+    });
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [], daemons: [legacy, current, otherDaemon] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "By daemon" }));
+
+    expect(screen.getAllByRole("article")).toHaveLength(2);
+  });
+
   it("shows a query error instead of treating it as an empty response", () => {
     renderWithI18n(
       <ProviderLimitsOverview overview={{ accounts: [], daemons: [] }} history={[]} isLoading={false} isError={true} />,

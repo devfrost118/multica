@@ -13,6 +13,7 @@ import { useT } from "../../i18n";
 import { ProviderLimitDetail } from "./provider-limit-detail";
 
 type ViewMode = "accounts" | "daemons";
+type AccountCollapseScope = "workspace" | "daemon";
 
 const EMPTY_OVERVIEW: ProviderLimitsOverviewResponse = { accounts: [], daemons: [] };
 const EMPTY_HISTORY: ProviderLimitHistoryResponse["snapshots"] = [];
@@ -20,6 +21,34 @@ const EMPTY_HISTORY: ProviderLimitHistoryResponse["snapshots"] = [];
 function timestamp(value: string): number {
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function collapseLegacyUnkeyedAccounts(
+  records: ProviderLimitSnapshot[],
+  scope: AccountCollapseScope,
+): ProviderLimitSnapshot[] {
+  return records.filter((record) => {
+    if (!record.account_label) return true;
+
+    const matching = records.filter(
+      (candidate) =>
+        candidate.provider === record.provider &&
+        candidate.account_label === record.account_label &&
+        (scope === "workspace" || candidate.daemon_id === record.daemon_id),
+    );
+    const identified = matching.filter((candidate) => candidate.account_key !== "unavailable");
+    const unkeyed = matching.filter((candidate) => candidate.account_key === "unavailable");
+    if (identified.length !== 1 || unkeyed.length !== 1) return true;
+
+    const identifiedRecord = identified[0];
+    const unkeyedRecord = unkeyed[0];
+    if (!identifiedRecord || !unkeyedRecord) return true;
+
+    const latest = timestamp(identifiedRecord.checked_at) >= timestamp(unkeyedRecord.checked_at)
+      ? identifiedRecord
+      : unkeyedRecord;
+    return record === latest;
+  });
 }
 
 function deduplicateAccounts(records: ProviderLimitSnapshot[]): ProviderLimitSnapshot[] {
@@ -31,7 +60,7 @@ function deduplicateAccounts(records: ProviderLimitSnapshot[]): ProviderLimitSna
       latest.set(key, record);
     }
   }
-  return [...latest.values()];
+  return collapseLegacyUnkeyedAccounts([...latest.values()], "workspace");
 }
 
 function effectiveStatus(record: ProviderLimitSnapshot): string {
@@ -114,7 +143,9 @@ export function ProviderLimitsOverview({
   const setWarningThreshold = useProviderLimitSettingsStore((state) => state.setWarningThreshold);
   const setCriticalThreshold = useProviderLimitSettingsStore((state) => state.setCriticalThreshold);
   const records = useMemo(() => {
-    return view === "accounts" ? deduplicateAccounts(overview.accounts) : overview.daemons;
+    return view === "accounts"
+      ? deduplicateAccounts(overview.accounts)
+      : collapseLegacyUnkeyedAccounts(overview.daemons, "daemon");
   }, [overview.accounts, overview.daemons, view]);
   const hasReportedRecords = view === "accounts"
     ? overview.accounts.length > 0
