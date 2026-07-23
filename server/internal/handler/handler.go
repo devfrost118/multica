@@ -28,6 +28,7 @@ import (
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
 	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
+	"github.com/multica-ai/multica/server/internal/providercredentials"
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/storage"
@@ -129,29 +130,30 @@ type WorkspaceSetRefreshNotifier interface {
 }
 
 type Handler struct {
-	Queries                   *db.Queries
-	DB                        dbExecutor
-	TxStarter                 txStarter
-	Hub                       *realtime.Hub
-	DaemonHub                 *daemonws.Hub
-	DaemonProfileRefresh      RuntimeProfileRefreshNotifier
-	DaemonWorkspaceRefresh    WorkspaceSetRefreshNotifier
-	Bus                       *events.Bus
-	TaskService               *service.TaskService
-	IssueService              *service.IssueService
-	AutopilotService          *service.AutopilotService
-	EmailService              *service.EmailService
-	UpdateStore               UpdateStore
-	ModelListStore            ModelListStore
-	LocalSkillListStore       LocalSkillListStore
-	LocalSkillImportStore     LocalSkillImportStore
-	ProviderLimitRefreshStore ProviderLimitRefreshStore
-	FeatureFlags              *featureflag.Service
-	LivenessStore             LivenessStore
-	HeartbeatScheduler        HeartbeatScheduler
-	Storage                   storage.Storage
-	CFSigner                  *auth.CloudFrontSigner
-	Analytics                 analytics.Client
+	Queries                        *db.Queries
+	DB                             dbExecutor
+	TxStarter                      txStarter
+	Hub                            *realtime.Hub
+	DaemonHub                      *daemonws.Hub
+	DaemonProfileRefresh           RuntimeProfileRefreshNotifier
+	DaemonWorkspaceRefresh         WorkspaceSetRefreshNotifier
+	Bus                            *events.Bus
+	TaskService                    *service.TaskService
+	IssueService                   *service.IssueService
+	AutopilotService               *service.AutopilotService
+	EmailService                   *service.EmailService
+	UpdateStore                    UpdateStore
+	ModelListStore                 ModelListStore
+	LocalSkillListStore            LocalSkillListStore
+	LocalSkillImportStore          LocalSkillImportStore
+	ProviderLimitRefreshStore      ProviderLimitRefreshStore
+	ProviderCredentialRefreshStore ProviderCredentialRefreshStore
+	FeatureFlags                   *featureflag.Service
+	LivenessStore                  LivenessStore
+	HeartbeatScheduler             HeartbeatScheduler
+	Storage                        storage.Storage
+	CFSigner                       *auth.CloudFrontSigner
+	Analytics                      analytics.Client
 	// Metrics is the shared business-metrics collector built by main.go.
 	// May be nil in tests / self-hosted with the metrics listener disabled;
 	// every Record* method is nil-safe and obsmetrics.RecordEvent treats a
@@ -234,7 +236,9 @@ type Handler struct {
 	// Its zero value is intentional legacy plaintext mode for installations
 	// that have not opted in by configuring MULTICA_PROJECT_ENV_SECRET_KEY.
 	ProjectEnvironmentSecrets projectenvsecrets.Codec
-	cfg                       Config
+	// ProviderCredentials always fails closed without the shared master key.
+	ProviderCredentials providercredentials.Codec
+	cfg                 Config
 }
 
 func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *events.Bus, emailService *service.EmailService, store storage.Storage, cfSigner *auth.CloudFrontSigner, analyticsClient analytics.Client, cfg Config, daemonHubs ...*daemonws.Hub) *Handler {
@@ -270,31 +274,32 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 	taskSvc := service.NewTaskService(queries, txStarter, hub, bus, daemonHub)
 	taskSvc.Analytics = analyticsClient
 	h := &Handler{
-		Queries:                      queries,
-		DB:                           executor,
-		TxStarter:                    txStarter,
-		Hub:                          hub,
-		DaemonHub:                    daemonHub,
-		DaemonProfileRefresh:         daemonProfileRefresh,
-		DaemonWorkspaceRefresh:       daemonWorkspaceRefresh,
-		Bus:                          bus,
-		TaskService:                  taskSvc,
-		IssueService:                 service.NewIssueService(queries, txStarter, bus, analyticsClient, taskSvc),
-		AutopilotService:             service.NewAutopilotService(queries, txStarter, bus, taskSvc),
-		EmailService:                 emailService,
-		UpdateStore:                  NewInMemoryUpdateStore(),
-		ModelListStore:               NewInMemoryModelListStore(),
-		LocalSkillListStore:          NewInMemoryLocalSkillListStore(),
-		LocalSkillImportStore:        NewInMemoryLocalSkillImportStore(),
-		ProviderLimitRefreshStore:    NewInMemoryProviderLimitRefreshStore(),
-		LivenessStore:                NewNoopLivenessStore(),
-		HeartbeatScheduler:           NewPassthroughHeartbeatScheduler(queries),
-		Storage:                      store,
-		CFSigner:                     cfSigner,
-		Analytics:                    analyticsClient,
-		WebhookRateLimiter:           NewMemoryWebhookRateLimiter(DefaultWebhookRateLimit()),
-		WebhookIPRateLimiter:         NewMemoryWebhookIPRateLimiter(DefaultWebhookIPRateLimit()),
-		WebhookAbsoluteIPRateLimiter: NewMemoryWebhookAbsoluteIPRateLimiter(DefaultWebhookAbsoluteIPRateLimit()),
+		Queries:                        queries,
+		DB:                             executor,
+		TxStarter:                      txStarter,
+		Hub:                            hub,
+		DaemonHub:                      daemonHub,
+		DaemonProfileRefresh:           daemonProfileRefresh,
+		DaemonWorkspaceRefresh:         daemonWorkspaceRefresh,
+		Bus:                            bus,
+		TaskService:                    taskSvc,
+		IssueService:                   service.NewIssueService(queries, txStarter, bus, analyticsClient, taskSvc),
+		AutopilotService:               service.NewAutopilotService(queries, txStarter, bus, taskSvc),
+		EmailService:                   emailService,
+		UpdateStore:                    NewInMemoryUpdateStore(),
+		ModelListStore:                 NewInMemoryModelListStore(),
+		LocalSkillListStore:            NewInMemoryLocalSkillListStore(),
+		LocalSkillImportStore:          NewInMemoryLocalSkillImportStore(),
+		ProviderLimitRefreshStore:      NewInMemoryProviderLimitRefreshStore(),
+		ProviderCredentialRefreshStore: NewInMemoryProviderCredentialRefreshStore(),
+		LivenessStore:                  NewNoopLivenessStore(),
+		HeartbeatScheduler:             NewPassthroughHeartbeatScheduler(queries),
+		Storage:                        store,
+		CFSigner:                       cfSigner,
+		Analytics:                      analyticsClient,
+		WebhookRateLimiter:             NewMemoryWebhookRateLimiter(DefaultWebhookRateLimit()),
+		WebhookIPRateLimiter:           NewMemoryWebhookIPRateLimiter(DefaultWebhookIPRateLimit()),
+		WebhookAbsoluteIPRateLimiter:   NewMemoryWebhookAbsoluteIPRateLimiter(DefaultWebhookAbsoluteIPRateLimit()),
 		CloudRuntime: cloudruntime.NewClient(cloudruntime.Config{
 			BaseURL: cfg.CloudRuntimeFleetURL,
 			Timeout: cfg.CloudRuntimeFleetTimeout,

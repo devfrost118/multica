@@ -71,6 +71,21 @@
     "checked_at": "Проверено {{value}}",
     "last_good": "Последний успешный: {{value}}",
     "reason": "Причина: {{value}}",
+    "credentials": {
+      "title": "Учётные данные Factory",
+      "connected": "Подключено",
+      "not_connected": "Не подключено",
+      "fingerprint": "Отпечаток: {{value}}",
+      "validation": "Проверка: {{value}}",
+      "account_label": "Название аккаунта Factory",
+      "account_label_placeholder": "Название аккаунта (необязательно)",
+      "token": "API-токен Factory",
+      "replacement_token": "Новый токен",
+      "connect": "Подключить",
+      "replace": "Заменить",
+      "remove": "Удалить",
+      "action_failed": "Не удалось выполнить действие. Проверьте права и повторите попытку."
+    },
     "thresholds": {
       "title": "Оповещения",
       "warning": "Предупреждение",

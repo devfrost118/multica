@@ -125,12 +125,14 @@ export function lastGoodSnapshot(
 }
 
 export function ProviderLimitsOverview({
+  wsId,
   overview = EMPTY_OVERVIEW,
   history = EMPTY_HISTORY,
   isLoading,
   isError,
   onRefresh,
 }: {
+  wsId?: string;
   overview?: ProviderLimitsOverviewResponse;
   history?: ProviderLimitSnapshot[];
   isLoading: boolean;
@@ -225,6 +227,7 @@ export function ProviderLimitsOverview({
               {records.map((record) => (
                 <ProviderLimitCard
                   key={`${record.daemon_id}:${record.runtime_id}:${record.provider}:${record.account_key}`}
+                  wsId={wsId ?? ""}
                   record={record}
                   history={history}
                   warningThreshold={warningThreshold}
@@ -267,11 +270,13 @@ function ThresholdSettings({
 }
 
 function ProviderLimitCard({
+  wsId,
   record,
   history,
   warningThreshold,
   criticalThreshold,
 }: {
+  wsId: string;
   record: ProviderLimitSnapshot;
   history: ProviderLimitSnapshot[];
   warningThreshold: number;
@@ -290,7 +295,7 @@ function ProviderLimitCard({
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={status} />
-          <ProviderLimitDetail record={record} history={history} />
+          <ProviderLimitDetail wsId={wsId} record={record} history={history} />
         </div>
       </div>
       <div className="mt-3 space-y-2">

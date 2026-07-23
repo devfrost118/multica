@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"io"
@@ -135,7 +136,20 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	accepted := 0
 	for _, snapshot := range request.Snapshots {
+		var factoryCredential *db.ProviderCredential
+		if snapshot.Provider == factoryProvider {
+			credential, found, err := h.factoryCredentialForAccount(r.Context(), runtime.WorkspaceID, snapshot.AccountKey)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to validate provider limits account")
+				return
+			}
+			if !found {
+				continue
+			}
+			factoryCredential = &credential
+		}
 		buckets, err := json.Marshal(snapshot.Buckets)
 		if err != nil {
 			writeError(w, http.StatusBadRequest, "invalid provider limits payload")
@@ -166,6 +180,23 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "failed to store provider limits")
 			return
 		}
+		accepted++
+		if factoryCredential != nil {
+			status := "unavailable"
+			if snapshot.Status == "ok" || snapshot.Status == "partial" {
+				status = "valid"
+			} else if snapshot.ErrorNote == "credential_invalid" {
+				status = "invalid"
+			}
+			if err := h.Queries.UpdateProviderCredentialValidation(r.Context(), db.UpdateProviderCredentialValidationParams{
+				ID: factoryCredential.ID, WorkspaceID: runtime.WorkspaceID,
+				LastValidatedAt:      pgtype.Timestamptz{Time: snapshot.CheckedAt.UTC(), Valid: true},
+				LastValidationStatus: status, LastValidationNote: snapshot.ErrorNote,
+			}); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to update provider credential validation")
+				return
+			}
+		}
 	}
 	if _, err := h.Queries.DeleteExpiredProviderLimitSnapshots(r.Context(), pgtype.Timestamptz{Time: time.Now().UTC().AddDate(0, 0, -30), Valid: true}); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retain provider limits")
@@ -175,7 +206,20 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 		h.ProviderLimitRefreshStore.Complete(runtimeID, request.RefreshIDs)
 	}
 
-	writeJSON(w, http.StatusOK, map[string]int{"accepted": len(request.Snapshots)})
+	writeJSON(w, http.StatusOK, map[string]int{"accepted": accepted})
+}
+
+func (h *Handler) factoryCredentialForAccount(ctx context.Context, workspaceID pgtype.UUID, accountKey string) (db.ProviderCredential, bool, error) {
+	rows, err := h.Queries.ListProviderCredentials(ctx, db.ListProviderCredentialsParams{WorkspaceID: workspaceID, Provider: factoryProvider})
+	if err != nil {
+		return db.ProviderCredential{}, false, err
+	}
+	for _, row := range rows {
+		if providerCredentialAccountKey(uuidToString(row.ID)) == accountKey {
+			return row, true, nil
+		}
+	}
+	return db.ProviderCredential{}, false, nil
 }
 
 // RequestProviderLimitsRefresh queues a manual collection for one daemon
@@ -336,7 +380,7 @@ func (providerLimitsPayloadError) Error() string { return "invalid provider limi
 
 func providerLimitStatusValid(status string) bool {
 	switch status {
-	case "ok", "partial", "unavailable", "error":
+	case "ok", "stale", "partial", "unavailable", "error":
 		return true
 	default:
 		return false

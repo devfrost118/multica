@@ -580,6 +580,9 @@ func (h *Handler) DaemonRegister(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp = append(resp, runtimeToResponse(registered))
+		if h.ProviderCredentialRefreshStore != nil {
+			h.ProviderCredentialRefreshStore.Enqueue(uuidToString(registered.ID))
+		}
 	}
 	for _, failed := range req.FailedProfiles {
 		profileID := strings.TrimSpace(failed.ProfileID)
@@ -991,6 +994,9 @@ func (h *Handler) DaemonHeartbeat(w http.ResponseWriter, r *http.Request) {
 	if ack.PendingProviderLimitRefresh != nil {
 		resp["pending_provider_limit_refresh"] = ack.PendingProviderLimitRefresh
 	}
+	if ack.PendingProviderCredentials != nil {
+		resp["pending_provider_credentials"] = ack.PendingProviderCredentials
+	}
 	if len(ack.PendingLocalSkillImports) > 0 {
 		resp["pending_local_skill_imports"] = ack.PendingLocalSkillImports
 	}
@@ -1113,6 +1119,9 @@ func (h *Handler) processHeartbeat(ctx context.Context, rt db.AgentRuntime, supp
 		if pending := h.ProviderLimitRefreshStore.Pending(runtimeID); pending != nil {
 			ack.PendingProviderLimitRefresh = &protocol.DaemonHeartbeatPendingProviderLimitRefresh{ID: pending.ID}
 		}
+	}
+	if h.ProviderCredentialRefreshStore != nil && h.ProviderCredentialRefreshStore.Pending(runtimeID) {
+		ack.PendingProviderCredentials = &protocol.DaemonHeartbeatPendingProviderCredentials{}
 	}
 
 	probeUpdateCtx, cancelProbeUpdate := context.WithTimeout(ctx, heartbeatHasPendingTimeout)
@@ -2443,9 +2452,9 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 		}
 		rules, err := h.Queries.ListEffectiveRules(r.Context(), db.ListEffectiveRulesParams{
 			WorkspaceID: parseUUID(resp.WorkspaceID),
-			ProjectID: projectID,
-			SquadID: squadID,
-			AgentID: task.AgentID,
+			ProjectID:   projectID,
+			SquadID:     squadID,
+			AgentID:     task.AgentID,
 		})
 		if err != nil {
 			slog.Warn("task claim: failed to load effective rule groups", "task_id", uuidToString(task.ID), "error", err)

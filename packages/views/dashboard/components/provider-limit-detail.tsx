@@ -17,6 +17,9 @@ import {
   selectBucketHistory,
   type PaceResult,
   type PaceUnavailableReason,
+  useDeleteProviderCredential,
+  useProviderCredentials,
+  useSaveProviderCredential,
 } from "@multica/core/provider-limits";
 import type { ProviderLimitSnapshot } from "@multica/core/types";
 import { useT } from "../../i18n";
@@ -45,9 +48,11 @@ function formatRunway(seconds: number): string {
 }
 
 export function ProviderLimitDetail({
+  wsId,
   record,
   history,
 }: {
+  wsId?: string;
   record: ProviderLimitSnapshot;
   history: ProviderLimitSnapshot[];
 }) {
@@ -116,16 +121,81 @@ export function ProviderLimitDetail({
               <ProviderLimitMetadata record={record} history={history} />
             </div>
           )}
+
+          {record.provider === "factory" && (
+            <FactoryCredentialSection wsId={wsId ?? ""} record={record} />
+          )}
         </DialogContent>
       </Dialog>
     </>
   );
 }
 
+function FactoryCredentialSection({ wsId, record }: { wsId: string; record: ProviderLimitSnapshot }) {
+  const { t } = useT("usage");
+  const credentialsQuery = useProviderCredentials(wsId, record.provider === "factory");
+  const saveCredential = useSaveProviderCredential(wsId);
+  const deleteCredential = useDeleteProviderCredential(wsId);
+  const [token, setToken] = useState("");
+  const [accountLabel, setAccountLabel] = useState("");
+  const credential = credentialsQuery.data?.find((item) => item.account_key === record.account_key);
+  const pending = saveCredential.isPending || deleteCredential.isPending;
+  const error = saveCredential.error ?? deleteCredential.error ?? credentialsQuery.error;
+
+  const submit = async () => {
+    if (!token.trim()) return;
+    try {
+      await saveCredential.mutateAsync({
+        id: credential?.id,
+        request: { provider: "factory", token: token.trim(), account_label: accountLabel.trim() || undefined },
+      });
+      setToken("");
+      setAccountLabel("");
+    } catch {
+      // The mutation exposes a sanitized user-facing error below.
+    }
+  };
+
+  const remove = async () => {
+    if (!credential) return;
+    try {
+      await deleteCredential.mutateAsync(credential.id);
+      setToken("");
+    } catch {
+      // The mutation exposes a sanitized user-facing error below.
+    }
+  };
+
+  return (
+    <section className="space-y-2 border-t pt-3" aria-label={t(($) => $.provider_limits.credentials.title)}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-medium">{t(($) => $.provider_limits.credentials.title)}</p>
+        <Badge variant={credential ? "secondary" : "outline"}>{credential ? t(($) => $.provider_limits.credentials.connected) : t(($) => $.provider_limits.credentials.not_connected)}</Badge>
+      </div>
+      {credential && (
+        <div className="text-xs text-muted-foreground">
+          <p>{t(($) => $.provider_limits.credentials.fingerprint, { value: credential.fingerprint })}</p>
+          <p>{t(($) => $.provider_limits.credentials.validation, { value: credential.last_validation_status })}</p>
+          {credential.last_validation_note && <p>{credential.last_validation_note}</p>}
+        </div>
+      )}
+      {!credential && (
+        <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
+      )}
+      <input aria-label={t(($) => $.provider_limits.credentials.token)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" type="password" autoComplete="off" value={token} placeholder={credential ? t(($) => $.provider_limits.credentials.replacement_token) : t(($) => $.provider_limits.credentials.token)} onChange={(event) => setToken(event.target.value)} />
+      <div className="flex gap-2">
+        <Button type="button" size="sm" disabled={pending || !token.trim()} onClick={() => void submit()}>{credential ? t(($) => $.provider_limits.credentials.replace) : t(($) => $.provider_limits.credentials.connect)}</Button>
+        {credential && <Button type="button" size="sm" variant="destructive" disabled={pending} onClick={() => void remove()}>{t(($) => $.provider_limits.credentials.remove)}</Button>}
+      </div>
+      {error && <p role="alert" className="text-xs text-destructive">{t(($) => $.provider_limits.credentials.action_failed)}</p>}
+    </section>
+  );
+}
 function ProviderLimitMetadata({
   record,
   history,
 }: {
+  wsId?: string;
   record: ProviderLimitSnapshot;
   history: ProviderLimitSnapshot[];
 }) {

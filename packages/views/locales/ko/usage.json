@@ -71,6 +71,21 @@
     "checked_at": "확인 {{value}}",
     "last_good": "마지막 정상: {{value}}",
     "reason": "사유: {{value}}",
+    "credentials": {
+      "title": "Factory 자격 증명",
+      "connected": "연결됨",
+      "not_connected": "연결되지 않음",
+      "fingerprint": "지문: {{value}}",
+      "validation": "검증: {{value}}",
+      "account_label": "Factory 계정 레이블",
+      "account_label_placeholder": "계정 레이블(선택 사항)",
+      "token": "Factory API 토큰",
+      "replacement_token": "교체 토큰",
+      "connect": "연결",
+      "replace": "교체",
+      "remove": "삭제",
+      "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요."
+    },
     "thresholds": {
       "title": "알림",
       "warning": "경고",
