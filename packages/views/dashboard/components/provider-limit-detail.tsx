@@ -27,6 +27,7 @@ import {
   sourceLabel,
   subscriptionLabel,
   titleCase,
+  useProviderLimitStatusLabel,
 } from "./provider-limits-overview";
 import { ProviderLimitHistoryChart } from "./provider-limit-history-chart";
 
@@ -138,6 +139,7 @@ function ProviderLimitMetadata({
     (record.buckets.length > 0 ? record.checked_at : "");
   const lastAttemptedAt = record.last_attempted_at || record.checked_at;
   const lastAttemptSource = record.last_attempt_source ?? record.source;
+  const lastAttemptStatus = useProviderLimitStatusLabel(record.last_attempt_status ?? "");
   const reasonLabels: Record<string, string> = {
     auth_expired: t(($) => $.provider_limits.reasons.auth_expired),
     authentication_required: t(($) => $.provider_limits.reasons.authentication_required),
@@ -175,7 +177,7 @@ function ProviderLimitMetadata({
         })}
       </p>
       {record.last_attempt_status && (
-        <p>{t(($) => $.provider_limits.last_attempt_status, { value: titleCase(record.last_attempt_status) })}</p>
+        <p>{t(($) => $.provider_limits.last_attempt_status, { value: lastAttemptStatus })}</p>
       )}
       {reason && <p>{t(($) => $.provider_limits.reason, { value: reason })}</p>}
     </div>

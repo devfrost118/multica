@@ -436,7 +436,7 @@ function BucketRow({
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+export function useProviderLimitStatusLabel(status: string): string {
   const { t } = useT("usage");
   const labels: Record<string, string> = {
     ok: t(($) => $.provider_limits.status.ok),
@@ -445,5 +445,10 @@ function StatusBadge({ status }: { status: string }) {
     unavailable: t(($) => $.provider_limits.status.unavailable),
     error: t(($) => $.provider_limits.status.error),
   };
-  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{labels[status] ?? titleCase(status)}</span>;
+  return labels[status] ?? titleCase(status);
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const label = useProviderLimitStatusLabel(status);
+  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{label}</span>;
 }

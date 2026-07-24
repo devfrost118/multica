@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
@@ -29,9 +28,9 @@ const (
 	defaultFreshness = 15 * time.Minute
 )
 
-// ErrRateLimited deliberately contains no provider response detail. Returning
-// it with a stale snapshot lets the collector retain the last useful reading
-// while applying its ordinary provider backoff.
+// ErrRateLimited deliberately contains no provider response detail. The
+// unavailable attempt is persisted for diagnostics while the backend overlays
+// the last successful reading and the collector applies its ordinary backoff.
 var ErrRateLimited = errors.New("codex usage rate limited")
 
 // Config supplies testable local and HTTP dependencies. An empty Home honors
@@ -49,9 +48,6 @@ type Adapter struct {
 	endpoint string
 	client   *http.Client
 	now      func() time.Time
-
-	mu       sync.Mutex
-	lastGood *providerlimits.AccountSnapshot
 }
 
 // NewAdapter constructs an adapter without touching local auth state.
@@ -113,7 +109,9 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 		}
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, reason)}, nil
 	case http.StatusTooManyRequests:
-		return a.staleOrUnavailable(checkedAt, auth.accountKey), ErrRateLimited
+		return []providerlimits.AccountSnapshot{
+			unavailableSnapshot(checkedAt, auth.accountKey, "rate_limited"),
+		}, ErrRateLimited
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, errors.New("codex usage request unavailable")
@@ -131,7 +129,6 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 	if len(snapshot.Buckets) == 0 {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, nil
 	}
-	a.storeLastGood(snapshot)
 	return []providerlimits.AccountSnapshot{snapshot}, nil
 }
 
@@ -296,59 +293,6 @@ func accountKeyFrom(accountID, email string) string {
 	}
 	hash := sha256.Sum256([]byte(identity))
 	return hex.EncodeToString(hash[:])[:16]
-}
-
-func (a *Adapter) staleOrUnavailable(checkedAt time.Time, accountKey string) []providerlimits.AccountSnapshot {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if a.lastGood == nil {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, accountKey, "rate_limited")}
-	}
-	stale := staleSnapshot(*a.lastGood, checkedAt)
-	return []providerlimits.AccountSnapshot{stale}
-}
-
-func (a *Adapter) storeLastGood(snapshot providerlimits.AccountSnapshot) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	copied := copySnapshot(snapshot)
-	a.lastGood = &copied
-}
-
-func staleSnapshot(snapshot providerlimits.AccountSnapshot, checkedAt time.Time) providerlimits.AccountSnapshot {
-	copied := copySnapshot(snapshot)
-	copied.CheckedAt = checkedAt
-	copied.Status = providerlimits.StatusStale
-	copied.ErrorNote = "rate_limited"
-	for index := range copied.Buckets {
-		copied.Buckets[index].Status = providerlimits.StatusStale
-	}
-	return copied
-}
-
-func copySnapshot(snapshot providerlimits.AccountSnapshot) providerlimits.AccountSnapshot {
-	copied := snapshot
-	copied.Buckets = make([]providerlimits.Bucket, len(snapshot.Buckets))
-	for index, bucket := range snapshot.Buckets {
-		copied.Buckets[index] = bucket
-		if bucket.LimitValue != nil {
-			value := *bucket.LimitValue
-			copied.Buckets[index].LimitValue = &value
-		}
-		if bucket.UsedValue != nil {
-			value := *bucket.UsedValue
-			copied.Buckets[index].UsedValue = &value
-		}
-		if bucket.RemainingValue != nil {
-			value := *bucket.RemainingValue
-			copied.Buckets[index].RemainingValue = &value
-		}
-		if bucket.ResetsAt != nil {
-			value := *bucket.ResetsAt
-			copied.Buckets[index].ResetsAt = &value
-		}
-	}
-	return copied
 }
 
 func unavailableSnapshot(checkedAt time.Time, accountKey, reason string) providerlimits.AccountSnapshot {

@@ -246,7 +246,7 @@ func TestAdapter_MissingAccessTokenStillUsesSafeLocalAccountIdentity(t *testing.
 	}
 }
 
-func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
+func TestAdapter_ReturnsKeyedUnavailableAttemptOnRateLimit(t *testing.T) {
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if calls.Add(1) == 1 {
@@ -263,17 +263,18 @@ func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
 	if err != nil || len(first) != 1 || first[0].Status != providerlimits.StatusOK {
 		t.Fatalf("first Collect() = %#v, %v", first, err)
 	}
-	stale, err := adapter.Collect(context.Background())
+	attempt, err := adapter.Collect(context.Background())
 	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("rate limited error = %v, want ErrRateLimited", err)
 	}
-	if len(stale) != 1 || stale[0].Status != providerlimits.StatusStale || stale[0].ErrorNote != "rate_limited" {
-		t.Fatalf("stale snapshots = %#v", stale)
+	if len(attempt) != 1 || attempt[0].Status != providerlimits.StatusUnavailable || attempt[0].ErrorNote != "rate_limited" {
+		t.Fatalf("rate limited snapshots = %#v", attempt)
 	}
-	for _, bucket := range stale[0].Buckets {
-		if bucket.Status != providerlimits.StatusStale {
-			t.Fatalf("stale bucket = %#v", bucket)
-		}
+	if attempt[0].AccountKey != first[0].AccountKey {
+		t.Fatalf("account key = %q, want %q", attempt[0].AccountKey, first[0].AccountKey)
+	}
+	if len(attempt[0].Buckets) != 0 {
+		t.Fatalf("rate limited attempt must not resend stale buckets: %#v", attempt[0].Buckets)
 	}
 }
 
