@@ -71,6 +71,18 @@
     "checked_at": "확인 {{value}}",
     "last_good": "마지막 정상: {{value}}",
     "reason": "사유: {{value}}",
+    "updated": "{{value}} 업데이트",
+    "data_unavailable_checked": "데이터를 사용할 수 없음 · {{value}} 확인",
+    "last_successful_collection": "마지막 성공 수집: {{value}}",
+    "last_attempted_probe": "마지막 확인 시도: {{value}}",
+    "attempt_source": "시도 소스: {{value}}",
+    "last_attempt_status": "최근 시도: {{value}}",
+    "reasons": {
+      "auth_expired": "인증이 만료되었습니다. Codex에 다시 로그인하세요.",
+      "authentication_required": "사용량 데이터를 수집하려면 Codex에 로그인하세요.",
+      "usage_unavailable": "사용량 데이터를 수집하지 못했습니다. 다시 시도하세요.",
+      "rate_limited": "공급자가 확인 빈도를 일시적으로 제한했습니다."
+    },
     "thresholds": {
       "title": "알림",
       "warning": "경고",

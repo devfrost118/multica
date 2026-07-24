@@ -44,6 +44,96 @@ func (q *Queries) DeleteExpiredProviderLimitSnapshots(ctx context.Context, check
 	return result.RowsAffected(), nil
 }
 
+const listLatestGoodProviderLimitSnapshots = `-- name: ListLatestGoodProviderLimitSnapshots :many
+SELECT DISTINCT ON (provider, account_key) id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+FROM provider_limit_snapshots
+WHERE workspace_id = $1
+  AND status IN ('ok', 'partial')
+ORDER BY provider, account_key, checked_at DESC, created_at DESC
+`
+
+func (q *Queries) ListLatestGoodProviderLimitSnapshots(ctx context.Context, workspaceID pgtype.UUID) ([]ProviderLimitSnapshot, error) {
+	rows, err := q.db.Query(ctx, listLatestGoodProviderLimitSnapshots, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProviderLimitSnapshot{}
+	for rows.Next() {
+		var i ProviderLimitSnapshot
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.RuntimeID,
+			&i.DaemonID,
+			&i.Provider,
+			&i.AccountKey,
+			&i.AccountLabel,
+			&i.CheckedAt,
+			&i.Status,
+			&i.SourceKind,
+			&i.SourceConfidence,
+			&i.SourceFreshnessSeconds,
+			&i.Buckets,
+			&i.ErrorNote,
+			&i.ContentHash,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLatestGoodProviderLimitSnapshotsByDaemon = `-- name: ListLatestGoodProviderLimitSnapshotsByDaemon :many
+SELECT DISTINCT ON (daemon_id, provider, account_key) id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
+FROM provider_limit_snapshots
+WHERE workspace_id = $1
+  AND status IN ('ok', 'partial')
+ORDER BY daemon_id, provider, account_key, checked_at DESC, created_at DESC
+`
+
+func (q *Queries) ListLatestGoodProviderLimitSnapshotsByDaemon(ctx context.Context, workspaceID pgtype.UUID) ([]ProviderLimitSnapshot, error) {
+	rows, err := q.db.Query(ctx, listLatestGoodProviderLimitSnapshotsByDaemon, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProviderLimitSnapshot{}
+	for rows.Next() {
+		var i ProviderLimitSnapshot
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.RuntimeID,
+			&i.DaemonID,
+			&i.Provider,
+			&i.AccountKey,
+			&i.AccountLabel,
+			&i.CheckedAt,
+			&i.Status,
+			&i.SourceKind,
+			&i.SourceConfidence,
+			&i.SourceFreshnessSeconds,
+			&i.Buckets,
+			&i.ErrorNote,
+			&i.ContentHash,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLatestProviderLimitSnapshots = `-- name: ListLatestProviderLimitSnapshots :many
 SELECT DISTINCT ON (provider, account_key) id, workspace_id, runtime_id, daemon_id, provider, account_key, account_label, checked_at, status, source_kind, source_confidence, source_freshness_seconds, buckets, error_note, content_hash, created_at
 FROM provider_limit_snapshots

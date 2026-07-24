@@ -27,10 +27,24 @@ FROM provider_limit_snapshots
 WHERE workspace_id = $1
 ORDER BY provider, account_key, checked_at DESC, created_at DESC;
 
+-- name: ListLatestGoodProviderLimitSnapshots :many
+SELECT DISTINCT ON (provider, account_key) *
+FROM provider_limit_snapshots
+WHERE workspace_id = $1
+  AND status IN ('ok', 'partial')
+ORDER BY provider, account_key, checked_at DESC, created_at DESC;
+
 -- name: ListLatestProviderLimitSnapshotsByDaemon :many
 SELECT DISTINCT ON (daemon_id, provider, account_key) *
 FROM provider_limit_snapshots
 WHERE workspace_id = $1
+ORDER BY daemon_id, provider, account_key, checked_at DESC, created_at DESC;
+
+-- name: ListLatestGoodProviderLimitSnapshotsByDaemon :many
+SELECT DISTINCT ON (daemon_id, provider, account_key) *
+FROM provider_limit_snapshots
+WHERE workspace_id = $1
+  AND status IN ('ok', 'partial')
 ORDER BY daemon_id, provider, account_key, checked_at DESC, created_at DESC;
 
 -- name: ListProviderLimitSnapshotHistory :many

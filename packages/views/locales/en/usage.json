@@ -71,6 +71,18 @@
     "checked_at": "Checked {{value}}",
     "last_good": "Last good: {{value}}",
     "reason": "Reason: {{value}}",
+    "updated": "Updated {{value}}",
+    "data_unavailable_checked": "Data unavailable · checked {{value}}",
+    "last_successful_collection": "Last successful collection: {{value}}",
+    "last_attempted_probe": "Last attempted probe: {{value}}",
+    "attempt_source": "Attempt source: {{value}}",
+    "last_attempt_status": "Latest attempt: {{value}}",
+    "reasons": {
+      "auth_expired": "Authentication expired. Sign in to Codex again.",
+      "authentication_required": "Sign in to Codex to collect usage data.",
+      "usage_unavailable": "Usage data could not be collected. Try again.",
+      "rate_limited": "The provider temporarily limited usage checks."
+    },
     "thresholds": {
       "title": "Alerts",
       "warning": "Warning",

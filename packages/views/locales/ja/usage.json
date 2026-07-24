@@ -71,6 +71,18 @@
     "checked_at": "確認 {{value}}",
     "last_good": "最後に正常: {{value}}",
     "reason": "理由: {{value}}",
+    "updated": "{{value}}に更新",
+    "data_unavailable_checked": "データを利用できません · {{value}}に確認",
+    "last_successful_collection": "最終成功取得: {{value}}",
+    "last_attempted_probe": "最終確認試行: {{value}}",
+    "attempt_source": "試行元: {{value}}",
+    "last_attempt_status": "最新の試行: {{value}}",
+    "reasons": {
+      "auth_expired": "認証の有効期限が切れました。Codex にもう一度サインインしてください。",
+      "authentication_required": "使用量データを取得するには Codex にサインインしてください。",
+      "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。",
+      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。"
+    },
     "thresholds": {
       "title": "アラート",
       "warning": "警告",

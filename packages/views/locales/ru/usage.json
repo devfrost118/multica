@@ -71,6 +71,18 @@
     "checked_at": "Проверено {{value}}",
     "last_good": "Последний успешный: {{value}}",
     "reason": "Причина: {{value}}",
+    "updated": "Обновлено {{value}}",
+    "data_unavailable_checked": "Данные недоступны · проверено {{value}}",
+    "last_successful_collection": "Последний успешный сбор: {{value}}",
+    "last_attempted_probe": "Последняя попытка проверки: {{value}}",
+    "attempt_source": "Источник попытки: {{value}}",
+    "last_attempt_status": "Состояние последней попытки: {{value}}",
+    "reasons": {
+      "auth_expired": "Срок действия авторизации истёк. Войдите в Codex снова.",
+      "authentication_required": "Войдите в Codex, чтобы получить данные об использовании.",
+      "usage_unavailable": "Не удалось получить данные об использовании. Повторите проверку.",
+      "rate_limited": "Провайдер временно ограничил частоту проверок."
+    },
     "thresholds": {
       "title": "Оповещения",
       "warning": "Предупреждение",

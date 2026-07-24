@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "../../test/i18n";
 import { ProviderLimitsOverview } from "./provider-limits-overview";
@@ -97,7 +97,7 @@ describe("ProviderLimitsOverview", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Details" }));
-    expect(screen.getByText(/Last good:/)).toBeTruthy();
+    expect(screen.getByText(/Last successful collection:/)).toBeTruthy();
   });
 
   it("deduplicates an account reported by two daemons while preserving the diagnostic daemon view", () => {
@@ -156,6 +156,81 @@ describe("ProviderLimitsOverview", () => {
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.getByText("5-hour window")).toBeTruthy();
     expect(screen.queryByText("Primary 7d")).toBeNull();
+  });
+
+  it("keeps one Codex card with last-known limits and relative age after an unkeyed auth failure", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-19T10:15:00Z"));
+    const lastGood = snapshot({
+      provider: "codex",
+      account_key: "0123456789abcdef",
+      account_label: "profile-plus",
+      checked_at: "2026-07-19T10:00:00Z",
+    });
+    const failedAttempt = snapshot({
+      provider: "codex",
+      account_key: "unavailable",
+      account_label: "",
+      checked_at: "2026-07-19T10:15:00Z",
+      status: "unavailable",
+      buckets: [],
+      error_note: "auth_expired",
+    });
+
+    try {
+      renderWithI18n(
+        <ProviderLimitsOverview
+          overview={{ accounts: [lastGood, failedAttempt], daemons: [] }}
+          history={[failedAttempt, lastGood]}
+          isLoading={false}
+          isError={false}
+        />,
+      );
+
+      expect(screen.getAllByRole("article")).toHaveLength(1);
+      expect(screen.getByText("Plus")).toBeTruthy();
+      expect(screen.getByText("5-hour window")).toBeTruthy();
+      expect(screen.getByText("30% used")).toBeTruthy();
+      expect(screen.getByText("Updated 15 minutes ago")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Details" }));
+      expect(screen.getByText(/Last successful collection:/)).toBeTruthy();
+      expect(screen.getByText(/Last attempted probe:/)).toBeTruthy();
+      expect(screen.getByText(/Authentication expired. Sign in to Codex again./)).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("shows one checked-age unavailable card when no successful snapshot exists", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-19T10:05:00Z"));
+    const unavailable = snapshot({
+      provider: "codex",
+      account_key: "unavailable",
+      account_label: "",
+      checked_at: "2026-07-19T10:00:00Z",
+      status: "unavailable",
+      buckets: [],
+      error_note: "authentication_required",
+    });
+
+    try {
+      renderWithI18n(
+        <ProviderLimitsOverview
+          overview={{ accounts: [unavailable], daemons: [] }}
+          history={[unavailable]}
+          isLoading={false}
+          isError={false}
+        />,
+      );
+
+      expect(screen.getAllByRole("article")).toHaveLength(1);
+      expect(screen.getByText("Data unavailable · checked 5 minutes ago")).toBeTruthy();
+      expect(screen.queryByText("Plus")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("collapses a legacy snapshot within one daemon without merging different daemons", () => {

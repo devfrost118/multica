@@ -71,6 +71,18 @@
     "checked_at": "检查时间 {{value}}",
     "last_good": "上次正常：{{value}}",
     "reason": "原因：{{value}}",
+    "updated": "更新于 {{value}}",
+    "data_unavailable_checked": "数据不可用 · 检查于 {{value}}",
+    "last_successful_collection": "最近成功采集：{{value}}",
+    "last_attempted_probe": "最近尝试检查：{{value}}",
+    "attempt_source": "尝试来源：{{value}}",
+    "last_attempt_status": "最近尝试状态：{{value}}",
+    "reasons": {
+      "auth_expired": "身份验证已过期。请重新登录 Codex。",
+      "authentication_required": "请登录 Codex 以采集用量数据。",
+      "usage_unavailable": "无法采集用量数据，请重试。",
+      "rate_limited": "提供商暂时限制了检查频率。"
+    },
     "thresholds": {
       "title": "提醒",
       "warning": "警告",
