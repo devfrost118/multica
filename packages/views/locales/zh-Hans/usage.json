@@ -71,6 +71,21 @@
     "checked_at": "检查时间 {{value}}",
     "last_good": "上次正常：{{value}}",
     "reason": "原因：{{value}}",
+    "credentials": {
+      "title": "Factory 凭据",
+      "connected": "已连接",
+      "not_connected": "未连接",
+      "fingerprint": "指纹：{{value}}",
+      "validation": "验证：{{value}}",
+      "account_label": "Factory 账户标签",
+      "account_label_placeholder": "账户标签（可选）",
+      "token": "Factory API 令牌",
+      "replacement_token": "替换令牌",
+      "connect": "连接",
+      "replace": "替换",
+      "remove": "删除",
+      "action_failed": "操作失败。请检查权限后重试。"
+    },
     "thresholds": {
       "title": "提醒",
       "warning": "警告",

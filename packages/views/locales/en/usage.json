@@ -71,6 +71,21 @@
     "checked_at": "Checked {{value}}",
     "last_good": "Last good: {{value}}",
     "reason": "Reason: {{value}}",
+    "credentials": {
+      "title": "Factory credential",
+      "connected": "Connected",
+      "not_connected": "Not connected",
+      "fingerprint": "Fingerprint: {{value}}",
+      "validation": "Validation: {{value}}",
+      "account_label": "Factory account label",
+      "account_label_placeholder": "Account label (optional)",
+      "token": "Factory API token",
+      "replacement_token": "Replacement token",
+      "connect": "Connect",
+      "replace": "Replace",
+      "remove": "Remove",
+      "action_failed": "Credential action failed. Check permissions and try again."
+    },
     "thresholds": {
       "title": "Alerts",
       "warning": "Warning",

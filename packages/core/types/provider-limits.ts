@@ -38,3 +38,22 @@ export interface ProviderLimitsOverviewResponse {
 export interface ProviderLimitHistoryResponse {
   snapshots: ProviderLimitSnapshot[];
 }
+
+export interface ProviderCredential {
+  id: string;
+  provider: string;
+  account_key: string;
+  account_label: string;
+  fingerprint: string;
+  last_validated_at: string | null;
+  last_validation_status: string;
+  last_validation_note: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SaveProviderCredentialRequest {
+  provider: "factory";
+  token: string;
+  account_label?: string;
+}

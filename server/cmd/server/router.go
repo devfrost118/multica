@@ -32,6 +32,7 @@ import (
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
 	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
+	"github.com/multica-ai/multica/server/internal/providercredentials"
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/storage"
@@ -219,7 +220,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 	}
 	h := handler.New(queries, pool, hub, bus, emailSvc, store, cfSigner, analyticsClient, signupConfig, daemonHub)
 	if strings.TrimSpace(os.Getenv("MULTICA_PROJECT_ENV_SECRET_KEY")) == "" {
-		slog.Warn("project environment secrets are stored in legacy plaintext; configure MULTICA_PROJECT_ENV_SECRET_KEY and backfill existing records")
+		slog.Warn("project environment secrets are stored in legacy plaintext and provider credentials are disabled; configure MULTICA_PROJECT_ENV_SECRET_KEY and backfill existing records")
 	} else {
 		key, err := secretbox.LoadKey("MULTICA_PROJECT_ENV_SECRET_KEY")
 		if err != nil {
@@ -230,6 +231,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 			panic("initialize MULTICA_PROJECT_ENV_SECRET_KEY: " + err.Error())
 		}
 		h.ProjectEnvironmentSecrets = projectenvsecrets.New(box)
+		h.ProviderCredentials = providercredentials.New(box)
 		slog.Info("project environment secret encryption enabled")
 	}
 	h.Metrics = opts.BusinessMetrics
@@ -783,6 +785,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 
 		r.Post("/register", h.DaemonRegister)
 		r.Post("/runtimes/{runtimeId}/provider-limits", h.ReportProviderLimits)
+		r.Get("/runtimes/{runtimeId}/provider-credentials", h.GetDaemonProviderCredentials)
 		r.Post("/deregister", h.DaemonDeregister)
 		r.Post("/heartbeat", h.DaemonHeartbeat)
 		r.Get("/ws", h.DaemonWebSocket)
@@ -831,6 +834,10 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		r.Get("/api/provider-limits", h.GetProviderLimits)
 		r.Get("/api/provider-limits/history", h.GetProviderLimitHistory)
 		r.Post("/api/provider-limits/refresh", h.RequestProviderLimitsRefresh)
+		r.Get("/api/provider-credentials", h.ListProviderCredentials)
+		r.Post("/api/provider-credentials", h.CreateProviderCredential)
+		r.Put("/api/provider-credentials/{credentialId}", h.ReplaceProviderCredential)
+		r.Delete("/api/provider-credentials/{credentialId}", h.DeleteProviderCredential)
 
 		// --- User-scoped routes (no workspace context required) ---
 		r.Get("/api/me", h.GetMe)

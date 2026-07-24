@@ -26,6 +26,8 @@ import (
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/claude"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/codex"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/cursor"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/factory"
 	"github.com/multica-ai/multica/server/internal/daemon/repocache"
 	"github.com/multica-ai/multica/server/internal/selfexec"
 	"github.com/multica-ai/multica/server/pkg/agent"
@@ -228,7 +230,10 @@ type Daemon struct {
 	// providerLimits is the daemon-owned background collector. It remains
 	// independent of task execution environments and forwards only sanitized
 	// snapshots through providerLimitsReporter.
-	providerLimits *providerlimits.Collector
+	providerLimits               *providerlimits.Collector
+	factoryLimits                *factory.Adapter
+	providerCredentialsMu        sync.Mutex
+	providerCredentialsByRuntime map[string][]factory.Credential
 
 	mu           sync.Mutex
 	workspaces   map[string]*workspaceState
@@ -380,41 +385,46 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 	// server can split logs/metrics by client version (parallel to the CLI).
 	client.SetVersion(cfg.CLIVersion)
 	d := &Daemon{
-		cfg:                       cfg,
-		client:                    client,
-		repoCache:                 repocache.New(cacheRoot, logger),
-		skillCache:                NewSkillBundleCache(skillCacheRoot),
-		logger:                    logger,
-		workspaces:                make(map[string]*workspaceState),
-		runtimeIndex:              make(map[string]Runtime),
-		profileLaunchSpecs:        make(map[string]profileLaunchSpec),
-		runtimeSet:                newRuntimeSetWatcher(),
-		agentVersions:             make(map[string]string),
-		resolvedPaths:             make(map[string]healedAgent),
-		wsHBLastAck:               make(map[string]time.Time),
-		activeEnvRoots:            make(map[string]int),
-		deletingEnvRoots:          make(map[string]bool),
-		activeCodexStores:         make(map[string]int),
-		deletingCodexStores:       make(map[string]bool),
-		localPathLocks:            NewLocalPathLocker(),
-		runtimeGoneInflight:       make(map[string]struct{}),
-		reregisterNextAttempt:     make(map[string]time.Time),
-		reregisterLastCompletedAt: make(map[string]time.Time),
-		cancelPollInterval:        5 * time.Second,
-		taskPrepareTimeout:        defaultTaskPrepareTimeout,
-		reconcile:                 newReconcileBroadcaster(),
-		workspaceChanges:          newWorkspaceChangeSignal(),
-		wsRPC:                     newWSRPCClient(wsRPCResponseGrace),
+		cfg:                          cfg,
+		client:                       client,
+		repoCache:                    repocache.New(cacheRoot, logger),
+		skillCache:                   NewSkillBundleCache(skillCacheRoot),
+		logger:                       logger,
+		workspaces:                   make(map[string]*workspaceState),
+		runtimeIndex:                 make(map[string]Runtime),
+		profileLaunchSpecs:           make(map[string]profileLaunchSpec),
+		runtimeSet:                   newRuntimeSetWatcher(),
+		agentVersions:                make(map[string]string),
+		resolvedPaths:                make(map[string]healedAgent),
+		wsHBLastAck:                  make(map[string]time.Time),
+		activeEnvRoots:               make(map[string]int),
+		deletingEnvRoots:             make(map[string]bool),
+		activeCodexStores:            make(map[string]int),
+		deletingCodexStores:          make(map[string]bool),
+		localPathLocks:               NewLocalPathLocker(),
+		runtimeGoneInflight:          make(map[string]struct{}),
+		reregisterNextAttempt:        make(map[string]time.Time),
+		reregisterLastCompletedAt:    make(map[string]time.Time),
+		cancelPollInterval:           5 * time.Second,
+		taskPrepareTimeout:           defaultTaskPrepareTimeout,
+		reconcile:                    newReconcileBroadcaster(),
+		workspaceChanges:             newWorkspaceChangeSignal(),
+		wsRPC:                        newWSRPCClient(wsRPCResponseGrace),
+		providerCredentialsByRuntime: make(map[string][]factory.Credential),
 	}
 	d.activeEnvRootsCond = sync.NewCond(&d.activeEnvRootsMu)
 	d.activeCodexStoresCond = sync.NewCond(&d.activeCodexStoresMu)
 	d.executionEnvironmentCommand = defaultExecutionEnvironmentCommand
 	d.runner = taskRunnerFunc(d.runTask)
 	d.runUpdateFn = d.runUpdate
+	factoryAdapter := factory.NewAdapter(factory.Config{})
+	d.factoryLimits = factoryAdapter
 	d.providerLimits = providerlimits.NewCollector(providerlimits.CollectorConfig{
 		Adapters: []providerlimits.Adapter{
 			claude.NewAdapter(claude.Config{}),
 			codex.NewAdapter(codex.Config{}),
+			factoryAdapter,
+			cursor.NewAdapter(cursor.Config{}),
 		},
 		Reporter: providerLimitsReporter{client: d.client, runtimeIDs: d.allRuntimeIDs},
 		OnError: func(error) {
@@ -2356,7 +2366,7 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 	if resp == nil {
 		return
 	}
-	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil || resp.PendingProviderLimitRefresh != nil {
+	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil || resp.PendingProviderLimitRefresh != nil || resp.PendingProviderCredentials != nil {
 		d.logger.Debug("heartbeat: pending actions",
 			"runtime_id", runtimeID,
 			"update", resp.PendingUpdate != nil,
@@ -2364,6 +2374,7 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 			"local_skills", resp.PendingLocalSkills != nil,
 			"local_skill_import", resp.PendingLocalSkillImport != nil,
 			"provider_limit_refresh", resp.PendingProviderLimitRefresh != nil,
+			"provider_credentials", resp.PendingProviderCredentials != nil,
 		)
 	}
 	if resp.PendingUpdate != nil {
@@ -2378,6 +2389,9 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 		if rt := d.findRuntime(runtimeID); rt != nil {
 			go d.handleLocalSkillList(ctx, *rt, resp.PendingLocalSkills.ID)
 		}
+	}
+	if resp.PendingProviderCredentials != nil && d.factoryLimits != nil {
+		go d.refreshProviderCredentials(ctx, runtimeID)
 	}
 	if resp.PendingProviderLimitRefresh != nil && d.providerLimits != nil {
 		go func(requestID string) {
@@ -2396,6 +2410,46 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 	} else if resp.PendingLocalSkillImport != nil {
 		if rt := d.findRuntime(runtimeID); rt != nil {
 			go d.handleLocalSkillImport(ctx, *rt, *resp.PendingLocalSkillImport)
+		}
+	}
+}
+
+func (d *Daemon) refreshProviderCredentials(ctx context.Context, runtimeID string) {
+	credentials, err := d.client.GetProviderCredentials(ctx, runtimeID)
+	if err != nil {
+		if ctx.Err() == nil {
+			d.logger.Warn("provider credentials refresh failed", "runtime_id", runtimeID)
+		}
+		return
+	}
+	current := make([]factory.Credential, 0, len(credentials))
+	for _, credential := range credentials {
+		if credential.Provider == "factory" {
+			current = append(current, factory.Credential{ID: credential.ID, Token: credential.Token, AccountLabel: credential.AccountLabel})
+		}
+	}
+	d.providerCredentialsMu.Lock()
+	nextByRuntime := make(map[string][]factory.Credential, len(d.providerCredentialsByRuntime)+1)
+	for key, values := range d.providerCredentialsByRuntime {
+		nextByRuntime[key] = append([]factory.Credential(nil), values...)
+	}
+	nextByRuntime[runtimeID] = append([]factory.Credential(nil), current...)
+	d.providerCredentialsByRuntime = nextByRuntime
+	byID := make(map[string]factory.Credential)
+	for _, values := range nextByRuntime {
+		for _, credential := range values {
+			byID[credential.ID] = credential
+		}
+	}
+	combined := make([]factory.Credential, 0, len(byID))
+	for _, credential := range byID {
+		combined = append(combined, credential)
+	}
+	d.providerCredentialsMu.Unlock()
+	d.factoryLimits.ReplaceCredentials(combined)
+	if d.providerLimits != nil {
+		if err := d.providerLimits.CollectRefresh(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			d.logger.Warn("provider limits refresh after credential update failed")
 		}
 	}
 }

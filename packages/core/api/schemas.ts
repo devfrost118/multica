@@ -32,6 +32,7 @@ import type {
   ResourceLabelsResponse,
   ProviderLimitHistoryResponse,
   ProviderLimitsOverviewResponse,
+  ProviderCredential,
   SearchIssuesResponse,
   SearchProjectsResponse,
   Squad,
@@ -125,6 +126,21 @@ export const ProviderLimitHistoryResponseSchema = z.object({
   snapshots: z.array(ProviderLimitSnapshotSchema).default([]),
 }).loose();
 
+export const ProviderCredentialSchema = z.object({
+  id: z.string(),
+  provider: z.string(),
+  account_key: z.string().default(""),
+  account_label: z.string().default(""),
+  fingerprint: z.string().default(""),
+  last_validated_at: z.string().nullable().optional().default(null),
+  last_validation_status: z.string().default("pending"),
+  last_validation_note: z.string().default(""),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const ProviderCredentialsSchema = z.array(ProviderCredentialSchema);
+export const EMPTY_PROVIDER_CREDENTIALS: ProviderCredential[] = [];
 export const EMPTY_PROVIDER_LIMITS_OVERVIEW: ProviderLimitsOverviewResponse = {
   accounts: [],
   daemons: [],

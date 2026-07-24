@@ -109,6 +109,8 @@ export type {
   ProviderLimitSnapshot,
   ProviderLimitSource,
   ProviderLimitsOverviewResponse,
+  ProviderCredential,
+  SaveProviderCredentialRequest,
 } from "./provider-limits";
 export type {
   Project,
