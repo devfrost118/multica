@@ -2,6 +2,7 @@ package codex
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -165,11 +166,12 @@ func TestAdapter_IgnoresWindowsThatDoNotMatchEitherDuration(t *testing.T) {
 
 func TestAdapter_ReturnsUnavailableForMissingAuthAndUnauthorizedResponse(t *testing.T) {
 	for _, testCase := range []struct {
-		name  string
-		setup func(t *testing.T, home string) string
+		name       string
+		wantReason string
+		setup      func(t *testing.T, home string) string
 	}{
-		{name: "missing auth", setup: func(*testing.T, string) string { return "" }},
-		{name: "unauthorized response", setup: func(t *testing.T, home string) string {
+		{name: "missing auth", wantReason: "authentication_required", setup: func(*testing.T, string) string { return "" }},
+		{name: "unauthorized response", wantReason: "authentication_required", setup: func(t *testing.T, home string) string {
 			writeAuthAt(t, home, "token")
 			server := usageServer(t, http.StatusUnauthorized, `{}`)
 			t.Cleanup(server.Close)
@@ -186,14 +188,65 @@ func TestAdapter_ReturnsUnavailableForMissingAuthAndUnauthorizedResponse(t *test
 			if err != nil {
 				t.Fatalf("Collect() error = %v", err)
 			}
-			if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusUnavailable || snapshots[0].ErrorNote != "usage_unavailable" {
+			if len(snapshots) != 1 || snapshots[0].Status != providerlimits.StatusUnavailable || snapshots[0].ErrorNote != testCase.wantReason {
 				t.Fatalf("snapshots = %#v", snapshots)
 			}
 		})
 	}
 }
 
-func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
+func TestAdapter_UnauthorizedPreservesLocalAccountIdentityAndReportsExpiredAuth(t *testing.T) {
+	now := time.Date(2026, time.July, 24, 18, 0, 0, 0, time.UTC)
+	home := t.TempDir()
+	expiredToken := testJWT(map[string]any{"exp": now.Add(-time.Hour).Unix()})
+	writeAuthWithAccountAt(t, home, expiredToken, "acct-local-123")
+	server := usageServer(t, http.StatusUnauthorized, `{}`)
+	defer server.Close()
+
+	snapshots, err := NewAdapter(Config{
+		Home:     home,
+		Endpoint: server.URL,
+		Now:      func() time.Time { return now },
+	}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 {
+		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
+	}
+
+	snapshot := snapshots[0]
+	if snapshot.AccountKey != accountKeyFrom("acct-local-123", "") {
+		t.Fatalf("account key = %q, want stable local auth identity", snapshot.AccountKey)
+	}
+	if snapshot.Status != providerlimits.StatusUnavailable || snapshot.ErrorNote != "auth_expired" {
+		t.Fatalf("snapshot diagnostics = %#v, want unavailable auth_expired", snapshot)
+	}
+}
+
+func TestAdapter_MissingAccessTokenStillUsesSafeLocalAccountIdentity(t *testing.T) {
+	home := t.TempDir()
+	writeAuthWithAccountAt(t, home, "", "acct-local-123")
+
+	snapshots, err := NewAdapter(Config{
+		Home:     home,
+		Endpoint: "http://127.0.0.1:1/backend-api/wham/usage",
+	}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	if len(snapshots) != 1 {
+		t.Fatalf("snapshot count = %d, want 1", len(snapshots))
+	}
+	if snapshots[0].AccountKey != accountKeyFrom("acct-local-123", "") {
+		t.Fatalf("account key = %q, want stable local auth identity", snapshots[0].AccountKey)
+	}
+	if snapshots[0].ErrorNote != "authentication_required" {
+		t.Fatalf("reason = %q, want authentication_required", snapshots[0].ErrorNote)
+	}
+}
+
+func TestAdapter_ReturnsKeyedUnavailableAttemptOnRateLimit(t *testing.T) {
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if calls.Add(1) == 1 {
@@ -210,17 +263,18 @@ func TestAdapter_ReturnsStaleLastGoodSnapshotOnRateLimit(t *testing.T) {
 	if err != nil || len(first) != 1 || first[0].Status != providerlimits.StatusOK {
 		t.Fatalf("first Collect() = %#v, %v", first, err)
 	}
-	stale, err := adapter.Collect(context.Background())
+	attempt, err := adapter.Collect(context.Background())
 	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("rate limited error = %v, want ErrRateLimited", err)
 	}
-	if len(stale) != 1 || stale[0].Status != providerlimits.StatusStale || stale[0].ErrorNote != "rate_limited" {
-		t.Fatalf("stale snapshots = %#v", stale)
+	if len(attempt) != 1 || attempt[0].Status != providerlimits.StatusUnavailable || attempt[0].ErrorNote != "rate_limited" {
+		t.Fatalf("rate limited snapshots = %#v", attempt)
 	}
-	for _, bucket := range stale[0].Buckets {
-		if bucket.Status != providerlimits.StatusStale {
-			t.Fatalf("stale bucket = %#v", bucket)
-		}
+	if attempt[0].AccountKey != first[0].AccountKey {
+		t.Fatalf("account key = %q, want %q", attempt[0].AccountKey, first[0].AccountKey)
+	}
+	if len(attempt[0].Buckets) != 0 {
+		t.Fatalf("rate limited attempt must not resend stale buckets: %#v", attempt[0].Buckets)
 	}
 }
 
@@ -266,14 +320,25 @@ func writeAuth(t *testing.T, token string) string {
 }
 
 func writeAuthAt(t *testing.T, home, token string) {
+	writeAuthWithAccountAt(t, home, token, "acct-must-not-leak")
+}
+
+func writeAuthWithAccountAt(t *testing.T, home, token, accountID string) {
 	t.Helper()
 	if err := os.MkdirAll(home, 0o700); err != nil {
 		t.Fatalf("create home dir: %v", err)
 	}
-	contents := `{"tokens":{"access_token":` + quoteJSON(token) + `,"refresh_token":"refresh-token-must-not-leak","account_id":"acct-must-not-leak"}}`
+	contents := `{"tokens":{"access_token":` + quoteJSON(token) + `,"refresh_token":"refresh-token-must-not-leak","account_id":` + quoteJSON(accountID) + `}}`
 	if err := os.WriteFile(filepath.Join(home, "auth.json"), []byte(contents), 0o600); err != nil {
 		t.Fatalf("write auth.json: %v", err)
 	}
+}
+
+func testJWT(claims map[string]any) string {
+	header, _ := json.Marshal(map[string]string{"alg": "none"})
+	payload, _ := json.Marshal(claims)
+	return base64.RawURLEncoding.EncodeToString(header) + "." +
+		base64.RawURLEncoding.EncodeToString(payload) + ".signature"
 }
 
 func assertPercentBucket(t *testing.T, bucket providerlimits.Bucket, id, label string, used, remaining float64, resetsAt time.Time) {

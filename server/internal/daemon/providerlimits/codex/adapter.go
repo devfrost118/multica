@@ -7,6 +7,7 @@ package codex
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -17,7 +18,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
@@ -28,9 +28,9 @@ const (
 	defaultFreshness = 15 * time.Minute
 )
 
-// ErrRateLimited deliberately contains no provider response detail. Returning
-// it with a stale snapshot lets the collector retain the last useful reading
-// while applying its ordinary provider backoff.
+// ErrRateLimited deliberately contains no provider response detail. The
+// unavailable attempt is persisted for diagnostics while the backend overlays
+// the last successful reading and the collector applies its ordinary backoff.
 var ErrRateLimited = errors.New("codex usage rate limited")
 
 // Config supplies testable local and HTTP dependencies. An empty Home honors
@@ -48,9 +48,6 @@ type Adapter struct {
 	endpoint string
 	client   *http.Client
 	now      func() time.Time
-
-	mu       sync.Mutex
-	lastGood *providerlimits.AccountSnapshot
 }
 
 // NewAdapter constructs an adapter without touching local auth state.
@@ -87,43 +84,51 @@ func (*Adapter) Capabilities() providerlimits.Capabilities {
 // tokens are intentionally ignored, matching the Claude adapter's approach.
 func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot, error) {
 	checkedAt := a.now().UTC()
-	accessToken, ok := a.loadAccessToken()
-	if !ok {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+	auth := a.loadAuth()
+	if auth.accessToken == "" {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "authentication_required")}, nil
 	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, a.endpoint, nil)
 	if err != nil {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, errors.New("codex usage request unavailable")
 	}
-	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("Authorization", "Bearer "+auth.accessToken)
 	request.Header.Set("Accept", "application/json")
 	response, err := a.client.Do(request)
 	if err != nil {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, errors.New("codex usage request unavailable")
 	}
 	defer response.Body.Close()
 
 	switch response.StatusCode {
 	case http.StatusUnauthorized:
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+		reason := "authentication_required"
+		if accessTokenExpired(auth.accessToken, checkedAt) {
+			reason = "auth_expired"
+		}
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, reason)}, nil
 	case http.StatusTooManyRequests:
-		return a.staleOrUnavailable(checkedAt), ErrRateLimited
+		return []providerlimits.AccountSnapshot{
+			unavailableSnapshot(checkedAt, auth.accountKey, "rate_limited"),
+		}, ErrRateLimited
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage request unavailable")
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, errors.New("codex usage request unavailable")
 	}
 
 	var usage usageResponse
 	decoder := json.NewDecoder(io.LimitReader(response.Body, 1<<20))
 	if err := decoder.Decode(&usage); err != nil {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, errors.New("codex usage response unavailable")
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, errors.New("codex usage response unavailable")
 	}
 	snapshot := snapshotFromUsage(usage, checkedAt)
-	if len(snapshot.Buckets) == 0 {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}, nil
+	if snapshot.AccountKey == "unavailable" {
+		snapshot.AccountKey = auth.accountKey
 	}
-	a.storeLastGood(snapshot)
+	if len(snapshot.Buckets) == 0 {
+		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, auth.accountKey, "usage_unavailable")}, nil
+	}
 	return []providerlimits.AccountSnapshot{snapshot}, nil
 }
 
@@ -135,20 +140,44 @@ type authFile struct {
 	} `json:"tokens"`
 }
 
-func (a *Adapter) loadAccessToken() (string, bool) {
+type localAuth struct {
+	accessToken string
+	accountKey  string
+}
+
+func (a *Adapter) loadAuth() localAuth {
+	unavailable := localAuth{accountKey: "unavailable"}
 	contents, err := os.ReadFile(filepath.Join(a.home, "auth.json"))
 	if err != nil {
-		return "", false
+		return unavailable
 	}
 	var auth authFile
 	if err := json.Unmarshal(contents, &auth); err != nil {
-		return "", false
+		return unavailable
 	}
 	accessToken := strings.TrimSpace(auth.Tokens.AccessToken)
-	if accessToken == "" {
-		return "", false
+	return localAuth{
+		accessToken: accessToken,
+		accountKey:  accountKeyFrom(auth.Tokens.AccountID, ""),
 	}
-	return accessToken, true
+}
+
+func accessTokenExpired(accessToken string, checkedAt time.Time) bool {
+	parts := strings.Split(accessToken, ".")
+	if len(parts) != 3 {
+		return false
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return false
+	}
+	var claims struct {
+		ExpiresAt int64 `json:"exp"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil || claims.ExpiresAt <= 0 {
+		return false
+	}
+	return !checkedAt.Before(time.Unix(claims.ExpiresAt, 0))
 }
 
 // usageResponse mirrors the real shape of the ChatGPT backend usage endpoint
@@ -266,63 +295,10 @@ func accountKeyFrom(accountID, email string) string {
 	return hex.EncodeToString(hash[:])[:16]
 }
 
-func (a *Adapter) staleOrUnavailable(checkedAt time.Time) []providerlimits.AccountSnapshot {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if a.lastGood == nil {
-		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt)}
-	}
-	stale := staleSnapshot(*a.lastGood, checkedAt)
-	return []providerlimits.AccountSnapshot{stale}
-}
-
-func (a *Adapter) storeLastGood(snapshot providerlimits.AccountSnapshot) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	copied := copySnapshot(snapshot)
-	a.lastGood = &copied
-}
-
-func staleSnapshot(snapshot providerlimits.AccountSnapshot, checkedAt time.Time) providerlimits.AccountSnapshot {
-	copied := copySnapshot(snapshot)
-	copied.CheckedAt = checkedAt
-	copied.Status = providerlimits.StatusStale
-	copied.ErrorNote = "rate_limited"
-	for index := range copied.Buckets {
-		copied.Buckets[index].Status = providerlimits.StatusStale
-	}
-	return copied
-}
-
-func copySnapshot(snapshot providerlimits.AccountSnapshot) providerlimits.AccountSnapshot {
-	copied := snapshot
-	copied.Buckets = make([]providerlimits.Bucket, len(snapshot.Buckets))
-	for index, bucket := range snapshot.Buckets {
-		copied.Buckets[index] = bucket
-		if bucket.LimitValue != nil {
-			value := *bucket.LimitValue
-			copied.Buckets[index].LimitValue = &value
-		}
-		if bucket.UsedValue != nil {
-			value := *bucket.UsedValue
-			copied.Buckets[index].UsedValue = &value
-		}
-		if bucket.RemainingValue != nil {
-			value := *bucket.RemainingValue
-			copied.Buckets[index].RemainingValue = &value
-		}
-		if bucket.ResetsAt != nil {
-			value := *bucket.ResetsAt
-			copied.Buckets[index].ResetsAt = &value
-		}
-	}
-	return copied
-}
-
-func unavailableSnapshot(checkedAt time.Time) providerlimits.AccountSnapshot {
+func unavailableSnapshot(checkedAt time.Time, accountKey, reason string) providerlimits.AccountSnapshot {
 	return providerlimits.AccountSnapshot{
 		Provider:   "codex",
-		AccountKey: "unavailable",
+		AccountKey: accountKey,
 		CheckedAt:  checkedAt,
 		Status:     providerlimits.StatusUnavailable,
 		Source: providerlimits.Source{
@@ -330,7 +306,7 @@ func unavailableSnapshot(checkedAt time.Time) providerlimits.AccountSnapshot {
 			FreshnessSeconds: int64(defaultFreshness / time.Second),
 			Confidence:       providerlimits.ConfidenceOfficial,
 		},
-		ErrorNote: "usage_unavailable",
+		ErrorNote: reason,
 	}
 }
 

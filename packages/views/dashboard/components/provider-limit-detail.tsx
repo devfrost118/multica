@@ -30,6 +30,7 @@ import {
   sourceLabel,
   subscriptionLabel,
   titleCase,
+  useProviderLimitStatusLabel,
 } from "./provider-limits-overview";
 import { ProviderLimitHistoryChart } from "./provider-limit-history-chart";
 
@@ -202,17 +203,53 @@ function ProviderLimitMetadata({
   const { t, i18n } = useT("usage");
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const lastGood = lastGoodSnapshot(history, record);
-  const checkedAt = record.checked_at ? new Date(record.checked_at).toLocaleString(locale) : t(($) => $.provider_limits.unknown);
+  const lastSuccessfulAt =
+    record.last_successful_at ||
+    lastGood?.checked_at ||
+    (record.buckets.length > 0 ? record.checked_at : "");
+  const lastAttemptedAt = record.last_attempted_at || record.checked_at;
+  const lastAttemptSource = record.last_attempt_source ?? record.source;
+  const lastAttemptStatus = useProviderLimitStatusLabel(record.last_attempt_status ?? "");
+  const reasonLabels: Record<string, string> = {
+    auth_expired: t(($) => $.provider_limits.reasons.auth_expired),
+    authentication_required: t(($) => $.provider_limits.reasons.authentication_required),
+    usage_unavailable: t(($) => $.provider_limits.reasons.usage_unavailable),
+    rate_limited: t(($) => $.provider_limits.reasons.rate_limited),
+  };
+  const reason = record.error_note
+    ? (reasonLabels[record.error_note] ?? titleCase(record.error_note))
+    : "";
 
   return (
     <div className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
       <p>{sourceLabel(record.source.kind)} · {record.source.confidence || t(($) => $.provider_limits.unknown)}</p>
       <p>{t(($) => $.provider_limits.freshness, { value: formatFreshness(record.source.freshness_seconds) })}</p>
-      <p className="flex items-center gap-1"><Clock3 className="size-3" />{t(($) => $.provider_limits.checked_at, { value: checkedAt })}</p>
-      {lastGood && lastGood.checked_at !== record.checked_at && (
-        <p>{t(($) => $.provider_limits.last_good, { value: new Date(lastGood.checked_at).toLocaleString(locale) })}</p>
+      {lastSuccessfulAt && (
+        <p className="flex items-center gap-1">
+          <Clock3 className="size-3" />
+          {t(($) => $.provider_limits.last_successful_collection, {
+            value: new Date(lastSuccessfulAt).toLocaleString(locale),
+          })}
+        </p>
       )}
-      {record.error_note && <p>{t(($) => $.provider_limits.reason, { value: titleCase(record.error_note) })}</p>}
+      {lastAttemptedAt && (
+        <p>
+          {t(($) => $.provider_limits.last_attempted_probe, {
+            value: new Date(lastAttemptedAt).toLocaleString(locale),
+          })}
+        </p>
+      )}
+      <p>
+        {t(($) => $.provider_limits.attempt_source, {
+          value: `${sourceLabel(lastAttemptSource.kind)} · ${
+            lastAttemptSource.confidence || t(($) => $.provider_limits.unknown)
+          }`,
+        })}
+      </p>
+      {record.last_attempt_status && (
+        <p>{t(($) => $.provider_limits.last_attempt_status, { value: lastAttemptStatus })}</p>
+      )}
+      {reason && <p>{t(($) => $.provider_limits.reason, { value: reason })}</p>}
     </div>
   );
 }

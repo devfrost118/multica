@@ -115,6 +115,10 @@ export const ProviderLimitSnapshotSchema = z.object({
   buckets: z.array(ProviderLimitBucketSchema).default([]),
   error_note: z.string().default(""),
   stale: z.boolean().default(false),
+  last_successful_at: z.string().nullable().optional().default(null),
+  last_attempted_at: z.string().optional().default(""),
+  last_attempt_status: z.string().optional().default(""),
+  last_attempt_source: ProviderLimitSourceSchema.optional(),
 }).loose();
 
 export const ProviderLimitsOverviewResponseSchema = z.object({

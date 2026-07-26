@@ -71,20 +71,17 @@
     "checked_at": "检查时间 {{value}}",
     "last_good": "上次正常：{{value}}",
     "reason": "原因：{{value}}",
-    "credentials": {
-      "title": "Factory 凭据",
-      "connected": "已连接",
-      "not_connected": "未连接",
-      "fingerprint": "指纹：{{value}}",
-      "validation": "验证：{{value}}",
-      "account_label": "Factory 账户标签",
-      "account_label_placeholder": "账户标签（可选）",
-      "token": "Factory API 令牌",
-      "replacement_token": "替换令牌",
-      "connect": "连接",
-      "replace": "替换",
-      "remove": "删除",
-      "action_failed": "操作失败。请检查权限后重试。"
+    "updated": "更新于 {{value}}",
+    "data_unavailable_checked": "数据不可用 · 检查于 {{value}}",
+    "last_successful_collection": "最近成功采集：{{value}}",
+    "last_attempted_probe": "最近尝试检查：{{value}}",
+    "attempt_source": "尝试来源：{{value}}",
+    "last_attempt_status": "最近尝试状态：{{value}}",
+    "reasons": {
+      "auth_expired": "身份验证已过期。请重新登录 Codex。",
+      "authentication_required": "请登录 Codex 以采集用量数据。",
+      "usage_unavailable": "无法采集用量数据，请重试。",
+      "rate_limited": "提供商暂时限制了检查频率。"
     },
     "thresholds": {
       "title": "提醒",
@@ -112,6 +109,21 @@
         "not_decreasing": "剩余量并未下降，因此无法计算消耗趋势。",
         "zero_elapsed_time": "snapshot 之间的时间间隔太短，无法估算消耗速度。"
       }
+    },
+    "credentials": {
+      "title": "Factory 凭据",
+      "connected": "已连接",
+      "not_connected": "未连接",
+      "fingerprint": "指纹：{{value}}",
+      "validation": "验证：{{value}}",
+      "account_label": "Factory 账户标签",
+      "account_label_placeholder": "账户标签（可选）",
+      "token": "Factory API 令牌",
+      "replacement_token": "替换令牌",
+      "connect": "连接",
+      "replace": "替换",
+      "remove": "删除",
+      "action_failed": "操作失败。请检查权限后重试。"
     }
   },
   "duration": {

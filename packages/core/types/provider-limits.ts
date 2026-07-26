@@ -28,6 +28,10 @@ export interface ProviderLimitSnapshot {
   buckets: ProviderLimitBucket[];
   error_note: string;
   stale: boolean;
+  last_successful_at?: string | null;
+  last_attempted_at?: string;
+  last_attempt_status?: string;
+  last_attempt_source?: ProviderLimitSource;
 }
 
 export interface ProviderLimitsOverviewResponse {

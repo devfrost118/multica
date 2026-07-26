@@ -151,7 +151,17 @@ describe("ProviderLimitDetail", () => {
 
     expect(screen.getByText("Official API · official")).toBeTruthy();
     expect(screen.getByText("Fresh for 15m")).toBeTruthy();
-    expect(screen.getByText("Reason: Rate Limited")).toBeTruthy();
+    expect(screen.getByText("Reason: The provider temporarily limited usage checks.")).toBeTruthy();
+  });
+
+  it("localizes the latest attempt status", () => {
+    renderWithI18n(
+      <ProviderLimitDetail record={snapshot({ last_attempt_status: "unavailable" })} history={[]} />,
+      { locale: "ru" },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Подробнее" }));
+
+    expect(screen.getByText("Состояние последней попытки: Недоступно")).toBeTruthy();
   });
 
   it("masks Factory credentials and never renders the token returned by the server", () => {

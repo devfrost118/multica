@@ -24,44 +24,117 @@ function timestamp(value: string): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-function collapseLegacyUnkeyedAccounts(
-  records: ProviderLimitSnapshot[],
-  scope: AccountCollapseScope,
-): ProviderLimitSnapshot[] {
-  return records.filter((record) => {
-    if (!record.account_label) return true;
-
-    const matching = records.filter(
-      (candidate) =>
-        candidate.provider === record.provider &&
-        candidate.account_label === record.account_label &&
-        (scope === "workspace" || candidate.daemon_id === record.daemon_id),
-    );
-    const identified = matching.filter((candidate) => candidate.account_key !== "unavailable");
-    const unkeyed = matching.filter((candidate) => candidate.account_key === "unavailable");
-    if (identified.length !== 1 || unkeyed.length !== 1) return true;
-
-    const identifiedRecord = identified[0];
-    const unkeyedRecord = unkeyed[0];
-    if (!identifiedRecord || !unkeyedRecord) return true;
-
-    const latest = timestamp(identifiedRecord.checked_at) >= timestamp(unkeyedRecord.checked_at)
-      ? identifiedRecord
-      : unkeyedRecord;
-    return record === latest;
-  });
+function scopeKey(record: ProviderLimitSnapshot, scope: AccountCollapseScope): string {
+  return scope === "daemon"
+    ? `${record.daemon_id}:${record.provider}`
+    : record.provider;
 }
 
-function deduplicateAccounts(records: ProviderLimitSnapshot[]): ProviderLimitSnapshot[] {
-  const latest = new Map<string, ProviderLimitSnapshot>();
-  for (const record of records) {
-    const key = `${record.provider}:${record.account_key}`;
-    const previous = latest.get(key);
-    if (!previous || timestamp(record.checked_at) > timestamp(previous.checked_at)) {
-      latest.set(key, record);
-    }
+function attemptTimestamp(record: ProviderLimitSnapshot): number {
+  return timestamp(record.last_attempted_at || record.checked_at);
+}
+
+function hasUsefulQuota(record: ProviderLimitSnapshot): boolean {
+  return (record.status === "ok" || record.status === "partial") && record.buckets.length > 0;
+}
+
+function buildKnownAccounts(
+  candidates: ProviderLimitSnapshot[],
+  scope: AccountCollapseScope,
+): Map<string, Set<string>> {
+  const knownAccounts = new Map<string, Set<string>>();
+  for (const candidate of candidates) {
+    if (candidate.account_key === "unavailable") continue;
+    const key = scopeKey(candidate, scope);
+    const accounts = knownAccounts.get(key) ?? new Set<string>();
+    knownAccounts.set(key, new Set([...accounts, candidate.account_key]));
   }
-  return collapseLegacyUnkeyedAccounts([...latest.values()], "workspace");
+  return knownAccounts;
+}
+
+function createCanonicalAccountKey(
+  knownAccounts: Map<string, Set<string>>,
+  scope: AccountCollapseScope,
+): (record: ProviderLimitSnapshot) => string {
+  return (record) => {
+    if (record.account_key !== "unavailable") return record.account_key;
+    const accounts = [...(knownAccounts.get(scopeKey(record, scope)) ?? [])];
+    return accounts.length === 1 ? (accounts[0] ?? record.account_key) : record.account_key;
+  };
+}
+
+function groupProviderLimitRecords(
+  records: ProviderLimitSnapshot[],
+  scope: AccountCollapseScope,
+  canonicalAccountKey: (record: ProviderLimitSnapshot) => string,
+): Map<string, ProviderLimitSnapshot[]> {
+  const recordGroups = new Map<string, ProviderLimitSnapshot[]>();
+  for (const record of records) {
+    const key = `${scopeKey(record, scope)}:${canonicalAccountKey(record)}`;
+    recordGroups.set(key, [...(recordGroups.get(key) ?? []), record]);
+  }
+  return recordGroups;
+}
+
+function reconcileProviderLimitGroup(
+  groupKey: string,
+  attempts: ProviderLimitSnapshot[],
+  candidates: ProviderLimitSnapshot[],
+  scope: AccountCollapseScope,
+  canonicalAccountKey: (record: ProviderLimitSnapshot) => string,
+): ProviderLimitSnapshot {
+  const latestAttempt = attempts.toSorted(
+    (left, right) => attemptTimestamp(right) - attemptTimestamp(left),
+  )[0]!;
+  const matchingCandidates = candidates.filter(
+    (candidate) =>
+      `${scopeKey(candidate, scope)}:${canonicalAccountKey(candidate)}` === groupKey,
+  );
+  const lastGood = matchingCandidates
+    .filter(hasUsefulQuota)
+    .toSorted((left, right) => timestamp(right.checked_at) - timestamp(left.checked_at))[0];
+  const display = lastGood ?? latestAttempt;
+  const attemptStatus = latestAttempt.last_attempt_status || latestAttempt.status;
+  const attemptFailed = attemptStatus === "unavailable" || attemptStatus === "error";
+
+  return {
+    ...display,
+    runtime_id: latestAttempt.runtime_id || display.runtime_id,
+    daemon_id: latestAttempt.daemon_id || display.daemon_id,
+    account_key: canonicalAccountKey(latestAttempt),
+    account_label: display.account_label || latestAttempt.account_label,
+    error_note: latestAttempt.error_note,
+    stale: display.stale || (attemptFailed && display !== latestAttempt),
+    last_successful_at:
+      latestAttempt.last_successful_at ??
+      display.last_successful_at ??
+      (hasUsefulQuota(display) ? display.checked_at : null),
+    last_attempted_at: latestAttempt.last_attempted_at || latestAttempt.checked_at,
+    last_attempt_status: attemptStatus,
+    last_attempt_source: latestAttempt.last_attempt_source ?? latestAttempt.source,
+  };
+}
+
+function reconcileProviderLimitAccounts(
+  records: ProviderLimitSnapshot[],
+  history: ProviderLimitSnapshot[],
+  scope: AccountCollapseScope,
+): ProviderLimitSnapshot[] {
+  const candidates = [...records, ...history];
+  const canonicalAccountKey = createCanonicalAccountKey(
+    buildKnownAccounts(candidates, scope),
+    scope,
+  );
+  const recordGroups = groupProviderLimitRecords(records, scope, canonicalAccountKey);
+  const reconciled = [...recordGroups.entries()].map(([groupKey, attempts]) =>
+    reconcileProviderLimitGroup(groupKey, attempts, candidates, scope, canonicalAccountKey),
+  );
+
+  return reconciled.toSorted((left, right) => {
+    const leftKey = `${left.daemon_id}:${left.provider}:${left.account_key}`;
+    const rightKey = `${right.daemon_id}:${right.provider}:${right.account_key}`;
+    return leftKey.localeCompare(rightKey);
+  });
 }
 
 function effectiveStatus(record: ProviderLimitSnapshot): string {
@@ -109,6 +182,22 @@ export function formatFreshness(seconds: number): string {
   return `${seconds}s`;
 }
 
+export function formatRelativeAge(value: string, locale: string, now = Date.now()): string {
+  const parsed = timestamp(value);
+  if (parsed === 0) return "вЂ”";
+  const deltaSeconds = Math.round((parsed - now) / 1_000);
+  const absoluteSeconds = Math.abs(deltaSeconds);
+  const [amount, unit] =
+    absoluteSeconds < 60
+      ? [deltaSeconds, "second" as const]
+      : absoluteSeconds < 3_600
+        ? [Math.round(deltaSeconds / 60), "minute" as const]
+        : absoluteSeconds < 86_400
+          ? [Math.round(deltaSeconds / 3_600), "hour" as const]
+          : [Math.round(deltaSeconds / 86_400), "day" as const];
+  return new Intl.RelativeTimeFormat(locale, { numeric: "always" }).format(amount, unit);
+}
+
 export function lastGoodSnapshot(
   history: ProviderLimitSnapshot[],
   record: ProviderLimitSnapshot,
@@ -118,7 +207,7 @@ export function lastGoodSnapshot(
       (candidate) =>
         candidate.provider === record.provider &&
         candidate.account_key === record.account_key &&
-        candidate.status === "ok" &&
+        (candidate.status === "ok" || candidate.status === "partial") &&
         !candidate.stale,
     )
     .toSorted((left, right) => timestamp(right.checked_at) - timestamp(left.checked_at))[0];
@@ -147,9 +236,9 @@ export function ProviderLimitsOverview({
   const setCriticalThreshold = useProviderLimitSettingsStore((state) => state.setCriticalThreshold);
   const records = useMemo(() => {
     return view === "accounts"
-      ? deduplicateAccounts(overview.accounts)
-      : collapseLegacyUnkeyedAccounts(overview.daemons, "daemon");
-  }, [overview.accounts, overview.daemons, view]);
+      ? reconcileProviderLimitAccounts(overview.accounts, history, "workspace")
+      : reconcileProviderLimitAccounts(overview.daemons, history, "daemon");
+  }, [history, overview.accounts, overview.daemons, view]);
   const hasReportedRecords = view === "accounts"
     ? overview.accounts.length > 0
     : overview.daemons.length > 0;
@@ -282,8 +371,12 @@ function ProviderLimitCard({
   warningThreshold: number;
   criticalThreshold: number;
 }) {
-  const { t } = useT("usage");
+  const { t, i18n } = useT("usage");
   const status = effectiveStatus(record);
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const lastSuccessfulAt =
+    record.last_successful_at || (record.buckets.length > 0 ? record.checked_at : "");
+  const lastAttemptedAt = record.last_attempted_at || record.checked_at;
   return (
     <article className="rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -292,6 +385,15 @@ function ProviderLimitCard({
           {record.account_label && (
             <p className="text-xs text-muted-foreground">{subscriptionLabel(record.account_label)}</p>
           )}
+          <p className="text-xs text-muted-foreground">
+            {lastSuccessfulAt
+              ? t(($) => $.provider_limits.updated, {
+                  value: formatRelativeAge(lastSuccessfulAt, locale),
+                })
+              : t(($) => $.provider_limits.data_unavailable_checked, {
+                  value: formatRelativeAge(lastAttemptedAt, locale),
+                })}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={status} />
@@ -339,7 +441,7 @@ function BucketRow({
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+export function useProviderLimitStatusLabel(status: string): string {
   const { t } = useT("usage");
   const labels: Record<string, string> = {
     ok: t(($) => $.provider_limits.status.ok),
@@ -348,5 +450,10 @@ function StatusBadge({ status }: { status: string }) {
     unavailable: t(($) => $.provider_limits.status.unavailable),
     error: t(($) => $.provider_limits.status.error),
   };
-  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{labels[status] ?? titleCase(status)}</span>;
+  return labels[status] ?? titleCase(status);
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const label = useProviderLimitStatusLabel(status);
+  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{label}</span>;
 }

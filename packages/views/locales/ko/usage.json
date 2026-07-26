@@ -71,20 +71,17 @@
     "checked_at": "확인 {{value}}",
     "last_good": "마지막 정상: {{value}}",
     "reason": "사유: {{value}}",
-    "credentials": {
-      "title": "Factory 자격 증명",
-      "connected": "연결됨",
-      "not_connected": "연결되지 않음",
-      "fingerprint": "지문: {{value}}",
-      "validation": "검증: {{value}}",
-      "account_label": "Factory 계정 레이블",
-      "account_label_placeholder": "계정 레이블(선택 사항)",
-      "token": "Factory API 토큰",
-      "replacement_token": "교체 토큰",
-      "connect": "연결",
-      "replace": "교체",
-      "remove": "삭제",
-      "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요."
+    "updated": "{{value}} 업데이트",
+    "data_unavailable_checked": "데이터를 사용할 수 없음 · {{value}} 확인",
+    "last_successful_collection": "마지막 성공 수집: {{value}}",
+    "last_attempted_probe": "마지막 확인 시도: {{value}}",
+    "attempt_source": "시도 소스: {{value}}",
+    "last_attempt_status": "최근 시도: {{value}}",
+    "reasons": {
+      "auth_expired": "인증이 만료되었습니다. Codex에 다시 로그인하세요.",
+      "authentication_required": "사용량 데이터를 수집하려면 Codex에 로그인하세요.",
+      "usage_unavailable": "사용량 데이터를 수집하지 못했습니다. 다시 시도하세요.",
+      "rate_limited": "공급자가 확인 빈도를 일시적으로 제한했습니다."
     },
     "thresholds": {
       "title": "알림",
@@ -112,6 +109,21 @@
         "not_decreasing": "잔여량이 감소하지 않아 소비 추세를 계산할 수 없습니다.",
         "zero_elapsed_time": "snapshot 간격이 너무 짧아 소비 속도를 추정할 수 없습니다."
       }
+    },
+    "credentials": {
+      "title": "Factory 자격 증명",
+      "connected": "연결됨",
+      "not_connected": "연결되지 않음",
+      "fingerprint": "지문: {{value}}",
+      "validation": "검증: {{value}}",
+      "account_label": "Factory 계정 레이블",
+      "account_label_placeholder": "계정 레이블(선택 사항)",
+      "token": "Factory API 토큰",
+      "replacement_token": "교체 토큰",
+      "connect": "연결",
+      "replace": "교체",
+      "remove": "삭제",
+      "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요."
     }
   },
   "duration": {

@@ -71,20 +71,17 @@
     "checked_at": "確認 {{value}}",
     "last_good": "最後に正常: {{value}}",
     "reason": "理由: {{value}}",
-    "credentials": {
-      "title": "Factory 認証情報",
-      "connected": "接続済み",
-      "not_connected": "未接続",
-      "fingerprint": "フィンガープリント: {{value}}",
-      "validation": "検証: {{value}}",
-      "account_label": "Factory アカウントラベル",
-      "account_label_placeholder": "アカウントラベル（任意）",
-      "token": "Factory API トークン",
-      "replacement_token": "置換トークン",
-      "connect": "接続",
-      "replace": "置換",
-      "remove": "削除",
-      "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。"
+    "updated": "{{value}}に更新",
+    "data_unavailable_checked": "データを利用できません · {{value}}に確認",
+    "last_successful_collection": "最終成功取得: {{value}}",
+    "last_attempted_probe": "最終確認試行: {{value}}",
+    "attempt_source": "試行元: {{value}}",
+    "last_attempt_status": "最新の試行: {{value}}",
+    "reasons": {
+      "auth_expired": "認証の有効期限が切れました。Codex にもう一度サインインしてください。",
+      "authentication_required": "使用量データを取得するには Codex にサインインしてください。",
+      "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。",
+      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。"
     },
     "thresholds": {
       "title": "アラート",
@@ -112,6 +109,21 @@
         "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
         "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
       }
+    },
+    "credentials": {
+      "title": "Factory 認証情報",
+      "connected": "接続済み",
+      "not_connected": "未接続",
+      "fingerprint": "フィンガープリント: {{value}}",
+      "validation": "検証: {{value}}",
+      "account_label": "Factory アカウントラベル",
+      "account_label_placeholder": "アカウントラベル（任意）",
+      "token": "Factory API トークン",
+      "replacement_token": "置換トークン",
+      "connect": "接続",
+      "replace": "置換",
+      "remove": "削除",
+      "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。"
     }
   },
   "duration": {

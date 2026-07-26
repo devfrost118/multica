@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -257,17 +258,21 @@ func (h *Handler) RequestProviderLimitsRefresh(w http.ResponseWriter, r *http.Re
 }
 
 type providerLimitSnapshotResponse struct {
-	RuntimeID    string                   `json:"runtime_id"`
-	DaemonID     string                   `json:"daemon_id,omitempty"`
-	Provider     string                   `json:"provider"`
-	AccountKey   string                   `json:"account_key"`
-	AccountLabel string                   `json:"account_label,omitempty"`
-	CheckedAt    time.Time                `json:"checked_at"`
-	Status       string                   `json:"status"`
-	Source       providerLimitSourceInput `json:"source"`
-	Buckets      json.RawMessage          `json:"buckets"`
-	ErrorNote    string                   `json:"error_note,omitempty"`
-	Stale        bool                     `json:"stale"`
+	RuntimeID         string                   `json:"runtime_id"`
+	DaemonID          string                   `json:"daemon_id,omitempty"`
+	Provider          string                   `json:"provider"`
+	AccountKey        string                   `json:"account_key"`
+	AccountLabel      string                   `json:"account_label,omitempty"`
+	CheckedAt         time.Time                `json:"checked_at"`
+	Status            string                   `json:"status"`
+	Source            providerLimitSourceInput `json:"source"`
+	Buckets           json.RawMessage          `json:"buckets"`
+	ErrorNote         string                   `json:"error_note,omitempty"`
+	Stale             bool                     `json:"stale"`
+	LastSuccessfulAt  *time.Time               `json:"last_successful_at,omitempty"`
+	LastAttemptedAt   time.Time                `json:"last_attempted_at"`
+	LastAttemptStatus string                   `json:"last_attempt_status"`
+	LastAttemptSource providerLimitSourceInput `json:"last_attempt_source"`
 }
 
 func (h *Handler) GetProviderLimits(w http.ResponseWriter, r *http.Request) {
@@ -284,12 +289,33 @@ func (h *Handler) GetProviderLimits(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
 		return
 	}
+	lastGoodAccounts, err := h.Queries.ListLatestGoodProviderLimitSnapshots(r.Context(), workspaceUUID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
+		return
+	}
 	byDaemon, err := h.Queries.ListLatestProviderLimitSnapshotsByDaemon(r.Context(), workspaceUUID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"accounts": providerLimitRows(accounts), "daemons": providerLimitRows(byDaemon)})
+	lastGoodByDaemon, err := h.Queries.ListLatestGoodProviderLimitSnapshotsByDaemon(r.Context(), workspaceUUID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to load provider limits")
+		return
+	}
+	accountCandidates := append(
+		append(make([]db.ProviderLimitSnapshot, 0, len(accounts)+len(lastGoodAccounts)), accounts...),
+		lastGoodAccounts...,
+	)
+	daemonCandidates := append(
+		append(make([]db.ProviderLimitSnapshot, 0, len(byDaemon)+len(lastGoodByDaemon)), byDaemon...),
+		lastGoodByDaemon...,
+	)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"accounts": providerLimitRows(accountCandidates),
+		"daemons":  providerLimitRowsByDaemon(daemonCandidates),
+	})
 }
 
 func (h *Handler) GetProviderLimitHistory(w http.ResponseWriter, r *http.Request) {
@@ -313,10 +339,18 @@ func (h *Handler) GetProviderLimitHistory(w http.ResponseWriter, r *http.Request
 			filtered = append(filtered, row)
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"snapshots": providerLimitRows(filtered)})
+	writeJSON(w, http.StatusOK, map[string]any{"snapshots": providerLimitHistoryRows(filtered)})
 }
 
 func providerLimitRows(rows []db.ProviderLimitSnapshot) []providerLimitSnapshotResponse {
+	return reconcileProviderLimitRows(rows, false)
+}
+
+func providerLimitRowsByDaemon(rows []db.ProviderLimitSnapshot) []providerLimitSnapshotResponse {
+	return reconcileProviderLimitRows(rows, true)
+}
+
+func providerLimitHistoryRows(rows []db.ProviderLimitSnapshot) []providerLimitSnapshotResponse {
 	response := make([]providerLimitSnapshotResponse, 0, len(rows))
 	now := time.Now().UTC()
 	for _, row := range rows {
@@ -325,9 +359,170 @@ func providerLimitRows(rows []db.ProviderLimitSnapshot) []providerLimitSnapshotR
 		if freshness <= 0 {
 			freshness = 900
 		}
-		response = append(response, providerLimitSnapshotResponse{RuntimeID: uuidToString(row.RuntimeID), DaemonID: row.DaemonID, Provider: row.Provider, AccountKey: row.AccountKey, AccountLabel: row.AccountLabel, CheckedAt: checkedAt, Status: row.Status, Source: providerLimitSourceInput{Kind: row.SourceKind, Confidence: row.SourceConfidence, FreshnessSeconds: row.SourceFreshnessSeconds}, Buckets: row.Buckets, ErrorNote: row.ErrorNote, Stale: now.After(checkedAt.Add(time.Duration(freshness) * time.Second))})
+		var lastSuccessfulAt *time.Time
+		if row.Status == "ok" || row.Status == "partial" {
+			value := checkedAt
+			lastSuccessfulAt = &value
+		}
+		source := providerLimitSourceInput{
+			Kind:             row.SourceKind,
+			Confidence:       row.SourceConfidence,
+			FreshnessSeconds: row.SourceFreshnessSeconds,
+		}
+		response = append(response, providerLimitSnapshotResponse{
+			RuntimeID:         uuidToString(row.RuntimeID),
+			DaemonID:          row.DaemonID,
+			Provider:          row.Provider,
+			AccountKey:        row.AccountKey,
+			AccountLabel:      row.AccountLabel,
+			CheckedAt:         checkedAt,
+			Status:            row.Status,
+			Source:            source,
+			Buckets:           row.Buckets,
+			ErrorNote:         row.ErrorNote,
+			Stale:             now.After(checkedAt.Add(time.Duration(freshness) * time.Second)),
+			LastSuccessfulAt:  lastSuccessfulAt,
+			LastAttemptedAt:   checkedAt,
+			LastAttemptStatus: row.Status,
+			LastAttemptSource: source,
+		})
 	}
 	return response
+}
+
+type providerLimitRowGroup struct {
+	accountKey string
+	rows       []db.ProviderLimitSnapshot
+}
+
+func reconcileProviderLimitRows(rows []db.ProviderLimitSnapshot, byDaemon bool) []providerLimitSnapshotResponse {
+	knownAccounts := providerLimitKnownAccounts(rows, byDaemon)
+	groups := providerLimitGroups(rows, knownAccounts, byDaemon)
+	response := make([]providerLimitSnapshotResponse, 0, len(groups))
+	now := time.Now().UTC()
+	for _, group := range groups {
+		response = append(response, providerLimitResponseForGroup(group, now))
+	}
+	sort.Slice(response, func(left, right int) bool {
+		leftKey := response[left].DaemonID + ":" + response[left].Provider + ":" + response[left].AccountKey
+		rightKey := response[right].DaemonID + ":" + response[right].Provider + ":" + response[right].AccountKey
+		return leftKey < rightKey
+	})
+	return response
+}
+
+func providerLimitKnownAccounts(rows []db.ProviderLimitSnapshot, byDaemon bool) map[string]map[string]struct{} {
+	knownAccounts := make(map[string]map[string]struct{})
+	for _, row := range rows {
+		if row.AccountKey == "unavailable" {
+			continue
+		}
+		scopeKey := providerLimitScopeKey(row, byDaemon)
+		if knownAccounts[scopeKey] == nil {
+			knownAccounts[scopeKey] = make(map[string]struct{})
+		}
+		knownAccounts[scopeKey][row.AccountKey] = struct{}{}
+	}
+	return knownAccounts
+}
+
+func providerLimitGroups(
+	rows []db.ProviderLimitSnapshot,
+	knownAccounts map[string]map[string]struct{},
+	byDaemon bool,
+) map[string]providerLimitRowGroup {
+	groups := make(map[string]providerLimitRowGroup)
+	for _, row := range rows {
+		scopeKey := providerLimitScopeKey(row, byDaemon)
+		accountKey := providerLimitCanonicalAccountKey(row.AccountKey, knownAccounts[scopeKey])
+		groupKey := scopeKey + ":" + accountKey
+		group := groups[groupKey]
+		group.accountKey = accountKey
+		group.rows = append(group.rows, row)
+		groups[groupKey] = group
+	}
+	return groups
+}
+
+func providerLimitCanonicalAccountKey(accountKey string, knownAccounts map[string]struct{}) string {
+	if accountKey != "unavailable" || len(knownAccounts) != 1 {
+		return accountKey
+	}
+	for knownAccountKey := range knownAccounts {
+		return knownAccountKey
+	}
+	return accountKey
+}
+
+func providerLimitResponseForGroup(group providerLimitRowGroup, now time.Time) providerLimitSnapshotResponse {
+	latestAttempt, lastGood := latestProviderLimitRows(group.rows)
+	display := latestAttempt
+	var lastSuccessfulAt *time.Time
+	if lastGood != nil {
+		display = *lastGood
+		value := lastGood.CheckedAt.Time.UTC()
+		lastSuccessfulAt = &value
+	}
+	checkedAt := display.CheckedAt.Time.UTC()
+	freshness := display.SourceFreshnessSeconds
+	if freshness <= 0 {
+		freshness = 900
+	}
+	accountLabel := display.AccountLabel
+	if accountLabel == "" {
+		accountLabel = latestAttempt.AccountLabel
+	}
+	return providerLimitSnapshotResponse{
+		RuntimeID:    uuidToString(latestAttempt.RuntimeID),
+		DaemonID:     latestAttempt.DaemonID,
+		Provider:     display.Provider,
+		AccountKey:   group.accountKey,
+		AccountLabel: accountLabel,
+		CheckedAt:    checkedAt,
+		Status:       display.Status,
+		Source: providerLimitSourceInput{
+			Kind:             display.SourceKind,
+			Confidence:       display.SourceConfidence,
+			FreshnessSeconds: display.SourceFreshnessSeconds,
+		},
+		Buckets:           display.Buckets,
+		ErrorNote:         latestAttempt.ErrorNote,
+		Stale:             now.After(checkedAt.Add(time.Duration(freshness) * time.Second)),
+		LastSuccessfulAt:  lastSuccessfulAt,
+		LastAttemptedAt:   latestAttempt.CheckedAt.Time.UTC(),
+		LastAttemptStatus: latestAttempt.Status,
+		LastAttemptSource: providerLimitSourceInput{
+			Kind:             latestAttempt.SourceKind,
+			Confidence:       latestAttempt.SourceConfidence,
+			FreshnessSeconds: latestAttempt.SourceFreshnessSeconds,
+		},
+	}
+}
+
+func providerLimitScopeKey(row db.ProviderLimitSnapshot, byDaemon bool) string {
+	if byDaemon {
+		return row.DaemonID + ":" + row.Provider
+	}
+	return row.Provider
+}
+
+func latestProviderLimitRows(rows []db.ProviderLimitSnapshot) (db.ProviderLimitSnapshot, *db.ProviderLimitSnapshot) {
+	latestAttempt := rows[0]
+	var lastGood *db.ProviderLimitSnapshot
+	for index := range rows {
+		row := rows[index]
+		if row.CheckedAt.Time.After(latestAttempt.CheckedAt.Time) {
+			latestAttempt = row
+		}
+		if row.Status != "ok" && row.Status != "partial" {
+			continue
+		}
+		if lastGood == nil || row.CheckedAt.Time.After(lastGood.CheckedAt.Time) {
+			copied := row
+			lastGood = &copied
+		}
+	}
+	return latestAttempt, lastGood
 }
 
 func stringHash(hash [sha256.Size]byte) string {
