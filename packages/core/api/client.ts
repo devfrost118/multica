@@ -152,6 +152,8 @@ import type {
   BillingCheckoutSessionStatus,
   ProviderLimitHistoryResponse,
   ProviderLimitsOverviewResponse,
+  ProviderCredential,
+  SaveProviderCredentialRequest,
   CreateBillingPortalSessionResponse,
   RuleGroupSummary,
   RuleGroupWithRules,
@@ -286,6 +288,9 @@ import {
   EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE,
   ProviderLimitHistoryResponseSchema,
   ProviderLimitsOverviewResponseSchema,
+  ProviderCredentialSchema,
+  ProviderCredentialsSchema,
+  EMPTY_PROVIDER_CREDENTIALS,
   EMPTY_PROVIDER_LIMIT_HISTORY,
   EMPTY_PROVIDER_LIMITS_OVERVIEW,
   RuleGroupSummaryListSchema,
@@ -384,6 +389,13 @@ export class PreviewUnsupportedError extends Error {
  */
 export const CHAT_DRAFT_RESTORE_CAPABILITY = "chat-draft-restore-v1";
 
+function emptyProviderCredential(): ProviderCredential {
+  return {
+    id: "", provider: "factory", account_key: "", account_label: "", fingerprint: "",
+    last_validated_at: null, last_validation_status: "pending", last_validation_note: "",
+    created_at: "", updated_at: "",
+  };
+}
 export class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
@@ -1518,6 +1530,36 @@ export class ApiClient {
     });
   }
 
+  async getProviderCredentials(): Promise<ProviderCredential[]> {
+    const raw = await this.fetch<unknown>("/api/provider-credentials?provider=factory");
+    return parseWithFallback(raw, ProviderCredentialsSchema, EMPTY_PROVIDER_CREDENTIALS, {
+      endpoint: "GET /api/provider-credentials",
+    });
+  }
+
+  async createProviderCredential(request: SaveProviderCredentialRequest): Promise<ProviderCredential> {
+    const raw = await this.fetch<unknown>("/api/provider-credentials", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+    return parseWithFallback(raw, ProviderCredentialSchema, emptyProviderCredential(), {
+      endpoint: "POST /api/provider-credentials",
+    });
+  }
+
+  async replaceProviderCredential(id: string, token: string): Promise<ProviderCredential> {
+    const raw = await this.fetch<unknown>(`/api/provider-credentials/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ token }),
+    });
+    return parseWithFallback(raw, ProviderCredentialSchema, { ...emptyProviderCredential(), id }, {
+      endpoint: "PUT /api/provider-credentials/:id",
+    });
+  }
+
+  async deleteProviderCredential(id: string): Promise<void> {
+    await this.fetch(`/api/provider-credentials/${id}`, { method: "DELETE" });
+  }
   async getDashboardUsageByAgent(
     params: { days?: number; project_id?: string | null; tz?: string },
   ): Promise<DashboardUsageByAgent[]> {
@@ -1987,7 +2029,7 @@ export class ApiClient {
 
     const rid = createRequestId();
     const start = Date.now();
-    this.logger.info("→ POST /api/upload-file", { rid });
+    this.logger.info("> POST /api/upload-file", { rid });
 
     const res = await fetch(`${this.baseUrl}/api/upload-file`, {
       method: "POST",

@@ -109,6 +109,21 @@
         "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
         "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
       }
+    },
+    "credentials": {
+      "title": "Factory 認証情報",
+      "connected": "接続済み",
+      "not_connected": "未接続",
+      "fingerprint": "フィンガープリント: {{value}}",
+      "validation": "検証: {{value}}",
+      "account_label": "Factory アカウントラベル",
+      "account_label_placeholder": "アカウントラベル（任意）",
+      "token": "Factory API トークン",
+      "replacement_token": "置換トークン",
+      "connect": "接続",
+      "replace": "置換",
+      "remove": "削除",
+      "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。"
     }
   },
   "duration": {

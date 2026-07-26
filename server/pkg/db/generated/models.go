@@ -810,6 +810,20 @@ type ProjectResource struct {
 	CreatedBy    pgtype.UUID        `json:"created_by"`
 }
 
+type ProviderCredential struct {
+	ID                   pgtype.UUID        `json:"id"`
+	WorkspaceID          pgtype.UUID        `json:"workspace_id"`
+	Provider             string             `json:"provider"`
+	AccountLabel         string             `json:"account_label"`
+	SealedToken          []byte             `json:"sealed_token"`
+	Fingerprint          string             `json:"fingerprint"`
+	LastValidatedAt      pgtype.Timestamptz `json:"last_validated_at"`
+	LastValidationStatus string             `json:"last_validation_status"`
+	LastValidationNote   string             `json:"last_validation_note"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
 type ProviderLimitSnapshot struct {
 	ID                     pgtype.UUID        `json:"id"`
 	WorkspaceID            pgtype.UUID        `json:"workspace_id"`
@@ -886,7 +900,6 @@ type RuleGroupRule struct {
 	RuntimeHints []byte             `json:"runtime_hints"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-
 }
 
 type Skill struct {

@@ -441,6 +441,7 @@ export function DashboardPage() {
           <p className="text-xs text-muted-foreground">{t(($) => $.subtitle)}</p>
 
           <ProviderLimitsOverview
+            wsId={wsId}
             overview={providerLimits}
             history={providerLimitHistory}
             isLoading={providerLimitsQuery.isLoading}

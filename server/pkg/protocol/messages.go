@@ -269,6 +269,7 @@ type DaemonHeartbeatAckPayload struct {
 	PendingLocalSkills          *DaemonHeartbeatPendingLocalSkills          `json:"pending_local_skills,omitempty"`
 	PendingLocalSkillImport     *DaemonHeartbeatPendingLocalSkillImport     `json:"pending_local_skill_import,omitempty"`
 	PendingProviderLimitRefresh *DaemonHeartbeatPendingProviderLimitRefresh `json:"pending_provider_limit_refresh,omitempty"`
+	PendingProviderCredentials  *DaemonHeartbeatPendingProviderCredentials  `json:"pending_provider_credentials,omitempty"`
 	// PendingLocalSkillImports carries multiple import requests in a single
 	// heartbeat so the daemon can process them concurrently. Old daemons
 	// that don't know this field silently ignore it (standard JSON behavior)
@@ -279,6 +280,8 @@ type DaemonHeartbeatAckPayload struct {
 type DaemonHeartbeatPendingProviderLimitRefresh struct {
 	ID string `json:"id"`
 }
+
+type DaemonHeartbeatPendingProviderCredentials struct{}
 
 // HeartbeatStatusRuntimeGone is the ack Status used when the runtime row no
 // longer exists server-side. Companion to DaemonHeartbeatAckPayload.RuntimeGone.

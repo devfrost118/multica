@@ -454,6 +454,7 @@ type (
 	PendingLocalSkills          = protocol.DaemonHeartbeatPendingLocalSkills
 	PendingLocalSkillImport     = protocol.DaemonHeartbeatPendingLocalSkillImport
 	PendingProviderLimitRefresh = protocol.DaemonHeartbeatPendingProviderLimitRefresh
+	PendingProviderCredentials  = protocol.DaemonHeartbeatPendingProviderCredentials
 )
 
 func (c *Client) SendHeartbeat(ctx context.Context, runtimeID string) (*HeartbeatResponse, error) {
@@ -500,6 +501,23 @@ func (c *Client) ReportProviderLimits(ctx context.Context, runtimeID string, sna
 		payload["refresh_ids"] = append([]string(nil), refreshIDs...)
 	}
 	return c.postJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/provider-limits", runtimeID), payload, nil)
+}
+
+type ProviderCredentialData struct {
+	ID           string `json:"id"`
+	Provider     string `json:"provider"`
+	AccountLabel string `json:"account_label,omitempty"`
+	Token        string `json:"token"`
+}
+
+func (c *Client) GetProviderCredentials(ctx context.Context, runtimeID string) ([]ProviderCredentialData, error) {
+	var response struct {
+		Credentials []ProviderCredentialData `json:"credentials"`
+	}
+	if err := c.getJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/provider-credentials", runtimeID), &response); err != nil {
+		return nil, err
+	}
+	return append([]ProviderCredentialData(nil), response.Credentials...), nil
 }
 
 // WorkspaceInfo holds minimal workspace metadata returned by the API.

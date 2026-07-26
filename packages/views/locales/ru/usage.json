@@ -109,6 +109,21 @@
         "not_decreasing": "Остаток не уменьшается, поэтому тренд расхода неприменим.",
         "zero_elapsed_time": "Снимки сделаны слишком близко по времени, чтобы оценить скорость расхода."
       }
+    },
+    "credentials": {
+      "title": "Учётные данные Factory",
+      "connected": "Подключено",
+      "not_connected": "Не подключено",
+      "fingerprint": "Отпечаток: {{value}}",
+      "validation": "Проверка: {{value}}",
+      "account_label": "Название аккаунта Factory",
+      "account_label_placeholder": "Название аккаунта (необязательно)",
+      "token": "API-токен Factory",
+      "replacement_token": "Новый токен",
+      "connect": "Подключить",
+      "replace": "Заменить",
+      "remove": "Удалить",
+      "action_failed": "Не удалось выполнить действие. Проверьте права и повторите попытку."
     }
   },
   "duration": {
