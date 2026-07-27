@@ -43,6 +43,21 @@
 
 ## Журнал синков
 
+### 2026-07-27: v0.4.7 → v0.4.12 (FRO-199)
+
+- Все 7 локальных тем целы, ничего не снималось. 108 upstream-коммитов, 718 файлов, 28 новых миграций.
+- Pre-update backup: `E:\backups\multica\pre-update\20260727T151230Z\` (`multica.dump` 17 435 933 B, `.env` 9 761 B, `manifest.txt` с SHA-256). Содержимое `.env` нигде не печаталось и не коммитилось.
+- **Грабли шага 5 (важно для следующего синка):** локальный `main` отставал от `origin/main` на 2 коммита (PR #16 FRO-197, #17 FRO-196). Процедура «merge тега → `push --force-with-lease`» в этом состоянии **проходит** lease-проверку (remote-tracking ref свежий после `fetch`) и перезаписывает `origin/main`, теряя оба PR. Правильный порядок: `git merge --ff-only origin/main` **до** merge тега; после этого push — обычный fast-forward, force не нужен.
+- Конфликты: 14 хунков в 12 файлах, разрешены объединением (`ProjectEnvironments` + `EffectiveRules` в `types.go`/`execenv.go`/`handler/agent.go`; `AllowNoAgents` + `droid` в `config.go`; `ProjectEnvironmentSecrets`/`ProviderCredentials` рядом с апстримными `VCSSecretBox`/`PRRefresh` в `handler.go`).
+- **Семантические (не текстовые) конфликты** — merge прошёл чисто, но сборка падала:
+  1. `handler/skill_discover.go` (локальный файл) звал GitHub-хелперы по старым сигнатурам — апстрим добавил первым параметром `context.Context`. Пробросил `r.Context()`.
+  2. `app-sidebar.tsx`: апстрим убрал иконки из `configureNav` (теперь их даёт `routeIconForPath`). Локальный пункт `rules` пришлось зарегистрировать в реестре: `packages/core/paths/route-icons.ts` (+`ShieldCheck`, +`rules`) и `packages/views/layout/route-icon-components.tsx`.
+- Нумерация миграций: локальные 203–208 и апстримные 203–208 совпадают по префиксу, но это **не** проблема — раннер (`server/cmd/migrate/main.go`) хранит в `schema_migrations.version` полное имя файла, а не число. Применилось 250 → 282.
+- Локализация RU: +130 ключей, −68 устаревших (`node locale-gaps.mjs ru --prune`). `parity.test.ts` — 212 passed; ja/ko/zh-Hans тоже без пробелов.
+- Проверки: `go build ./...` OK, `pnpm typecheck` 6/6 OK, backend health HTTP 200, миграции `Done.` без ошибок.
+- Замечено: апстрим перестал публиковать порт postgres на хост (было `127.0.0.1:5432->5432/tcp`, стало только `5432/tcp` внутри сети). Если что-то ходило в БД с хоста — учесть.
+- Своп демона: `server/bin/multica.exe.new` собран (29 764 096 B, `v0.4.12-101-g51c829995`), скрипт `server/bin/daemon-swap.ps1` готов, **но задача Планировщика не зарегистрирована** — в песочнице агента `schtasks.exe` и `Register-ScheduledTask` недоступны (`Access is denied` / `EPERM`). Своп нужно запустить вручную, см. отчёт в FRO-199.
+
 ### 2026-07-21: v0.4.6 → v0.4.7
 
 - `codex-windows-sandbox` снята (см. таблицу выше); остальные 7 тем целы.
