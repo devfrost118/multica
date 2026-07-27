@@ -25,6 +25,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/cli"
 	"github.com/multica-ai/multica/server/internal/daemon/execenv"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/antigravity"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/claude"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/codex"
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/cursor"
@@ -430,6 +431,7 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 			codex.NewAdapter(codex.Config{}),
 			factoryAdapter,
 			cursor.NewAdapter(cursor.Config{}),
+			antigravity.NewAdapter(antigravity.Config{}),
 		},
 		Reporter: providerLimitsReporter{client: d.client, runtimeIDs: d.allRuntimeIDs},
 		OnError: func(error) {
