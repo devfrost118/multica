@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { AlertCircle, Server, SlidersHorizontal } from "lucide-react";
 
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { useProviderLimitSettingsStore } from "@multica/core/provider-limits";
+import { useProviderLimitSettingsStore, withCanonicalBuckets } from "@multica/core/provider-limits";
 import type {
   ProviderLimitHistoryResponse,
   ProviderLimitSnapshot,
@@ -234,11 +234,15 @@ export function ProviderLimitsOverview({
   const criticalThreshold = useProviderLimitSettingsStore((state) => state.criticalThreshold);
   const setWarningThreshold = useProviderLimitSettingsStore((state) => state.setWarningThreshold);
   const setCriticalThreshold = useProviderLimitSettingsStore((state) => state.setCriticalThreshold);
+  // Canonicalize before reconciling so a snapshot whose buckets are all legacy
+  // no longer counts as useful quota, and so the cards and the detail dialog
+  // read one bucket set.
+  const canonicalHistory = useMemo(() => withCanonicalBuckets(history), [history]);
   const records = useMemo(() => {
     return view === "accounts"
-      ? reconcileProviderLimitAccounts(overview.accounts, history, "workspace")
-      : reconcileProviderLimitAccounts(overview.daemons, history, "daemon");
-  }, [history, overview.accounts, overview.daemons, view]);
+      ? reconcileProviderLimitAccounts(withCanonicalBuckets(overview.accounts), canonicalHistory, "workspace")
+      : reconcileProviderLimitAccounts(withCanonicalBuckets(overview.daemons), canonicalHistory, "daemon");
+  }, [canonicalHistory, overview.accounts, overview.daemons, view]);
   const hasReportedRecords = view === "accounts"
     ? overview.accounts.length > 0
     : overview.daemons.length > 0;
@@ -318,7 +322,7 @@ export function ProviderLimitsOverview({
                   key={`${record.daemon_id}:${record.runtime_id}:${record.provider}:${record.account_key}`}
                   wsId={wsId ?? ""}
                   record={record}
-                  history={history}
+                  history={canonicalHistory}
                   warningThreshold={warningThreshold}
                   criticalThreshold={criticalThreshold}
                 />

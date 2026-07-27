@@ -23,21 +23,24 @@ function snapshot(overrides: Record<string, unknown> = {}) {
       confidence: "official",
       freshness_seconds: 900,
     },
-    buckets: [
-      {
-        id: "five_hour",
-        label: "5-hour window",
-        unit: "percent",
-        limit_value: 100,
-        used_value: 30,
-        remaining_value: 70,
-        resets_at: "2026-07-19T15:00:00Z",
-        status: "ok",
-        note: "",
-      },
-    ],
+    buckets: [bucket()],
     error_note: "",
     stale: false,
+    ...overrides,
+  };
+}
+
+function bucket(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "session",
+    label: "Limit session",
+    unit: "percent",
+    limit_value: 100,
+    used_value: 30,
+    remaining_value: 70,
+    resets_at: "2026-07-19T15:00:00Z",
+    status: "ok",
+    note: "",
     ...overrides,
   };
 }
@@ -125,17 +128,13 @@ describe("ProviderLimitsOverview", () => {
       account_label: "profile-plus",
       checked_at: "2026-07-19T10:00:00Z",
       buckets: [
-        {
-          id: "primary",
+        bucket({
+          id: "weekly_all",
           label: "Primary 7d",
-          unit: "percent",
-          limit_value: 100,
           used_value: 88,
           remaining_value: 12,
           resets_at: "2026-07-25T11:43:13Z",
-          status: "ok",
-          note: "",
-        },
+        }),
       ],
     });
     const current = snapshot({
@@ -154,7 +153,7 @@ describe("ProviderLimitsOverview", () => {
     );
 
     expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByText("5-hour window")).toBeTruthy();
+    expect(screen.getByText("Limit session")).toBeTruthy();
     expect(screen.queryByText("Primary 7d")).toBeNull();
   });
 
@@ -189,7 +188,7 @@ describe("ProviderLimitsOverview", () => {
 
       expect(screen.getAllByRole("article")).toHaveLength(1);
       expect(screen.getByText("Plus")).toBeTruthy();
-      expect(screen.getByText("5-hour window")).toBeTruthy();
+      expect(screen.getByText("Limit session")).toBeTruthy();
       expect(screen.getByText("30% used")).toBeTruthy();
       expect(screen.getByText("Updated 15 minutes ago")).toBeTruthy();
 
@@ -267,6 +266,45 @@ describe("ProviderLimitsOverview", () => {
     fireEvent.click(screen.getByRole("button", { name: "By daemon" }));
 
     expect(screen.getAllByRole("article")).toHaveLength(2);
+  });
+
+  // A daemon build older than the app writes six Claude buckets: the three real
+  // quotas under "limit-" ids plus five_hour/seven_day/spend windows duplicating
+  // them. Both the card and the Details tabs must stay at the canonical three.
+  it("shows only the three canonical Claude buckets when a snapshot carries legacy windows", () => {
+    const legacyBuild = snapshot({
+      buckets: [
+        bucket({ id: "five_hour", label: "Five hour", used_value: 14, remaining_value: 86 }),
+        bucket({ id: "seven_day", label: "Seven day", used_value: 3, remaining_value: 97 }),
+        bucket({ id: "limit-session", label: "Limit session", used_value: 14, remaining_value: 86 }),
+        bucket({ id: "limit-weekly_all", label: "Limit weekly all", used_value: 3, remaining_value: 97 }),
+        bucket({ id: "limit-weekly_scoped", label: "Limit weekly scoped", used_value: 0, remaining_value: 100 }),
+        bucket({ id: "spend", label: "Spend", used_value: 0, remaining_value: 100 }),
+      ],
+    });
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [legacyBuild], daemons: [legacyBuild] }}
+        history={[legacyBuild]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    expect(screen.getByText("Limit session")).toBeTruthy();
+    expect(screen.getByText("Limit weekly all")).toBeTruthy();
+    expect(screen.getByText("Limit weekly scoped")).toBeTruthy();
+    expect(screen.queryByText("Five hour")).toBeNull();
+    expect(screen.queryByText("Seven day")).toBeNull();
+    expect(screen.queryByText("Spend")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Limit session",
+      "Limit weekly all",
+      "Limit weekly scoped",
+    ]);
   });
 
   it("shows a query error instead of treating it as an empty response", () => {
