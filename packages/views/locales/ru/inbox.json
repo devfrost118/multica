@@ -49,7 +49,8 @@
     "reaction_added": "Реакция",
     "quick_create_done": "Создано агентом",
     "quick_create_failed": "Не удалось создать агентом",
-    "issue_subscribed": "Подписан"
+    "issue_subscribed": "Подписан",
+    "quick_create_unconfirmed": "Создание с агентом не подтверждено"
   },
   "labels": {
     "set_status_to": "Установить статус",

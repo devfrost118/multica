@@ -190,7 +190,8 @@
     "name_label": "Имя",
     "description_label": "Описание",
     "labels_label": "Метки",
-    "labels_hint": "Метки рабочей области, используемые для классификации этого агента."
+    "labels_hint": "Метки рабочей области, используемые для классификации этого агента.",
+    "prop_speed": "Скорость"
   },
   "skill_attach": {
     "trigger_aria": "Прикрепить навык рабочей области",
@@ -221,7 +222,11 @@
     "thinking_tooltip": "Размышление · {{value}}",
     "thinking_clear": "Следовать конфигу CLI",
     "thinking_clear_title": "Сбросить переопределение и позволить локальному конфигу CLI (claude/codex) выбрать уровень рассуждения",
-    "runtime_back_to_machines": "Назад к машинам"
+    "runtime_back_to_machines": "Назад к машинам",
+    "service_tier_default": "По умолчанию для среды",
+    "service_tier_tooltip": "Скорость · {{value}}",
+    "service_tier_clear": "По умолчанию для среды",
+    "service_tier_clear_title": "Сбросить переопределение скорости и оставить решение за локальной конфигурацией Codex"
   },
   "model_dropdown": {
     "label": "Модель",
@@ -491,7 +496,9 @@
       "detail_provider": "Провайдер",
       "detail_plugin": "Плагин",
       "detail_files": "Файлы",
-      "detail_supporting_files": "Вспомогательные файлы"
+      "detail_supporting_files": "Вспомогательные файлы",
+      "runtime_toggle_aria": "Переключить наследуемый навык {{name}}",
+      "runtime_toggle_failed_toast": "Не удалось изменить статус наследуемого навыка"
     },
     "activity": {
       "section_now": "Сейчас",
@@ -631,10 +638,6 @@
     "status_failed": "С ошибкой",
     "filter": "Фильтр",
     "clear_filters": "Сбросить фильтры",
-    "tool_calls_one": "{{count}} вызов инструмента",
-    "tool_calls_few": "{{count}} вызова инструмента",
-    "tool_calls_many": "{{count}} вызовов инструмента",
-    "tool_calls_other": "{{count}} вызовов инструмента",
     "events_one": "{{count}} событие",
     "events_few": "{{count}} события",
     "events_many": "{{count}} событий",
@@ -649,10 +652,38 @@
     "sort_label": "Сортировка",
     "sort_chronological": "Сначала старые",
     "sort_newest_first": "Сначала новые",
-    "expand_visible": "Развернуть видимые",
-    "collapse_visible": "Свернуть видимые",
-    "preserve_filters": "Сохранять фильтры",
-    "default_expanded": "Открывать детали по умолчанию"
+    "density_label": "Режим раскрытия",
+    "density_smart": "Фокус",
+    "density_smart_desc": "Ответы и ошибки раскрыты; размышления и шаги инструментов свёрнуты",
+    "density_expanded": "Раскрыть всё",
+    "density_expanded_desc": "Полные параметры и вывод каждой строки — для пошагового разбора",
+    "density_collapsed": "Свернуть всё",
+    "density_collapsed_desc": "По одной строке на событие — самый компактный просмотр",
+    "no_output": "Нет вывода",
+    "show_all": "Показать все",
+    "status_queued": "В очереди",
+    "status_dispatched": "Отправлено",
+    "status_cancelled": "Отменено",
+    "status_waiting": "Ожидание",
+    "trigger_initial": "Первый запуск",
+    "trigger_comment": "Из комментария",
+    "trigger_autopilot": "Автопилот",
+    "trigger_retry": "Повтор",
+    "trigger_chat": "Из чата",
+    "trigger_quick_create": "Быстрое создание",
+    "trigger_direct": "Прямое назначение",
+    "run_info": "Детали запуска",
+    "details_runtime": "Среда выполнения",
+    "details_provider": "Провайдер",
+    "details_mode": "Режим",
+    "details_workdir": "Рабочий каталог",
+    "details_created": "Создано",
+    "details_started": "Начато",
+    "details_completed": "Завершено",
+    "copy_workdir": "Скопировать рабочий каталог",
+    "close": "Закрыть",
+    "fact_created": "Создано {{time}}",
+    "fact_took": "Заняло {{duration}}"
   },
   "task_failure": {
     "agent_error": "Ошибка выполнения агента",
@@ -819,7 +850,10 @@
       "prompt_assistant": "Помогать нашей команде планировать и оформлять проекты",
       "thinking": "Обновление черновика…",
       "placeholder": "Опишите нужного вам агента…",
-      "send": "Отправить сообщение"
+      "send": "Отправить сообщение",
+      "switch_runtime_failed": "Не удалось сменить среду выполнения. Диалог продолжается в предыдущей.",
+      "switch_runtime_pending": "Остановите текущий ответ, чтобы сменить среду выполнения.",
+      "switch_runtime_success": "Среда выполнения изменена. Черновик сохранён, диалог продолжается в новой среде с новой сессией модели."
     },
     "live_draft": "Конфигурация агента",
     "live_draft_hint": "Здесь появляются изменения из диалога, и вы можете напрямую скорректировать любое поле.",
@@ -828,6 +862,7 @@
     "create_and_add": "Создать и добавить в отряд",
     "creating": "Создание агента…",
     "create_failed": "Не удалось создать агента.",
-    "created": "{{name}} создан"
+    "created": "{{name}} создан",
+    "name_conflict": "Агент с таким именем уже существует."
   }
 }

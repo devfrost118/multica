@@ -124,8 +124,6 @@
     "empty": "Нет задач, подходящих для этого представления.",
     "search_placeholder": "Поиск по названию или ID задачи…",
     "search_clear": "Очистить поиск",
-    "loaded_count": "Загружено {{count}} из {{total}}",
-    "structure_paused": "Группировка и иерархия приостановлены — {{total}} задач превышают лимит в {{limit}} задач. Сузьте фильтры, чтобы включить их снова.",
     "load_failed": "Не удалось загрузить задачи.",
     "load_failed_retry": "Повторить",
     "load_more_failed_retry": "Не удалось загрузить ещё — Повторить",
@@ -168,7 +166,14 @@
       "sum": "Сумма",
       "average": "Среднее",
       "count": "Количество"
-    }
+    },
+    "rename_title": "Переименовать задачу",
+    "load_more": "Загрузить ещё",
+    "loading_branch": "Загрузка…",
+    "no_more": "Больше нет",
+    "value_unavailable": "Недоступное значение",
+    "group_property_unavailable": "Свойство группировки больше недоступно. Группировка сброшена.",
+    "group_active": "Группировка: {{group}}"
   },
   "gantt": {
     "header_issue": "Задача",
@@ -248,20 +253,6 @@
     "pull_request_state_draft": "Черновик",
     "pull_request_state_merged": "Слит",
     "pull_request_state_closed": "Закрыт",
-    "pull_request_checks_passed": "Проверки пройдены",
-    "pull_request_checks_failed": "Проверки не пройдены",
-    "pull_request_checks_pending": "Проверки в ожидании",
-    "pull_request_conflicts_clean": "Нет конфликтов",
-    "pull_request_conflicts_dirty": "Конфликты",
-    "pull_request_card_status_closed": "Закрыт без слияния",
-    "pull_request_card_status_merged": "Слит",
-    "pull_request_card_status_conflicts": "Есть конфликты слияния",
-    "pull_request_card_status_checks_failed": "Некоторые проверки не пройдены",
-    "pull_request_card_status_checks_pending": "Некоторые проверки ещё не завершены",
-    "pull_request_card_status_checks_passed": "Все проверки пройдены",
-    "pull_request_card_status_ready": "Готов к слиянию",
-    "pull_request_card_status_unknown": "Проверки ещё не отчитались",
-    "pull_request_card_draft_prefix": "Черновик · {{status}}",
     "pull_request_card_files_count_one": "{{count}} файл",
     "pull_request_card_files_count_few": "{{count}} файла",
     "pull_request_card_files_count_many": "{{count}} файлов",
@@ -311,7 +302,21 @@
       "next": "Следующее совпадение",
       "close": "Закрыть поиск"
     },
-    "thread_nav_label": "Перейти к ветке комментариев"
+    "thread_nav_label": "Перейти к ветке комментариев",
+    "pull_request_checks_none": "Проверок пока нет",
+    "pull_request_checks_all_passed": "Все проверки пройдены ({{total}}/{{total}})",
+    "pull_request_checks_running": "{{passed}}/{{total}} · выполняется {{running}}",
+    "pull_request_checks_failed_count": "{{failed}}/{{total}} с ошибкой",
+    "pull_request_checks_failed_named": "{{failed}}/{{total}} с ошибкой · {{names}}",
+    "pull_request_checks_more": "ещё +{{count}}",
+    "pull_request_merge_conflicting": "Есть конфликты слияния",
+    "pull_request_merge_ready": "Готов к слиянию",
+    "pull_request_merge_blocked": "Заблокирован",
+    "pull_request_merge_behind": "Отстаёт от базовой ветки",
+    "pull_request_merge_unstable": "Нестабилен",
+    "pull_request_merge_has_hooks": "Есть хуки",
+    "pull_request_snapshot_stale": "Обновлено {{time}}",
+    "pull_request_snapshot_stale_unknown": "Снимок может быть устаревшим"
   },
   "timeline": {
     "loading": "Загрузка..."
