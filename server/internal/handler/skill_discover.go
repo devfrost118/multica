@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -54,7 +55,7 @@ func selectSkillDirsFromTree(tree []githubTreeEntry, scope string) []string {
 // for each SKILL.md reads its frontmatter to build a candidate list. Only the
 // SKILL.md bodies are fetched here — supporting files are fetched at import
 // time by the existing single-skill importer.
-func (h *Handler) discoverGitHubSkills(rawURL string) (*SkillDiscoveryResponse, error) {
+func (h *Handler) discoverGitHubSkills(ctx context.Context, rawURL string) (*SkillDiscoveryResponse, error) {
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 
 	spec, err := parseGitHubURL(rawURL)
@@ -62,19 +63,19 @@ func (h *Handler) discoverGitHubSkills(rawURL string) (*SkillDiscoveryResponse, 
 		return nil, err
 	}
 	if len(spec.refSegments) > 0 {
-		if err := resolveGitHubRefAndPath(httpClient, &spec); err != nil {
+		if err := resolveGitHubRefAndPath(ctx, httpClient, &spec); err != nil {
 			return nil, err
 		}
 	}
 	if spec.ref == "" {
-		spec.ref = fetchGitHubDefaultBranch(httpClient, spec.owner, spec.repo)
+		spec.ref = fetchGitHubDefaultBranch(ctx, httpClient, spec.owner, spec.repo)
 	}
 
 	treeURL := fmt.Sprintf(
 		"https://api.github.com/repos/%s/%s/git/trees/%s?recursive=1",
 		spec.owner, spec.repo, escapeRefPath(spec.ref),
 	)
-	resp, err := doGitHubAPIGet(httpClient, treeURL)
+	resp, err := doGitHubAPIGet(ctx, httpClient, treeURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to reach GitHub: %w", err)
 	}
@@ -103,7 +104,7 @@ func (h *Handler) discoverGitHubSkills(rawURL string) (*SkillDiscoveryResponse, 
 		if dir != "" {
 			mdPath = dir + "/SKILL.md"
 		}
-		body, err := fetchRawFile(httpClient, buildRawGitHubURL(rawPrefix, mdPath))
+		body, err := fetchRawFile(ctx, httpClient, buildRawGitHubURL(rawPrefix, mdPath))
 		if err != nil {
 			// unreadable/oversize SKILL.md → skip this candidate
 			continue
@@ -156,7 +157,7 @@ func (h *Handler) DiscoverSkills(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.discoverGitHubSkills(normalized)
+	result, err := h.discoverGitHubSkills(r.Context(), normalized)
 	if err != nil {
 		writeError(w, http.StatusBadGateway, err.Error())
 		return

@@ -45,6 +45,7 @@ import {
 } from "../../platform";
 import { useT } from "../../i18n";
 import { ProjectEnvironmentsSection } from "./project-environments-section";
+import { githubShortLabel } from "../../common/github-url";
 
 // Project Resources sidebar section.
 //
@@ -327,7 +328,7 @@ export function ProjectResourcesSection({ projectId }: { projectId: string }) {
                           <Tooltip>
                             <TooltipTrigger
                               render={
-                                <span className="truncate flex-1">{repo.url}</span>
+                                <span className="truncate flex-1">{githubShortLabel(repo.url)}</span>
                               }
                             />
                             <TooltipContent side="top">{repo.url}</TooltipContent>
@@ -412,7 +413,7 @@ function ResourceRow({
   const { t } = useT("projects");
   if (isGithubRef(resource)) {
     const ref = resource.resource_ref;
-    const display = resource.label || (ref.ref ? `${ref.url} @ ${ref.ref}` : ref.url);
+    const display = resource.label || (ref.ref ? `${githubShortLabel(ref.url)} @ ${ref.ref}` : githubShortLabel(ref.url));
     const tooltip = ref.ref ? `${ref.url}\nref: ${ref.ref}` : ref.url;
     return (
       <div className="flex items-center gap-2 text-xs group">

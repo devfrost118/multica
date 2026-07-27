@@ -65,6 +65,10 @@ type ExecOptions struct {
 	// the field rather than fail (so MUL-2339 can grow runtime support
 	// incrementally without breaking unrelated agents).
 	ThinkingLevel string
+	// ServiceTier is a runtime-native Codex execution tier (for example
+	// "priority", displayed as Fast). Empty means inherit local Codex config.
+	// Other providers ignore this field.
+	ServiceTier string
 	// OpenclawMode chooses between local (embedded) and gateway routing for
 	// the openclaw backend. "" or "local" keeps the historical behaviour —
 	// the daemon spawns `openclaw agent --local …` and the agent loop runs
@@ -76,6 +80,10 @@ type ExecOptions struct {
 	// ignore this field, mirroring ThinkingLevel's renderer-side fall-through
 	// pattern. See issue #3260.
 	OpenclawMode string
+	// ClaudeSettingsPath is a daemon-owned, task-local settings file passed
+	// through Claude Code's --settings flag. It currently carries restrictive
+	// runtime-skill overrides only; other providers ignore it.
+	ClaudeSettingsPath string
 }
 
 // runContext derives the execution context for an agent subprocess from the
@@ -132,7 +140,22 @@ type TokenUsage struct {
 	OutputTokens     int64
 	CacheReadTokens  int64
 	CacheWriteTokens int64
+	// CostUSDTicks is the provider's own statement of what this usage cost,
+	// in ticks of 1e-10 USD. Zero means "not reported" — only a few agents
+	// return it (xAI Grok Build does, via `_meta.usage.costUsdTicks`).
+	//
+	// It matters because a token-times-rate estimate cannot reproduce
+	// request-level pricing rules. xAI bills a request at 2x once its prompt
+	// reaches 200K tokens, and a usage record aggregates every model call in
+	// a turn — so the stored token counts cannot say which tier any single
+	// request hit. The provider's own figure already has that priced in.
+	CostUSDTicks int64
 }
+
+// CostUSDTicksPerUSD is the scale of the provider-reported cost unit: xAI
+// reports whole ticks of 1e-10 USD, which keeps sub-cent turn costs exact in
+// int64 all the way to the database instead of drifting through float64.
+const CostUSDTicksPerUSD = 10_000_000_000
 
 // Result is the final outcome after an agent session completes.
 type Result struct {
@@ -142,11 +165,38 @@ type Result struct {
 	DurationMs int64
 	SessionID  string
 	Usage      map[string]TokenUsage // keyed by model name
+	// ResumeRejected is positive evidence that this run's requested resume
+	// was itself refused — the transcript is gone, the session belongs to
+	// another provider account, OR the session still exists but its history
+	// can no longer be replayed to the provider (e.g. GH #5975: a stored
+	// image now exceeds the provider's max dimensions, so every resumed
+	// session/prompt is rejected before the turn runs). What unites these is
+	// that the resume CANNOT continue and only starting over can cure it, so
+	// it is what the daemon's fresh-session fallback looks for first. Note the
+	// last case keeps a non-empty SessionID (the id is real, only its history
+	// is unusable) — the daemon gates on this boolean, not an empty id.
+	//
+	// false is NOT evidence of the opposite. For a backend listed in
+	// ResumeRejectionUndetectable it means "could not tell"; for every other
+	// backend it means "checked, and this was not a rejection". The daemon
+	// needs the provider name to tell those apart — see
+	// shouldRetryWithFreshSession in internal/daemon.
+	//
+	// Backends must NOT set it for failures a new session cannot cure:
+	// network drops, rate limits, quota, provider 5xx, or auth errors. Those
+	// keep the session pointer so the platform's own retry can resume the
+	// truncated conversation (see retryableReasons in internal/service/task.go).
+	ResumeRejected bool
 	// codexInitializeRetrySafe is provider-internal evidence that an
 	// initialize timeout happened before semantic activity and after the
 	// process tree was reaped. It is intentionally not part of the public
 	// result contract.
 	codexInitializeRetrySafe bool
+	// codexStartupRefreshRetrySafe is provider-internal evidence that the
+	// first turn produced no semantic progress because Codex could not load
+	// its model catalog, and that the process tree was reaped afterwards.
+	// Like codexInitializeRetrySafe it is not part of the public contract.
+	codexStartupRefreshRetrySafe bool
 }
 
 // Config configures a Backend instance.
@@ -209,6 +259,33 @@ func IsSupportedType(agentType string) bool {
 		}
 	}
 	return false
+}
+
+// resumeRejectionUndetectable lists the backends that cannot produce
+// Result.ResumeRejected at all. They scrape SessionID out of stream output and
+// have no rejection detection: no phrase match, no structured error code, no
+// internal restart. copilot's own comment documents the hole (a session.error
+// arriving before session.start leaves SessionID empty), and antigravity's
+// conversation-id reader returns "" whenever the CLI exits before dispatching.
+//
+// Membership is deliberately opt-in. A backend absent from this map is treated
+// as capable, so a new backend fails closed — it reports no rejection and gets
+// no fallback — rather than silently inheriting a guess-based retry. Remove an
+// entry as soon as its backend learns to report rejections.
+var resumeRejectionUndetectable = map[string]bool{
+	"antigravity": true,
+	"copilot":     true,
+	"cursor":      true,
+	"deveco":      true,
+	"opencode":    true,
+}
+
+// ResumeRejectionUndetectable reports whether agentType is a backend that
+// cannot tell a refused resume from any other startup failure. Callers use it
+// to read a false Result.ResumeRejected correctly: "could not tell" for these,
+// "checked, not a rejection" for everything else.
+func ResumeRejectionUndetectable(agentType string) bool {
+	return resumeRejectionUndetectable[agentType]
 }
 
 func New(agentType string, cfg Config) (Backend, error) {
