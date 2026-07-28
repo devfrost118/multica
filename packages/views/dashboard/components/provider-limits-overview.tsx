@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Loader2, Server, SlidersHorizontal } from "lucide-react";
 
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
@@ -416,6 +416,7 @@ function ProviderLimitCard({
   const lastSuccessfulAt =
     record.last_successful_at || (record.buckets.length > 0 ? record.checked_at : "");
   const lastAttemptedAt = record.last_attempted_at || record.checked_at;
+  const reason = useProviderLimitReasonLabel(record.error_note);
   return (
     <article className="rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -445,7 +446,9 @@ function ProviderLimitCard({
           <BucketRow key={bucket.id} bucket={bucket} warningThreshold={warningThreshold} criticalThreshold={criticalThreshold} />
         ))}
         {record.buckets.length === 0 && (
-          <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
+          <p className="text-xs text-muted-foreground">
+            {reason || t(($) => $.provider_limits.no_buckets)}
+          </p>
         )}
       </div>
     </article>
@@ -492,6 +495,27 @@ function BucketRow({
       {bucket.note && <p className="mt-1 text-xs text-muted-foreground">{titleCase(bucket.note)}</p>}
     </div>
   );
+}
+
+// A provider that reports no quota is only useful if the card says what to do
+// about it. The reason code is the daemon's machine-readable diagnosis
+// (`credential_missing` for Factory, `reauth_required` for Cursor), so it maps
+// to one actionable sentence shared by the card and the Details dialog.
+export function useProviderLimitReasonLabel(errorNote: string | undefined): string {
+  const { t } = useT("usage");
+  const labels: Record<string, string> = {
+    auth_expired: t(($) => $.provider_limits.reasons.auth_expired),
+    authentication_required: t(($) => $.provider_limits.reasons.authentication_required),
+    reauth_required: t(($) => $.provider_limits.reasons.reauth_required),
+    onboarding_required: t(($) => $.provider_limits.reasons.onboarding_required),
+    usage_unavailable: t(($) => $.provider_limits.reasons.usage_unavailable),
+    rate_limited: t(($) => $.provider_limits.reasons.rate_limited),
+    unsupported_platform: t(($) => $.provider_limits.reasons.unsupported_platform),
+    credential_missing: t(($) => $.provider_limits.reasons.credential_missing),
+    credential_invalid: t(($) => $.provider_limits.reasons.credential_invalid),
+  };
+  if (!errorNote) return "";
+  return labels[errorNote] ?? titleCase(errorNote);
 }
 
 export function useProviderLimitStatusLabel(status: string): string {

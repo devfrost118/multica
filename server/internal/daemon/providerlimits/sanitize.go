@@ -65,11 +65,15 @@ func SanitizeSnapshots(input []AccountSnapshot, caps SanitizationCaps) []Account
 		}
 
 		bucketLimit := min(len(snapshot.Buckets), caps.MaxBucketsPerSnapshot)
-		copied.Buckets = make([]Bucket, bucketLimit)
-		for index, bucket := range snapshot.Buckets[:bucketLimit] {
-			copied.Buckets[index] = Bucket{
-				ID:             safeIdentifier(bucket.ID, reasonCode, caps.MaxTextLength),
-				Label:          safeIdentifier(bucket.Label, bucketLabel, caps.MaxTextLength),
+		copied.Buckets = make([]Bucket, 0, bucketLimit)
+		for _, bucket := range snapshot.Buckets[:bucketLimit] {
+			id, label := safeBucketIdentity(bucket, caps.MaxTextLength)
+			if id == "" || label == "" {
+				continue
+			}
+			copied.Buckets = append(copied.Buckets, Bucket{
+				ID:             id,
+				Label:          label,
 				Unit:           safeUnit(bucket.Unit),
 				LimitValue:     cloneNumber(bucket.LimitValue),
 				UsedValue:      cloneNumber(bucket.UsedValue),
@@ -77,11 +81,27 @@ func SanitizeSnapshots(input []AccountSnapshot, caps SanitizationCaps) []Account
 				ResetsAt:       cloneTime(bucket.ResetsAt),
 				Status:         safeStatus(bucket.Status),
 				Note:           safeReason(bucket.Note),
-			}
+			})
 		}
 		output = append(output, copied)
 	}
 	return output
+}
+
+// safeBucketIdentity returns the id and label a bucket may cross the boundary
+// with. A label the allowlist cannot represent falls back to the already-safe
+// id instead of becoming empty: the transport contract requires a non-empty
+// label, and the ingest endpoint rejects the whole batch when one bucket
+// violates it, so a single adapter's cosmetic label would otherwise drop every
+// provider's snapshot. A bucket with no safe id has no stable identity to
+// display or chart, so callers drop it.
+func safeBucketIdentity(bucket Bucket, maxLength int) (id, label string) {
+	id = safeIdentifier(bucket.ID, reasonCode, maxLength)
+	label = safeIdentifier(bucket.Label, bucketLabel, maxLength)
+	if label == "" {
+		label = id
+	}
+	return id, label
 }
 
 func safeReason(value string) string {

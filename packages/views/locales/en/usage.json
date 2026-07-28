@@ -86,7 +86,9 @@
       "onboarding_required": "Finish setup in the provider's CLI to collect usage data.",
       "usage_unavailable": "Usage data could not be collected. Try again.",
       "rate_limited": "The provider temporarily limited usage checks.",
-      "unsupported_platform": "Usage collection is not supported on this operating system."
+      "unsupported_platform": "Usage collection is not supported on this operating system.",
+      "credential_missing": "No token is connected. Open Details and add one to collect usage data.",
+      "credential_invalid": "The saved token was rejected. Open Details and replace it."
     },
     "thresholds": {
       "title": "Alerts",
