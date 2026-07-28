@@ -80,8 +80,11 @@
     "reasons": {
       "auth_expired": "身份验证已过期。请重新登录 Codex。",
       "authentication_required": "请登录 Codex 以采集用量数据。",
+      "reauth_required": "本地会话已过期。请通过提供商 CLI 重新登录。",
+      "onboarding_required": "请在提供商 CLI 中完成设置，以采集用量数据。",
       "usage_unavailable": "无法采集用量数据，请重试。",
-      "rate_limited": "提供商暂时限制了检查频率。"
+      "rate_limited": "提供商暂时限制了检查频率。",
+      "unsupported_platform": "当前操作系统不支持采集用量数据。"
     },
     "thresholds": {
       "title": "提醒",

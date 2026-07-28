@@ -80,8 +80,11 @@
     "reasons": {
       "auth_expired": "認証の有効期限が切れました。Codex にもう一度サインインしてください。",
       "authentication_required": "使用量データを取得するには Codex にサインインしてください。",
+      "reauth_required": "ローカルセッションの有効期限が切れました。プロバイダーの CLI で再度サインインしてください。",
+      "onboarding_required": "使用量データを取得するには、プロバイダーの CLI でセットアップを完了してください。",
       "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。",
-      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。"
+      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。",
+      "unsupported_platform": "この OS では使用量データの取得はサポートされていません。"
     },
     "thresholds": {
       "title": "アラート",

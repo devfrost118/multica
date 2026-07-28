@@ -80,8 +80,11 @@
     "reasons": {
       "auth_expired": "Authentication expired. Sign in to Codex again.",
       "authentication_required": "Sign in to Codex to collect usage data.",
+      "reauth_required": "The local session expired. Sign in with the provider's CLI again.",
+      "onboarding_required": "Finish setup in the provider's CLI to collect usage data.",
       "usage_unavailable": "Usage data could not be collected. Try again.",
-      "rate_limited": "The provider temporarily limited usage checks."
+      "rate_limited": "The provider temporarily limited usage checks.",
+      "unsupported_platform": "Usage collection is not supported on this operating system."
     },
     "thresholds": {
       "title": "Alerts",

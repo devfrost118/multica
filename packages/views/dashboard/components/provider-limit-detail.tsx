@@ -213,8 +213,11 @@ function ProviderLimitMetadata({
   const reasonLabels: Record<string, string> = {
     auth_expired: t(($) => $.provider_limits.reasons.auth_expired),
     authentication_required: t(($) => $.provider_limits.reasons.authentication_required),
+    reauth_required: t(($) => $.provider_limits.reasons.reauth_required),
+    onboarding_required: t(($) => $.provider_limits.reasons.onboarding_required),
     usage_unavailable: t(($) => $.provider_limits.reasons.usage_unavailable),
     rate_limited: t(($) => $.provider_limits.reasons.rate_limited),
+    unsupported_platform: t(($) => $.provider_limits.reasons.unsupported_platform),
   };
   const reason = record.error_note
     ? (reasonLabels[record.error_note] ?? titleCase(record.error_note))
