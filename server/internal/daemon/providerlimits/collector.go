@@ -113,10 +113,12 @@ func (c *Collector) CollectOnce(ctx context.Context) error {
 	return c.collect(ctx, false, nil)
 }
 
-// CollectRefresh performs one user-requested collection. It may bypass a
-// provider's normal success cadence, but it never bypasses an active failure
-// backoff: a 429 or transport failure must remain storm-safe even after
-// repeated clicks.
+// CollectRefresh performs one user-requested collection. It bypasses both the
+// provider's normal success cadence and an active failure backoff, so a click
+// always produces one fresh attempt instead of silently reusing an aging
+// reading. It stays storm-safe because a click can only ever start a single
+// attempt per provider: a provider already being probed is skipped, and the
+// exponential backoff still governs the scheduled loop.
 func (c *Collector) CollectRefresh(ctx context.Context, refreshIDs ...string) error {
 	return c.collect(ctx, true, refreshIDs)
 }
@@ -217,7 +219,7 @@ func (c *Collector) beginAttempt(provider string, now time.Time, manual bool) bo
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	state := c.states[provider]
-	if state.inFlight || now.Before(state.backoffUntil) || (!manual && now.Before(state.nextScheduled)) {
+	if state.inFlight || (!manual && (now.Before(state.backoffUntil) || now.Before(state.nextScheduled))) {
 		return false
 	}
 	state.inFlight = true

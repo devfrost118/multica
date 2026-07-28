@@ -312,7 +312,7 @@ func TestCollector_HonorsAdapterMinimumIntervalAfterSuccess(t *testing.T) {
 	}
 }
 
-func TestCollector_ManualRefreshBypassesSuccessIntervalButHonorsBackoff(t *testing.T) {
+func TestCollector_ManualRefreshBypassesSuccessInterval(t *testing.T) {
 	t.Parallel()
 
 	now := time.Date(2026, time.July, 19, 19, 0, 0, 0, time.UTC)
@@ -323,9 +323,6 @@ func TestCollector_ManualRefreshBypassesSuccessIntervalButHonorsBackoff(t *testi
 			caps:     Capabilities{MinimumInterval: 15 * time.Minute},
 			collect: func(context.Context) ([]AccountSnapshot, error) {
 				attempts++
-				if attempts == 3 {
-					return nil, errors.New("rate limited")
-				}
 				return []AccountSnapshot{testSnapshot("claude")}, nil
 			},
 		}},
@@ -346,13 +343,91 @@ func TestCollector_ManualRefreshBypassesSuccessIntervalButHonorsBackoff(t *testi
 	if attempts != 2 {
 		t.Fatalf("attempts after manual refresh = %d, want 2", attempts)
 	}
-	if err := collector.CollectRefresh(context.Background()); err != nil {
-		t.Fatalf("failing CollectRefresh() error = %v", err)
+}
+
+// TestCollector_ManualRefreshRetriesProviderInFailureBackoff pins the manual
+// path a user can actually observe: a provider parked in failure backoff after
+// a 429 must still be probed once per click, otherwise the card keeps showing
+// the aging last-good reading and the refresh request is never answered.
+func TestCollector_ManualRefreshRetriesProviderInFailureBackoff(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, time.July, 28, 12, 0, 0, 0, time.UTC)
+	attempts := 0
+	var reported []AccountSnapshot
+	collector := NewCollector(CollectorConfig{
+		Adapters: []Adapter{adapterFunc{provider: "codex", collect: func(context.Context) ([]AccountSnapshot, error) {
+			attempts++
+			if attempts == 1 {
+				return nil, errors.New("rate limited")
+			}
+			return []AccountSnapshot{testSnapshot("codex")}, nil
+		}}},
+		Reporter: reporterFunc(func(_ context.Context, snapshots []AccountSnapshot) error {
+			reported = snapshots
+			return nil
+		}),
+		Now:     func() time.Time { return now },
+		Backoff: BackoffConfig{Base: 30 * time.Minute, Max: 30 * time.Minute},
+	})
+
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("failing CollectOnce() error = %v", err)
 	}
-	if err := collector.CollectRefresh(context.Background()); err != nil {
-		t.Fatalf("backed off CollectRefresh() error = %v", err)
+	if err := collector.CollectOnce(context.Background()); err != nil {
+		t.Fatalf("backed off CollectOnce() error = %v", err)
 	}
-	if attempts != 3 {
-		t.Fatalf("attempts after backoff = %d, want 3", attempts)
+	if attempts != 1 {
+		t.Fatalf("scheduled attempts = %d, want 1 while backing off", attempts)
+	}
+
+	if err := collector.CollectRefresh(context.Background(), "refresh-1"); err != nil {
+		t.Fatalf("CollectRefresh() error = %v", err)
+	}
+	if attempts != 2 {
+		t.Fatalf("attempts after manual refresh = %d, want 2", attempts)
+	}
+	if len(reported) != 1 || reported[0].Provider != "codex" || reported[0].Status != StatusOK {
+		t.Fatalf("reported snapshots = %#v, want one fresh codex reading", reported)
+	}
+}
+
+// TestCollector_ManualRefreshDoesNotRelaunchProviderStillInFlight keeps the
+// bypass storm-safe: with failure backoff no longer gating manual attempts, the
+// in-flight guard is the only thing left that stops repeated clicks from
+// stacking concurrent probes on one provider.
+func TestCollector_ManualRefreshDoesNotRelaunchProviderStillInFlight(t *testing.T) {
+	t.Parallel()
+
+	var mu sync.Mutex
+	attempts := 0
+	started := make(chan struct{})
+	release := make(chan struct{})
+	collector := NewCollector(CollectorConfig{
+		Adapters: []Adapter{adapterFunc{provider: "codex", caps: Capabilities{Timeout: 5 * time.Millisecond}, collect: func(context.Context) ([]AccountSnapshot, error) {
+			mu.Lock()
+			attempts++
+			mu.Unlock()
+			close(started)
+			<-release
+			return nil, nil
+		}}},
+		Reporter: reporterFunc(func(context.Context, []AccountSnapshot) error { return nil }),
+		Backoff:  BackoffConfig{Base: time.Hour, Max: time.Hour},
+	})
+
+	if err := collector.CollectRefresh(context.Background(), "refresh-1"); err != nil {
+		t.Fatalf("first CollectRefresh() error = %v", err)
+	}
+	<-started
+	if err := collector.CollectRefresh(context.Background(), "refresh-2"); err != nil {
+		t.Fatalf("second CollectRefresh() error = %v", err)
+	}
+	close(release)
+
+	mu.Lock()
+	defer mu.Unlock()
+	if attempts != 1 {
+		t.Fatalf("in-flight provider attempts = %d, want 1", attempts)
 	}
 }
