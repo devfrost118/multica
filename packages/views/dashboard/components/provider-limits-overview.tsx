@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Server, SlidersHorizontal } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlertCircle, Loader2, Server, SlidersHorizontal } from "lucide-react";
 
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
 import { useProviderLimitSettingsStore, withCanonicalBuckets } from "@multica/core/provider-limits";
@@ -277,15 +277,18 @@ export function ProviderLimitsOverview({
     ? overview.accounts.length > 0
     : overview.daemons.length > 0;
   const refreshRuntimeID = records.find((record) => record.runtime_id)?.runtime_id;
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  // A refresh is queued per runtime, not per provider, so the daemon re-probes
+  // every provider it owns at once. Tracking the runtime instead of a plain
+  // boolean lets each card decide whether the running refresh covers it.
+  const [refreshingRuntimeID, setRefreshingRuntimeID] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     if (!refreshRuntimeID || !onRefresh) return;
-    setIsRefreshing(true);
+    setRefreshingRuntimeID(refreshRuntimeID);
     try {
       await onRefresh(refreshRuntimeID);
     } finally {
-      setIsRefreshing(false);
+      setRefreshingRuntimeID(null);
     }
   };
 
@@ -319,8 +322,8 @@ export function ProviderLimitsOverview({
             {t(($) => $.provider_limits.by_daemon)}
           </button>
         </div>
-        <button type="button" className="rounded-md border px-2.5 py-1 text-xs font-medium disabled:opacity-50" disabled={!refreshRuntimeID || isRefreshing} onClick={() => void handleRefresh()}>
-          {isRefreshing ? "Refreshing…" : "Refresh"}
+        <button type="button" className="rounded-md border px-2.5 py-1 text-xs font-medium disabled:opacity-50" disabled={!refreshRuntimeID || refreshingRuntimeID !== null} onClick={() => void handleRefresh()}>
+          {t(($) => $.provider_limits.refresh)}
         </button>
       </div>
 
@@ -355,6 +358,7 @@ export function ProviderLimitsOverview({
                   history={canonicalHistory}
                   warningThreshold={warningThreshold}
                   criticalThreshold={criticalThreshold}
+                  isRefreshing={record.runtime_id === refreshingRuntimeID}
                 />
               ))}
             </div>
@@ -398,12 +402,14 @@ function ProviderLimitCard({
   history,
   warningThreshold,
   criticalThreshold,
+  isRefreshing,
 }: {
   wsId: string;
   record: ProviderLimitSnapshot;
   history: ProviderLimitSnapshot[];
   warningThreshold: number;
   criticalThreshold: number;
+  isRefreshing: boolean;
 }) {
   const { t, i18n } = useT("usage");
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -430,6 +436,7 @@ function ProviderLimitCard({
         </div>
         <div className="flex items-center gap-2">
           <FreshnessBadge record={record} />
+          {isRefreshing && <RefreshSpinner />}
           <ProviderLimitDetail wsId={wsId} record={record} history={history} />
         </div>
       </div>
@@ -445,6 +452,19 @@ function ProviderLimitCard({
   );
 }
 
+
+// Per-card progress for the running refresh. The icon is decorative, so the
+// accessible name lives on the `status` wrapper — screen readers announce the
+// card that is being refreshed instead of an unnamed image.
+function RefreshSpinner() {
+  const { t } = useT("usage");
+  const label = t(($) => $.provider_limits.refreshing);
+  return (
+    <span role="status" aria-label={label} title={label} className="text-muted-foreground">
+      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
+    </span>
+  );
+}
 
 function BucketRow({
   bucket,

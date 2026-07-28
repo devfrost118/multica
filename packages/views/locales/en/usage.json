@@ -61,6 +61,8 @@
     "by_accounts": "By accounts",
     "by_daemon": "By daemon",
     "loading": "Loading provider limits…",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing usage data…",
     "empty": "No provider limits reported yet.",
     "error": "Provider limits could not be loaded.",
     "unknown": "Unknown",

@@ -102,6 +102,10 @@ function rangesForDim(dim: Dim) {
   return TIME_RANGES.filter((r) => (r.dims as readonly string[]).includes(dim));
 }
 
+// How long a queued provider-limits refresh is given to reach the daemon and
+// land a new snapshot before the overview re-reads it.
+const PROVIDER_LIMITS_REFRESH_SETTLE_MS = 1500;
+
 // Sentinel for "no project filter" — kept distinct from the empty string
 // so it survives a refactor that ever lets a project be slug-keyed.
 const ALL_PROJECTS = "__all__";
@@ -268,12 +272,19 @@ export function DashboardPage() {
   const providerLimitHistory = Array.isArray(providerLimitHistoryQuery.data?.snapshots)
     ? providerLimitHistoryQuery.data.snapshots
     : EMPTY_PROVIDER_LIMIT_HISTORY;
+  // The daemon collects out of band, so the queued refresh needs a beat before
+  // the re-read can see it. Awaiting both the delay and the re-fetch is what
+  // makes the returned promise mean "this refresh is done" — the overview
+  // shows its per-card spinners for exactly that long.
   const refreshProviderLimits = async (runtimeId: string) => {
     await api.requestProviderLimitsRefresh(runtimeId);
-    window.setTimeout(() => {
-      void providerLimitsQuery.refetch();
-      void providerLimitHistoryQuery.refetch();
-    }, 1500);
+    await new Promise((resolve) =>
+      window.setTimeout(resolve, PROVIDER_LIMITS_REFRESH_SETTLE_MS),
+    );
+    await Promise.all([
+      providerLimitsQuery.refetch(),
+      providerLimitHistoryQuery.refetch(),
+    ]);
   };
 
   // Daily-aggregation surfaces (cost/tokens/time/tasks KPIs and the Daily
