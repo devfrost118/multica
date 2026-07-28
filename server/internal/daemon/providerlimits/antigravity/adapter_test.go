@@ -24,7 +24,7 @@ const (
 	testResetTime   = "2026-07-27T21:48:31Z"
 )
 
-func TestAdapterReportsOneSessionBucketFromAccountQuota(t *testing.T) {
+func TestAdapterReportsOneBucketPerFamilyFromAccountQuota(t *testing.T) {
 	now := time.Date(2026, time.July, 27, 17, 0, 0, 0, time.UTC)
 	service, baseURL := newFakeService(t, map[string]route{
 		loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
@@ -48,19 +48,26 @@ func TestAdapterReportsOneSessionBucketFromAccountQuota(t *testing.T) {
 	if snapshot.AccountLabel != "profile-gemini-code-assist-in-google-one-ai-pro" {
 		t.Fatalf("account label = %q", snapshot.AccountLabel)
 	}
-	if len(snapshot.Buckets) != 1 {
+	if len(snapshot.Buckets) != 2 {
 		t.Fatalf("bucket count = %d: %#v", len(snapshot.Buckets), snapshot.Buckets)
 	}
-	bucket := snapshot.Buckets[0]
-	if bucket.ID != sessionBucketID || bucket.Label != sessionBucketLabel || bucket.Unit != providerlimits.UnitPercent {
-		t.Fatalf("bucket identity = %#v", bucket)
+	if snapshot.Buckets[0].ID != claudeBucketID || snapshot.Buckets[0].Label != claudeBucketLabel {
+		t.Fatalf("claude bucket identity = %#v", snapshot.Buckets[0])
 	}
-	// Internal models sit at remainingFraction 0.1; counting them would report 90.
-	if bucket.UsedValue == nil || *bucket.UsedValue != 0 || bucket.RemainingValue == nil || *bucket.RemainingValue != 100 {
-		t.Fatalf("bucket values = %#v", bucket)
+	if snapshot.Buckets[1].ID != geminiBucketID || snapshot.Buckets[1].Label != geminiBucketLabel {
+		t.Fatalf("gemini bucket identity = %#v", snapshot.Buckets[1])
 	}
-	if bucket.ResetsAt != nil {
-		t.Fatalf("untouched quota exposed a sliding reset: %v", bucket.ResetsAt)
+	for _, bucket := range snapshot.Buckets {
+		if bucket.Unit != providerlimits.UnitPercent {
+			t.Fatalf("bucket unit = %#v", bucket)
+		}
+		// Internal models sit at remainingFraction 0.1; counting them would report 90.
+		if bucket.UsedValue == nil || *bucket.UsedValue != 0 || bucket.RemainingValue == nil || *bucket.RemainingValue != 100 {
+			t.Fatalf("bucket values = %#v", bucket)
+		}
+		if bucket.ResetsAt != nil {
+			t.Fatalf("untouched quota exposed a sliding reset: %v", bucket.ResetsAt)
+		}
 	}
 
 	requests := service.recorded()
@@ -103,6 +110,76 @@ func TestAdapterReportsUsedPercentAndEarliestResetWhenQuotaConsumed(t *testing.T
 	}
 	if bucket.ResetsAt == nil || !bucket.ResetsAt.Equal(time.Date(2026, time.July, 27, 21, 48, 31, 0, time.UTC)) {
 		t.Fatalf("resets at = %v", bucket.ResetsAt)
+	}
+}
+
+// A controlled quota check proved the pools are independent: one `agy` call on
+// a Claude model moved the claude/gpt-oss fraction and its resetTime while the
+// gemini fraction and resetTime stood still. Folding them into one bucket
+// reports whichever family is worse and hides the other entirely.
+func TestAdapterReportsIndependentBucketPerQuotaFamily(t *testing.T) {
+	now := time.Date(2026, time.July, 27, 17, 0, 0, 0, time.UTC)
+	const geminiReset = "2026-07-27T22:40:22Z"
+	_, baseURL := newFakeService(t, map[string]route{
+		loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
+		fetchAvailableModelsPath: {status: http.StatusOK, body: familyModelsFixture(0.9, testResetTime, 0.5, geminiReset)},
+	})
+
+	snapshots, err := newTestAdapter(baseURL, now, validCredential(now)).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	buckets := snapshots[0].Buckets
+	if len(buckets) != 2 {
+		t.Fatalf("bucket count = %d: %#v", len(buckets), buckets)
+	}
+	if buckets[0].ID != claudeBucketID || buckets[1].ID != geminiBucketID {
+		t.Fatalf("bucket ids = %q, %q", buckets[0].ID, buckets[1].ID)
+	}
+	if buckets[0].UsedValue == nil || *buckets[0].UsedValue != 10 {
+		t.Fatalf("claude family used = %#v", buckets[0])
+	}
+	if buckets[1].UsedValue == nil || *buckets[1].UsedValue != 50 {
+		t.Fatalf("gemini family used = %#v", buckets[1])
+	}
+	// Each family recovers on its own schedule, so one shared resets_at would be
+	// wrong for whichever family it did not come from.
+	if buckets[0].ResetsAt == nil || !buckets[0].ResetsAt.Equal(time.Date(2026, time.July, 27, 21, 48, 31, 0, time.UTC)) {
+		t.Fatalf("claude family reset = %v", buckets[0].ResetsAt)
+	}
+	if buckets[1].ResetsAt == nil || !buckets[1].ResetsAt.Equal(time.Date(2026, time.July, 27, 22, 40, 22, 0, time.UTC)) {
+		t.Fatalf("gemini family reset = %v", buckets[1].ResetsAt)
+	}
+}
+
+// The bucket set is a stored contract: history keys series by bucket id, so a
+// family that reports nothing this cycle must not silently drop its bar.
+func TestAdapterKeepsBothFamilyBucketsWhenOneFamilyIsAbsent(t *testing.T) {
+	now := time.Date(2026, time.July, 27, 17, 0, 0, 0, time.UTC)
+	models := map[string]any{
+		"gemini-3.6-flash-high": map[string]any{
+			"quotaInfo": map[string]any{"remainingFraction": 0.25, "resetTime": testResetTime},
+		},
+	}
+	body, err := json.Marshal(map[string]any{"models": models})
+	if err != nil {
+		t.Fatalf("marshal fixture: %v", err)
+	}
+	_, baseURL := newFakeService(t, map[string]route{
+		loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
+		fetchAvailableModelsPath: {status: http.StatusOK, body: string(body)},
+	})
+
+	snapshots, err := newTestAdapter(baseURL, now, validCredential(now)).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+	buckets := snapshots[0].Buckets
+	if len(buckets) != 1 || buckets[0].ID != geminiBucketID {
+		t.Fatalf("buckets = %#v", buckets)
+	}
+	if buckets[0].UsedValue == nil || *buckets[0].UsedValue != 75 {
+		t.Fatalf("gemini family used = %#v", buckets[0])
 	}
 }
 
@@ -236,7 +313,7 @@ func TestAdapterKeepsLastGoodSnapshotWhenRateLimited(t *testing.T) {
 	if snapshot.Status != providerlimits.StatusStale || snapshot.ErrorNote != "rate_limited" {
 		t.Fatalf("snapshot = %#v", snapshot)
 	}
-	if len(snapshot.Buckets) != 1 || snapshot.Buckets[0].Status != providerlimits.StatusStale {
+	if len(snapshot.Buckets) != 2 || snapshot.Buckets[0].Status != providerlimits.StatusStale || snapshot.Buckets[1].Status != providerlimits.StatusStale {
 		t.Fatalf("buckets = %#v", snapshot.Buckets)
 	}
 	if snapshot.Buckets[0].UsedValue == nil || *snapshot.Buckets[0].UsedValue != 58 {
@@ -298,8 +375,11 @@ func TestSanitizedSnapshotCarriesNoTokenEmailOrLocalPath(t *testing.T) {
 	if err := json.Unmarshal(encoded, &sanitized); err != nil {
 		t.Fatalf("Unmarshal() error = %v", err)
 	}
-	if len(sanitized) != 1 || len(sanitized[0].Buckets) != 1 || sanitized[0].Buckets[0].ID != sessionBucketID {
-		t.Fatalf("sanitization dropped the session bucket: %#v", sanitized)
+	if len(sanitized) != 1 || len(sanitized[0].Buckets) != 2 {
+		t.Fatalf("sanitization dropped a family bucket: %#v", sanitized)
+	}
+	if sanitized[0].Buckets[0].ID != claudeBucketID || sanitized[0].Buckets[1].ID != geminiBucketID {
+		t.Fatalf("sanitization rewrote the bucket ids: %#v", sanitized[0].Buckets)
 	}
 	if sanitized[0].AccountLabel != "profile-gemini-code-assist-in-google-one-ai-pro" {
 		t.Fatalf("sanitization dropped the plan label: %q", sanitized[0].AccountLabel)
@@ -352,16 +432,29 @@ func loadCodeAssistFixture(project string) string {
 	return string(body)
 }
 
-// modelsFixture mirrors the observed shape: non-internal models sharing one
-// fraction and resetTime, two completion models without a reset window, and two
-// internal models that must never reach the bucket.
+// modelsFixture mirrors the observed shape with both quota families sitting at
+// the same fraction — the reading that made the pools look shared until a
+// controlled quota check separated them.
 func modelsFixture(remainingFraction float64) string {
-	models := make(map[string]any, 24)
+	return familyModelsFixture(remainingFraction, testResetTime, remainingFraction, testResetTime)
+}
+
+// familyModelsFixture builds a response where the Claude/GPT family and the
+// Gemini family carry independent fractions and reset windows, which is what
+// the endpoint actually reports once either family has been used.
+func familyModelsFixture(claudeFraction float64, claudeReset string, geminiFraction float64, geminiReset string) string {
+	models := make(map[string]any, 28)
 	for index := 0; index < 20; index++ {
 		models[fmt.Sprintf("gemini-3.6-model-%d", index)] = map[string]any{
 			"displayName": "Gemini 3.6 (Thinking) " + testAuthPath,
 			"model":       "MODEL_PLACEHOLDER_M26",
-			"quotaInfo":   map[string]any{"remainingFraction": remainingFraction, "resetTime": testResetTime},
+			"quotaInfo":   map[string]any{"remainingFraction": geminiFraction, "resetTime": geminiReset},
+		}
+	}
+	for _, id := range []string{"claude-sonnet-4-6", "claude-opus-4-6-thinking", "gpt-oss-120b-medium"} {
+		models[id] = map[string]any{
+			"displayName": "Claude Sonnet " + testAuthPath,
+			"quotaInfo":   map[string]any{"remainingFraction": claudeFraction, "resetTime": claudeReset},
 		}
 	}
 	for _, id := range []string{"tab_completion", "tab_edit"} {

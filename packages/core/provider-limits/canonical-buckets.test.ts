@@ -46,6 +46,23 @@ const legacyClaudeBuckets = [
 ];
 
 describe("selectCanonicalBuckets", () => {
+  // Antigravity used to report one "session" bucket for what turned out to be
+  // two independently metered pools. History keeps that id forever, so without
+  // a canonical set the detail dialog grows a third tab plotting a series that
+  // no longer means anything.
+  it("drops the superseded Antigravity session bucket and keeps both families", () => {
+    const stored = [
+      bucket({ id: "session", label: "Limit session" }),
+      bucket({ id: "session_claude", label: "Limit session Claude", used_value: 10, remaining_value: 90 }),
+      bucket({ id: "session_gemini", label: "Limit session Gemini", used_value: 50, remaining_value: 50 }),
+    ];
+
+    const selected = selectCanonicalBuckets("antigravity", stored);
+
+    expect(selected.map((entry) => entry.id)).toEqual(["session_claude", "session_gemini"]);
+    expect(selected.map((entry) => entry.used_value)).toEqual([10, 50]);
+  });
+
   it("keeps the three Claude quotas in display order and drops legacy windows", () => {
     const selected = selectCanonicalBuckets("claude", legacyClaudeBuckets);
 
