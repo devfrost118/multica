@@ -306,6 +306,52 @@ describe("ProviderLimitsOverview", () => {
     ]);
   });
 
+  // Antigravity meters the Claude/GPT and Gemini pools separately, so its card
+  // carries two bars with their own numbers. History still holds the superseded
+  // single "session" bucket, which must not come back as a third Details tab.
+  it("shows both Antigravity family buckets and drops the superseded session bucket", () => {
+    const antigravity = snapshot({
+      provider: "antigravity",
+      account_key: "account-antigravity",
+      account_label: "profile-gemini-code-assist",
+      buckets: [
+        bucket({ id: "session_claude", label: "Limit session Claude", used_value: 10, remaining_value: 90 }),
+        bucket({ id: "session_gemini", label: "Limit session Gemini", used_value: 50, remaining_value: 50 }),
+      ],
+    });
+    const beforeFamilies = snapshot({
+      provider: "antigravity",
+      account_key: "account-antigravity",
+      account_label: "profile-gemini-code-assist",
+      checked_at: "2026-07-19T09:00:00Z",
+      buckets: [bucket({ id: "session", label: "Limit session" })],
+    });
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [antigravity], daemons: [] }}
+        history={[beforeFamilies, antigravity]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    const card = within(screen.getByRole("article"));
+    expect(card.getByText("Limit session Claude")).toBeTruthy();
+    expect(card.getByText("Limit session Gemini")).toBeTruthy();
+    expect(card.queryByText("Limit session")).toBeNull();
+    // Each family reports its own consumption; one shared number would be wrong
+    // for whichever pool it did not come from.
+    expect(card.getByText("10% used")).toBeTruthy();
+    expect(card.getByText("50% used")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Limit session Claude",
+      "Limit session Gemini",
+    ]);
+  });
+
   it("shows a query error instead of treating it as an empty response", () => {
     renderWithI18n(
       <ProviderLimitsOverview overview={{ accounts: [], daemons: [] }} history={[]} isLoading={false} isError={true} />,

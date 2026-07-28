@@ -12,13 +12,47 @@ import (
 	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
 )
 
-// sessionBucketID and sessionBucketLabel are fixed. The bucket set must not
-// change between snapshots, otherwise bucket history accumulates drifting
-// series for the same account.
+// Bucket ids are fixed. The bucket set must not change between snapshots,
+// otherwise bucket history accumulates drifting series for the same account.
+//
+// Antigravity meters two independent pools, confirmed by a controlled quota
+// check: one `agy` call on a Claude model moved the claude/gpt-oss fraction and
+// its resetTime while the gemini fraction and resetTime stood still. The pools
+// are reported per model, so the model id is the only signal that says which
+// pool a reading belongs to.
 const (
-	sessionBucketID    = "session"
-	sessionBucketLabel = "Limit session"
+	claudeBucketID    = "session_claude"
+	claudeBucketLabel = "Limit session Claude"
+	geminiBucketID    = "session_gemini"
+	geminiBucketLabel = "Limit session Gemini"
 )
+
+// bucketOrder controls display order and is the complete set of families this
+// adapter can emit.
+var bucketOrder = []struct {
+	id    string
+	label string
+}{
+	{id: claudeBucketID, label: claudeBucketLabel},
+	{id: geminiBucketID, label: geminiBucketLabel},
+}
+
+// claudeFamilyPrefixes lists the model id prefixes observed sharing the
+// non-Gemini pool. Anything else falls in with Gemini: that is what every
+// observed non-Claude model did, and since a family reports its lowest
+// fraction, an unrecognized model can only ever make its bar more pessimistic,
+// never hide consumption.
+var claudeFamilyPrefixes = []string{"claude-", "gpt-oss-"}
+
+func familyBucketID(modelID string) string {
+	lowered := strings.ToLower(strings.TrimSpace(modelID))
+	for _, prefix := range claudeFamilyPrefixes {
+		if strings.HasPrefix(lowered, prefix) {
+			return claudeBucketID
+		}
+	}
+	return geminiBucketID
+}
 
 // keyringCredential is the go-keyring blob written by `agy`. Only the access
 // token and its expiry are modeled: refresh_token is intentionally absent so it
@@ -95,14 +129,20 @@ func (number *flexibleNumber) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
-// sessionBucket folds every eligible model into the one account-wide pool the
-// endpoint actually meters. Models share a single remainingFraction and
-// resetTime, so the lowest fraction is the account's real consumption and the
-// earliest resetTime is when it recovers.
-func sessionBucket(models map[string]modelEntry) (providerlimits.Bucket, bool) {
-	lowestFraction := math.Inf(1)
-	var earliestReset *time.Time
-	for _, entry := range models {
+// familyReading accumulates the worst reading seen inside one quota family.
+type familyReading struct {
+	lowestFraction float64
+	earliestReset  *time.Time
+	seen           bool
+}
+
+// sessionBuckets reports one bucket per quota family. Within a family the
+// lowest fraction is the real consumption and the earliest resetTime is when it
+// recovers; across families nothing is combined, because they drain and reset
+// independently. Returns false only when no family produced a usable reading.
+func sessionBuckets(models map[string]modelEntry) ([]providerlimits.Bucket, bool) {
+	readings := make(map[string]*familyReading, len(bucketOrder))
+	for modelID, entry := range models {
 		if entry.IsInternal {
 			continue
 		}
@@ -111,31 +151,45 @@ func sessionBucket(models map[string]modelEntry) (providerlimits.Bucket, bool) {
 		if resetsAt == nil || !fraction.Valid || fraction.Value < 0 || fraction.Value > 1 {
 			continue
 		}
-		lowestFraction = math.Min(lowestFraction, fraction.Value)
-		if earliestReset == nil || resetsAt.Before(*earliestReset) {
-			earliestReset = resetsAt
+		bucketID := familyBucketID(modelID)
+		reading, ok := readings[bucketID]
+		if !ok {
+			reading = &familyReading{lowestFraction: math.Inf(1)}
+			readings[bucketID] = reading
+		}
+		reading.seen = true
+		reading.lowestFraction = math.Min(reading.lowestFraction, fraction.Value)
+		if reading.earliestReset == nil || resetsAt.Before(*reading.earliestReset) {
+			reading.earliestReset = resetsAt
 		}
 	}
-	if math.IsInf(lowestFraction, 1) {
-		return providerlimits.Bucket{}, false
+
+	buckets := make([]providerlimits.Bucket, 0, len(bucketOrder))
+	for _, entry := range bucketOrder {
+		reading, ok := readings[entry.id]
+		if !ok || !reading.seen {
+			continue
+		}
+		used := math.Round((1 - reading.lowestFraction) * 100)
+		resetsAt := reading.earliestReset
+		if used <= 0 {
+			// resetTime slides forward while the window has not started, so a reset
+			// hint on an untouched quota would show a moving number with no meaning.
+			used = 0
+			resetsAt = nil
+		}
+		buckets = append(buckets, providerlimits.Bucket{
+			ID:             entry.id,
+			Label:          entry.label,
+			Unit:           providerlimits.UnitPercent,
+			LimitValue:     numberPointer(100),
+			UsedValue:      numberPointer(used),
+			RemainingValue: numberPointer(100 - used),
+			ResetsAt:       resetsAt,
+			Status:         providerlimits.StatusOK,
+		})
 	}
-	used := math.Round((1 - lowestFraction) * 100)
-	if used <= 0 {
-		// resetTime slides forward while the window has not started, so a reset
-		// hint on an untouched quota would show a moving number with no meaning.
-		used = 0
-		earliestReset = nil
-	}
-	return providerlimits.Bucket{
-		ID:             sessionBucketID,
-		Label:          sessionBucketLabel,
-		Unit:           providerlimits.UnitPercent,
-		LimitValue:     numberPointer(100),
-		UsedValue:      numberPointer(used),
-		RemainingValue: numberPointer(100 - used),
-		ResetsAt:       earliestReset,
-		Status:         providerlimits.StatusOK,
-	}, true
+	return buckets, len(buckets) > 0
 }
 
 func planName(assist codeAssistResponse) string {
