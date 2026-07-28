@@ -137,8 +137,38 @@ function reconcileProviderLimitAccounts(
   });
 }
 
-function effectiveStatus(record: ProviderLimitSnapshot): string {
-  return record.stale ? "stale" : record.status;
+// Freshness scale for the card badge: how much can the numbers still be
+// trusted? Green is inside the window the source itself declares (15m for the
+// official APIs), then one step per age bracket. A failed probe drops straight
+// to `expired` — a snapshot collected minutes ago still means nothing once the
+// provider login expired, and a green dot there would hide the problem.
+export type ProviderLimitFreshness = "fresh" | "recent" | "aging" | "expired";
+
+const DEFAULT_FRESHNESS_WINDOW_SECONDS = 900;
+const DAY_SECONDS = 86_400;
+const AGING_LIMIT_SECONDS = 3 * DAY_SECONDS;
+
+function isFailedStatus(status: string | undefined): boolean {
+  return status === "unavailable" || status === "error";
+}
+
+export function providerLimitFreshness(
+  record: ProviderLimitSnapshot,
+  now = Date.now(),
+): ProviderLimitFreshness {
+  if (isFailedStatus(record.status) || isFailedStatus(record.last_attempt_status)) return "expired";
+
+  const collectedAt = timestamp(record.last_successful_at || record.checked_at);
+  if (collectedAt === 0) return "expired";
+
+  const declaredWindow = record.source?.freshness_seconds ?? 0;
+  const windowSeconds = declaredWindow > 0 ? declaredWindow : DEFAULT_FRESHNESS_WINDOW_SECONDS;
+  const ageSeconds = Math.max(0, (now - collectedAt) / 1_000);
+
+  if (ageSeconds <= windowSeconds) return "fresh";
+  if (ageSeconds <= DAY_SECONDS) return "recent";
+  if (ageSeconds <= AGING_LIMIT_SECONDS) return "aging";
+  return "expired";
 }
 
 export function titleCase(value: string): string {
@@ -376,7 +406,6 @@ function ProviderLimitCard({
   criticalThreshold: number;
 }) {
   const { t, i18n } = useT("usage");
-  const status = effectiveStatus(record);
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const lastSuccessfulAt =
     record.last_successful_at || (record.buckets.length > 0 ? record.checked_at : "");
@@ -400,7 +429,7 @@ function ProviderLimitCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <StatusBadge status={status} />
+          <FreshnessBadge record={record} />
           <ProviderLimitDetail wsId={wsId} record={record} history={history} />
         </div>
       </div>
@@ -457,7 +486,50 @@ export function useProviderLimitStatusLabel(status: string): string {
   return labels[status] ?? titleCase(status);
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const label = useProviderLimitStatusLabel(status);
-  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{label}</span>;
+// No semantic token sits between `warning` and `destructive`, so the 1-3 day
+// step borrows the palette orange the rest of the app already uses for
+// "needs attention, not broken yet".
+const FRESHNESS_BADGE_CLASS: Record<ProviderLimitFreshness, string> = {
+  fresh: "bg-success/10 text-success",
+  recent: "bg-warning/10 text-warning",
+  aging: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  expired: "bg-destructive/10 text-destructive",
+};
+
+const FRESHNESS_DOT_CLASS: Record<ProviderLimitFreshness, string> = {
+  fresh: "bg-success",
+  recent: "bg-warning",
+  aging: "bg-orange-500",
+  expired: "bg-destructive",
+};
+
+function FreshnessBadge({ record }: { record: ProviderLimitSnapshot }) {
+  const { t } = useT("usage");
+  const level = providerLimitFreshness(record);
+  const labels: Record<ProviderLimitFreshness, string> = {
+    fresh: t(($) => $.provider_limits.freshness_level.fresh),
+    recent: t(($) => $.provider_limits.freshness_level.recent),
+    aging: t(($) => $.provider_limits.freshness_level.aging),
+    expired: t(($) => $.provider_limits.freshness_level.expired),
+  };
+  const hints: Record<ProviderLimitFreshness, string> = {
+    fresh: t(($) => $.provider_limits.freshness_hint.fresh),
+    recent: t(($) => $.provider_limits.freshness_hint.recent),
+    aging: t(($) => $.provider_limits.freshness_hint.aging),
+    expired: t(($) => $.provider_limits.freshness_hint.expired),
+  };
+
+  // Colour is never the only channel: the badge keeps a visible label and the
+  // accessible name carries the full explanation of what the colour means.
+  return (
+    <span
+      role="img"
+      aria-label={`${labels[level]}: ${hints[level]}`}
+      title={hints[level]}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${FRESHNESS_BADGE_CLASS[level]}`}
+    >
+      <span className={`size-1.5 shrink-0 rounded-full ${FRESHNESS_DOT_CLASS[level]}`} />
+      {labels[level]}
+    </span>
+  );
 }

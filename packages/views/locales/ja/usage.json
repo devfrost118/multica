@@ -98,6 +98,18 @@
       "unavailable": "利用不可",
       "error": "エラー"
     },
+    "freshness_level": {
+      "fresh": "最新",
+      "recent": "やや古い",
+      "aging": "古い",
+      "expired": "期限切れ"
+    },
+    "freshness_hint": {
+      "fresh": "鮮度の有効期間内に更新されました。",
+      "recent": "24時間以内に更新されました。",
+      "aging": "1〜3日前に更新されました。",
+      "expired": "更新から3日以上経過、または使用状況データを取得できませんでした。"
+    },
     "detail": {
       "trigger": "詳細",
       "no_history": "このクォータ枠の履歴はまだありません。",

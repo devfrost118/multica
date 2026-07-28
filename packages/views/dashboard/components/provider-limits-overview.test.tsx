@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import type { ProviderLimitSnapshot } from "@multica/core/types";
 import { renderWithI18n } from "../../test/i18n";
-import { ProviderLimitsOverview } from "./provider-limits-overview";
+import { ProviderLimitsOverview, providerLimitFreshness } from "./provider-limits-overview";
 
 afterEach(cleanup);
 
@@ -77,18 +78,16 @@ describe("ProviderLimitsOverview", () => {
       <ProviderLimitsOverview overview={{ accounts: statuses, daemons: [] }} history={[]} isLoading={false} isError={false} />,
     );
 
-    expect(screen.getByText("OK")).toBeTruthy();
-    expect(screen.getByText("Stale")).toBeTruthy();
-    expect(screen.getByText("Partial")).toBeTruthy();
-    expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0);
-    expect(screen.getByText("Error")).toBeTruthy();
+    expect(screen.getAllByRole("article")).toHaveLength(5);
     expect(screen.getAllByText("30% used").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Resets/).length).toBeGreaterThan(0);
 
-    // Metadata is now in Details dialog
+    // Metadata and the textual status are now in the Details dialog; the card
+    // itself only carries the colour freshness badge.
     fireEvent.click(screen.getAllByRole("button", { name: "Details" })[0]!);
     expect(screen.getByText("Official API · official")).toBeTruthy();
     expect(screen.getByText("Fresh for 15m")).toBeTruthy();
+    expect(screen.getByText("Latest attempt: OK")).toBeTruthy();
   });
 
   it("uses history to surface the last good snapshot after an unavailable report in Details", () => {
@@ -313,5 +312,116 @@ describe("ProviderLimitsOverview", () => {
     );
 
     expect(screen.getByText("Provider limits could not be loaded.")).toBeTruthy();
+  });
+});
+
+// The card badge is the only place the freshness scale is visible, so each
+// colour step needs a rendered example — a unit test on the helper alone would
+// not catch a wrong class landing in the badge.
+describe("provider limit freshness badge", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function renderBadge(now: string, overrides: Record<string, unknown> = {}): HTMLElement {
+    vi.setSystemTime(new Date(now));
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [snapshot(overrides)], daemons: [] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+    return within(screen.getByRole("article")).getByRole("img");
+  }
+
+  it("is green while the snapshot is inside the declared freshness window", () => {
+    const badge = renderBadge("2026-07-19T10:05:00Z");
+
+    expect(badge.className).toContain("bg-success/10");
+    expect(badge.getAttribute("aria-label")).toBe("Fresh: Updated within the freshness window.");
+    expect(within(badge).getByText("Fresh")).toBeTruthy();
+  });
+
+  it("is yellow once the snapshot is older than the window but under a day", () => {
+    const badge = renderBadge("2026-07-19T15:00:00Z");
+
+    expect(badge.className).toContain("bg-warning/10");
+    expect(badge.getAttribute("aria-label")).toBe("Aging: Updated less than a day ago.");
+  });
+
+  it("is orange for a snapshot between one and three days old", () => {
+    const badge = renderBadge("2026-07-21T10:00:00Z");
+
+    expect(badge.className).toContain("bg-orange-500/10");
+    expect(badge.getAttribute("aria-label")).toBe("Old: Updated 1-3 days ago.");
+  });
+
+  it("is red for a snapshot older than three days", () => {
+    const badge = renderBadge("2026-07-25T10:00:00Z");
+
+    expect(badge.className).toContain("bg-destructive/10");
+    expect(badge.getAttribute("aria-label")).toBe(
+      "Outdated: Updated more than 3 days ago, or usage data could not be collected.",
+    );
+  });
+
+  it("is red for an unavailable provider even when the probe just ran", () => {
+    const badge = renderBadge("2026-07-19T10:00:00Z", { status: "unavailable", buckets: [] });
+
+    expect(badge.className).toContain("bg-destructive/10");
+  });
+
+  it("is red for an errored provider even when the probe just ran", () => {
+    const badge = renderBadge("2026-07-19T10:00:00Z", { status: "error", buckets: [] });
+
+    expect(badge.className).toContain("bg-destructive/10");
+  });
+
+  it("is red when the latest probe failed behind a still-recent good snapshot", () => {
+    const badge = renderBadge("2026-07-19T10:05:00Z", { last_attempt_status: "unavailable" });
+
+    expect(badge.className).toContain("bg-destructive/10");
+  });
+});
+
+describe("providerLimitFreshness", () => {
+  const record = (overrides: Record<string, unknown> = {}) =>
+    snapshot(overrides) as ProviderLimitSnapshot;
+  const now = Date.parse("2026-07-19T12:00:00Z");
+
+  it("keeps a snapshot fresh exactly at the window boundary", () => {
+    expect(providerLimitFreshness(record({ checked_at: "2026-07-19T11:45:00Z" }), now)).toBe("fresh");
+  });
+
+  it("honours a provider that declares a longer freshness window", () => {
+    const longWindow = record({
+      checked_at: "2026-07-19T06:00:00Z",
+      source: { kind: "local_log", confidence: "inferred", freshness_seconds: 43_200 },
+    });
+
+    expect(providerLimitFreshness(longWindow, now)).toBe("fresh");
+  });
+
+  it("falls back to the default window when the source declares none", () => {
+    const noWindow = record({
+      checked_at: "2026-07-19T11:00:00Z",
+      source: { kind: "local_log", confidence: "inferred", freshness_seconds: 0 },
+    });
+
+    expect(providerLimitFreshness(noWindow, now)).toBe("recent");
+  });
+
+  it("prefers the last successful collection over the latest probe time", () => {
+    const stale = record({
+      checked_at: "2026-07-19T11:59:00Z",
+      last_successful_at: "2026-07-17T12:00:00Z",
+    });
+
+    expect(providerLimitFreshness(stale, now)).toBe("aging");
+  });
+
+  it("treats an unparseable timestamp as expired", () => {
+    expect(providerLimitFreshness(record({ checked_at: "not-a-date" }), now)).toBe("expired");
   });
 });

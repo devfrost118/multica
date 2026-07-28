@@ -98,6 +98,18 @@
       "unavailable": "不可用",
       "error": "错误"
     },
+    "freshness_level": {
+      "fresh": "最新",
+      "recent": "略旧",
+      "aging": "较旧",
+      "expired": "过期"
+    },
+    "freshness_hint": {
+      "fresh": "在新鲜度有效期内更新。",
+      "recent": "24 小时内更新。",
+      "aging": "1-3 天前更新。",
+      "expired": "超过 3 天未更新，或无法采集用量数据。"
+    },
     "detail": {
       "trigger": "详情",
       "no_history": "该配额 bucket 暂无历史记录。",
