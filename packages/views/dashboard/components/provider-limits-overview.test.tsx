@@ -426,7 +426,7 @@ describe("provider limit freshness badge", () => {
   it("is orange for a snapshot between one and three days old", () => {
     const badge = renderBadge("2026-07-21T10:00:00Z");
 
-    expect(badge.className).toContain("bg-orange-500/10");
+    expect(badge.className).toContain("bg-warning-strong/10");
     expect(badge.getAttribute("aria-label")).toBe("Old: Updated 1-3 days ago.");
   });
 
@@ -455,6 +455,28 @@ describe("provider limit freshness badge", () => {
     const badge = renderBadge("2026-07-19T10:05:00Z", { last_attempt_status: "unavailable" });
 
     expect(badge.className).toContain("bg-destructive/10");
+  });
+
+  // The dashboard is a long-lived page: nothing refetches or re-renders it on
+  // its own, so a badge that only reads the clock during render stays green for
+  // hours after the data went stale. The same rendered badge must walk the
+  // whole scale on its own.
+  it("walks the whole scale on a page that is never refetched or remounted", () => {
+    const badge = renderBadge("2026-07-19T10:05:00Z");
+    const step = (now: string) => {
+      vi.setSystemTime(new Date(now));
+      act(() => {
+        vi.advanceTimersByTime(60_000);
+      });
+      return within(screen.getByRole("article")).getByRole("img");
+    };
+
+    expect(badge.className).toContain("bg-success/10");
+    expect(step("2026-07-19T10:20:00Z").className).toContain("bg-warning/10");
+    expect(step("2026-07-20T11:00:00Z").className).toContain("bg-warning-strong/10");
+    expect(step("2026-07-23T11:00:00Z").className).toContain("bg-destructive/10");
+    // Same DOM node throughout: the colour changed by ticking, not by remount.
+    expect(within(screen.getByRole("article")).getByRole("img")).toBe(badge);
   });
 });
 

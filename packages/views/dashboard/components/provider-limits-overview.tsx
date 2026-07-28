@@ -506,26 +506,39 @@ export function useProviderLimitStatusLabel(status: string): string {
   return labels[status] ?? titleCase(status);
 }
 
-// No semantic token sits between `warning` and `destructive`, so the 1-3 day
-// step borrows the palette orange the rest of the app already uses for
-// "needs attention, not broken yet".
 const FRESHNESS_BADGE_CLASS: Record<ProviderLimitFreshness, string> = {
   fresh: "bg-success/10 text-success",
   recent: "bg-warning/10 text-warning",
-  aging: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  aging: "bg-warning-strong/10 text-warning-strong",
   expired: "bg-destructive/10 text-destructive",
 };
 
 const FRESHNESS_DOT_CLASS: Record<ProviderLimitFreshness, string> = {
   fresh: "bg-success",
   recent: "bg-warning",
-  aging: "bg-orange-500",
+  aging: "bg-warning-strong",
   expired: "bg-destructive",
 };
 
+// The dashboard is a long-lived page and the limits query does not poll, so
+// nothing re-renders the badge on its own. Without a clock of its own the
+// colour is frozen at whatever the age was when the page happened to render.
+// A minute is the finest resolution any of the four steps needs.
+const FRESHNESS_TICK_MS = 60_000;
+
+function useNowTick(intervalMs: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
+
 function FreshnessBadge({ record }: { record: ProviderLimitSnapshot }) {
   const { t } = useT("usage");
-  const level = providerLimitFreshness(record);
+  const now = useNowTick(FRESHNESS_TICK_MS);
+  const level = providerLimitFreshness(record, now);
   const labels: Record<ProviderLimitFreshness, string> = {
     fresh: t(($) => $.provider_limits.freshness_level.fresh),
     recent: t(($) => $.provider_limits.freshness_level.recent),
