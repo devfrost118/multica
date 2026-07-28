@@ -98,6 +98,18 @@
       "unavailable": "Unavailable",
       "error": "Error"
     },
+    "freshness_level": {
+      "fresh": "Fresh",
+      "recent": "Aging",
+      "aging": "Old",
+      "expired": "Outdated"
+    },
+    "freshness_hint": {
+      "fresh": "Updated within the freshness window.",
+      "recent": "Updated less than a day ago.",
+      "aging": "Updated 1-3 days ago.",
+      "expired": "Updated more than 3 days ago, or usage data could not be collected."
+    },
     "detail": {
       "trigger": "Details",
       "no_history": "No history recorded yet for this bucket.",

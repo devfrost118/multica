@@ -98,6 +98,18 @@
       "unavailable": "사용 불가",
       "error": "오류"
     },
+    "freshness_level": {
+      "fresh": "최신",
+      "recent": "조금 지남",
+      "aging": "오래됨",
+      "expired": "만료됨"
+    },
+    "freshness_hint": {
+      "fresh": "신선도 유효 기간 이내에 업데이트되었습니다.",
+      "recent": "24시간 이내에 업데이트되었습니다.",
+      "aging": "1~3일 전에 업데이트되었습니다.",
+      "expired": "업데이트된 지 3일이 넘었거나 사용량 데이터를 수집하지 못했습니다."
+    },
     "detail": {
       "trigger": "상세 정보",
       "no_history": "이 bucket에 대한 기록이 아직 없습니다.",
