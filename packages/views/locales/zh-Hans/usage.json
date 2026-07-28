@@ -61,6 +61,8 @@
     "by_accounts": "按账号",
     "by_daemon": "按守护进程",
     "loading": "正在加载提供商限额…",
+    "refresh": "刷新",
+    "refreshing": "正在刷新用量数据…",
     "empty": "尚未上报提供商限额。",
     "error": "无法加载提供商限额。",
     "unknown": "未知",

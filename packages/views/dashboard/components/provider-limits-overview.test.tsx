@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import type { ProviderLimitSnapshot } from "@multica/core/types";
 import { renderWithI18n } from "../../test/i18n";
 import { ProviderLimitsOverview, providerLimitFreshness } from "./provider-limits-overview";
@@ -312,6 +312,79 @@ describe("ProviderLimitsOverview", () => {
     );
 
     expect(screen.getByText("Provider limits could not be loaded.")).toBeTruthy();
+  });
+});
+
+// One Refresh click queues a collection for a whole runtime, so progress has to
+// show on every card of that runtime — and only that runtime — for as long as
+// the caller's refresh promise is pending.
+describe("per-card refresh spinner", () => {
+  function deferredRefresh() {
+    let settle = () => {};
+    const promise = new Promise<void>((resolve) => {
+      settle = () => resolve();
+    });
+    return { promise, settle };
+  }
+
+  const twoRuntimes = [
+    snapshot(),
+    snapshot({ provider: "codex", account_key: "account-b", account_label: "Codex" }),
+    snapshot({
+      runtime_id: "daemon-2",
+      daemon_id: "daemon-2",
+      provider: "cursor",
+      account_key: "account-c",
+      account_label: "Cursor",
+    }),
+  ];
+
+  it("shows a labelled spinner on every card of the refreshing runtime", async () => {
+    const refresh = deferredRefresh();
+    const onRefresh = vi.fn(() => refresh.promise);
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: twoRuntimes, daemons: [] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+        onRefresh={onRefresh}
+      />,
+    );
+
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+    expect(screen.queryAllByRole("status")).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    expect(onRefresh).toHaveBeenCalledWith("daemon-1");
+    const spinners = await screen.findAllByRole("status");
+    expect(spinners).toHaveLength(2);
+    expect(spinners[0]!.getAttribute("aria-label")).toBe("Refreshing usage data…");
+
+    await act(async () => refresh.settle());
+  });
+
+  it("hides the spinners once the refresh settles", async () => {
+    const refresh = deferredRefresh();
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: twoRuntimes, daemons: [] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+        onRefresh={() => refresh.promise}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(await screen.findAllByRole("status")).toHaveLength(2);
+
+    await act(async () => refresh.settle());
+
+    expect(screen.queryAllByRole("status")).toHaveLength(0);
   });
 });
 
