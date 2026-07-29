@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Loader2, Server, SlidersHorizontal } from "lucide-react";
 
 import { Skeleton } from "@multica/ui/components/ui/skeleton";
