@@ -52,6 +52,19 @@ var legacyDuplicateMigrationStems = map[string][]string{
 	"117": {"117_agent_task_queue_initiator_user_id", "117_rule_groups"},
 	"179": {"179_project_environment", "179_runtime_profile_add_grok"},
 	"180": {"180_provider_limit_snapshots", "180_task_chat_finalize_deferred"},
+	// Same collision, second round: the fork's provider-credentials and
+	// provider-limit topics (FRO-184/197/203) numbered 203-208 while upstream
+	// v0.4.12 shipped its own 203-208. Renumbering the local stems is not an
+	// option for the same reason as above — 205_provider_credentials is a bare
+	// CREATE TABLE, 206/207 are CREATE INDEX CONCURRENTLY without IF NOT
+	// EXISTS, and 208 DROPs a constraint unconditionally, so a renamed stem
+	// would re-run and fail on every already-migrated install.
+	"203": {"203_issue_workspace_assignee_index", "203_provider_limit_snapshots_daemon_id_backfill"},
+	"204": {"204_issue_workspace_parent_index", "204_provider_limit_snapshots_daemon_index"},
+	"205": {"205_issue_workspace_position_index", "205_provider_credentials", "205_runtime_profile_add_droid"},
+	"206": {"206_agent_disabled_runtime_skills", "206_provider_credentials_unique_index"},
+	"207": {"207_client_usage_daily", "207_provider_credentials_workspace_index"},
+	"208": {"208_client_usage_daily_unique_index", "208_provider_limit_snapshots_stale_status"},
 }
 
 var migrationPrefixPattern = regexp.MustCompile(`^(\d+)_`)

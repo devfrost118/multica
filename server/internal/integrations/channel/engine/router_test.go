@@ -538,11 +538,15 @@ func TestRouter_Ingested_InTxMark_FinalizeNone(t *testing.T) {
 	if !waitFor(time.Second, func() bool { return h.typing.calls() == 1 }) {
 		t.Fatalf("ingest must show the typing indicator")
 	}
+	// Media resolution is detached (enqueueMedia), and BindMedia is the last
+	// thing that goroutine does — waiting on the bind is what makes the
+	// ResolveMedia call count below deterministic instead of a race with the
+	// typing indicator that unblocked the wait above.
+	if !waitFor(time.Second, func() bool { return len(h.binder.boundMedia().MediaRefs) == 1 }) {
+		t.Fatalf("resolved media not bound after append: %+v", h.binder.boundMedia().MediaRefs)
+	}
 	if h.media.calls() != 1 {
 		t.Fatalf("ingested message resolved media %d times, want 1", h.media.calls())
-	}
-	if refs := h.binder.boundMedia().MediaRefs; len(refs) != 1 {
-		t.Fatalf("resolved media not bound after append: %+v", refs)
 	}
 }
 
