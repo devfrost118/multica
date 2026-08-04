@@ -86,7 +86,9 @@
       "onboarding_required": "请在提供商 CLI 中完成设置，以采集用量数据。",
       "usage_unavailable": "无法采集用量数据，请重试。",
       "rate_limited": "提供商暂时限制了检查频率。",
-      "unsupported_platform": "当前操作系统不支持采集用量数据。"
+      "unsupported_platform": "当前操作系统不支持采集用量数据。",
+      "credential_missing": "尚未连接令牌。打开“详情”并添加令牌即可采集用量数据。",
+      "credential_invalid": "已保存的令牌被拒绝。打开“详情”并替换该令牌。"
     },
     "thresholds": {
       "title": "提醒",

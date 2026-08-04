@@ -64,6 +64,51 @@ func TestReportProviderLimitsPersistsOneSnapshotForDuplicateReports(t *testing.T
 	})
 }
 
+// Factory reports "no credential configured" as an unkeyed snapshot. Dropping
+// it because no stored credential matches would make the Factory card
+// impossible to reach: the card is the only entry point to the Details dialog
+// that onboards the credential (FRO-206). A snapshot that claims a specific
+// account key is still refused when that credential does not exist.
+func TestReportProviderLimitsStoresUnkeyedFactorySnapshotWithoutCredential(t *testing.T) {
+	checkedAt := time.Date(2026, time.July, 28, 12, 0, 0, 0, time.UTC)
+	payload := map[string]any{"snapshots": []any{
+		providerLimitsFactorySnapshot(checkedAt, "unavailable", "credential_missing"),
+		providerLimitsFactorySnapshot(checkedAt, "00112233445566778899aabbccddeeff", "credential_invalid"),
+	}}
+
+	req := newDaemonTokenRequest(http.MethodPost, "/api/daemon/runtimes/"+testRuntimeID+"/provider-limits", payload, testWorkspaceID, "provider-limits-test-daemon")
+	recorder := httptest.NewRecorder()
+	testHandler.ReportProviderLimits(recorder, withURLParam(req, "runtimeId", testRuntimeID))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("report status = %d, want %d: %s", recorder.Code, http.StatusOK, recorder.Body.String())
+	}
+
+	var storedKeys []string
+	rows, err := testPool.Query(t.Context(), `
+		SELECT account_key
+		FROM provider_limit_snapshots
+		WHERE workspace_id = $1 AND runtime_id = $2 AND provider = 'factory'
+	`, testWorkspaceID, testRuntimeID)
+	if err != nil {
+		t.Fatalf("query factory snapshots: %v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var accountKey string
+		if err := rows.Scan(&accountKey); err != nil {
+			t.Fatalf("scan factory snapshot: %v", err)
+		}
+		storedKeys = append(storedKeys, accountKey)
+	}
+	if len(storedKeys) != 1 || storedKeys[0] != "unavailable" {
+		t.Fatalf("stored factory account keys = %v, want only the unkeyed credential_missing snapshot", storedKeys)
+	}
+
+	t.Cleanup(func() {
+		testPool.Exec(t.Context(), `DELETE FROM provider_limit_snapshots WHERE workspace_id = $1 AND runtime_id = $2`, testWorkspaceID, testRuntimeID)
+	})
+}
+
 func TestReportProviderLimitsRejectsRuntimeOutsideDaemonWorkspace(t *testing.T) {
 	req := newDaemonTokenRequest(http.MethodPost, "/api/daemon/runtimes/"+testRuntimeID+"/provider-limits", map[string]any{
 		"snapshots": []any{providerLimitsTestSnapshot(time.Now().UTC())},
@@ -72,6 +117,22 @@ func TestReportProviderLimitsRejectsRuntimeOutsideDaemonWorkspace(t *testing.T) 
 	testHandler.ReportProviderLimits(recorder, withURLParam(req, "runtimeId", testRuntimeID))
 	if recorder.Code != http.StatusNotFound {
 		t.Fatalf("cross-workspace status = %d, want %d: %s", recorder.Code, http.StatusNotFound, recorder.Body.String())
+	}
+}
+
+func providerLimitsFactorySnapshot(checkedAt time.Time, accountKey, errorNote string) map[string]any {
+	return map[string]any{
+		"provider":    "factory",
+		"account_key": accountKey,
+		"checked_at":  checkedAt.Format(time.RFC3339),
+		"status":      "unavailable",
+		"source": map[string]any{
+			"kind":              "official_api",
+			"confidence":        "official",
+			"freshness_seconds": 900,
+		},
+		"buckets":    []any{},
+		"error_note": errorNote,
 	}
 }
 
