@@ -833,13 +833,20 @@ func TestClaimTaskByRuntime_IncludesEffectiveRuleGroups(t *testing.T) {
 	`, testWorkspaceID, workspaceGroupID, agentGroupID); err != nil {
 		t.Fatalf("create rule group rules: %v", err)
 	}
+	// One statement per Exec: a parameterised query goes through the extended
+	// protocol, and PostgreSQL rejects multiple commands in a prepared
+	// statement (SQLSTATE 42601).
 	if _, err := testPool.Exec(ctx, `
 		INSERT INTO rule_group_binding (workspace_id, rule_group_id, enabled, sort_order)
-		VALUES ($1, $2, true, 0);
+		VALUES ($1, $2, true, 0)
+	`, testWorkspaceID, workspaceGroupID); err != nil {
+		t.Fatalf("create workspace rule group binding: %v", err)
+	}
+	if _, err := testPool.Exec(ctx, `
 		INSERT INTO rule_group_binding (workspace_id, rule_group_id, agent_id, enabled, sort_order)
-		VALUES ($1, $3, $4, true, 0)
-	`, testWorkspaceID, workspaceGroupID, agentGroupID, agentID); err != nil {
-		t.Fatalf("create rule group bindings: %v", err)
+		VALUES ($1, $2, $3, true, 0)
+	`, testWorkspaceID, agentGroupID, agentID); err != nil {
+		t.Fatalf("create agent rule group binding: %v", err)
 	}
 
 	w := httptest.NewRecorder()
