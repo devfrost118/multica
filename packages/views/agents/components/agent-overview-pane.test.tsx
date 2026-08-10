@@ -27,6 +27,12 @@ vi.mock("./agent-overview-summary", () => ({
 vi.mock("./agent-access-settings", () => ({
   AgentAccessSettings: () => <div>agent-access-settings</div>,
 }));
+// The default Settings view. It mounts RuleGroupsBindingSection, which reads
+// the auth store through useCurrentMember and throws when no store is
+// registered — the same reason the sibling tabs above are stubbed.
+vi.mock("./agent-detail-inspector", () => ({
+  AgentDetailInspector: () => <div>agent-detail-inspector</div>,
+}));
 vi.mock("./tabs/instructions-tab", () => ({
   InstructionsTab: () => <div>instructions-tab</div>,
 }));

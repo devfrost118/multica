@@ -21,6 +21,9 @@ const (
 	providerLimitsMaxRequestBytes = 256 << 10
 	providerLimitsMaxSnapshots    = 32
 	providerLimitsMaxBuckets      = 32
+	// providerLimitUnknownAccountKey is the account key an adapter reports when
+	// it could not identify an account at all — no credential, no local session.
+	providerLimitUnknownAccountKey = "unavailable"
 )
 
 var (
@@ -140,7 +143,13 @@ func (h *Handler) ReportProviderLimits(w http.ResponseWriter, r *http.Request) {
 	accepted := 0
 	for _, snapshot := range request.Snapshots {
 		var factoryCredential *db.ProviderCredential
-		if snapshot.Provider == factoryProvider {
+		// A keyed Factory snapshot claims a specific workspace credential, so it
+		// is only accepted when that credential exists. The unkeyed snapshot
+		// claims no account at all — it is how the daemon reports that no
+		// credential is configured yet — and must still be stored, otherwise the
+		// Factory card can never appear and the user never reaches the Details
+		// dialog that onboards the credential (FRO-206).
+		if snapshot.Provider == factoryProvider && snapshot.AccountKey != providerLimitUnknownAccountKey {
 			credential, found, err := h.factoryCredentialForAccount(r.Context(), runtime.WorkspaceID, snapshot.AccountKey)
 			if err != nil {
 				writeError(w, http.StatusInternalServerError, "failed to validate provider limits account")
@@ -414,7 +423,7 @@ func reconcileProviderLimitRows(rows []db.ProviderLimitSnapshot, byDaemon bool) 
 func providerLimitKnownAccounts(rows []db.ProviderLimitSnapshot, byDaemon bool) map[string]map[string]struct{} {
 	knownAccounts := make(map[string]map[string]struct{})
 	for _, row := range rows {
-		if row.AccountKey == "unavailable" {
+		if row.AccountKey == providerLimitUnknownAccountKey {
 			continue
 		}
 		scopeKey := providerLimitScopeKey(row, byDaemon)
@@ -445,7 +454,7 @@ func providerLimitGroups(
 }
 
 func providerLimitCanonicalAccountKey(accountKey string, knownAccounts map[string]struct{}) string {
-	if accountKey != "unavailable" || len(knownAccounts) != 1 {
+	if accountKey != providerLimitUnknownAccountKey || len(knownAccounts) != 1 {
 		return accountKey
 	}
 	for knownAccountKey := range knownAccounts {

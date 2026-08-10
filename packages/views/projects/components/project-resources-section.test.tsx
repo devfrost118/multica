@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../test/i18n";
 import { ProjectResourcesSection } from "./project-resources-section";
@@ -178,8 +178,12 @@ describe("ProjectResourcesSection environments", () => {
       screen.getByRole("button", { name: "Reveal secrets for Staging" }),
     );
     expect(mocks.revealEnvironment).toHaveBeenCalledWith("environment-1");
-    expect(screen.getByLabelText("Secret API_TOKEN")).toHaveValue(
-      "actual-token",
+    // handleReveal awaits the mutation before it swaps the masked value in, so
+    // the field still reads "****" for a microtask after the click settles.
+    await waitFor(() =>
+      expect(screen.getByLabelText("Secret API_TOKEN")).toHaveValue(
+        "actual-token",
+      ),
     );
   });
 

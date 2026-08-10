@@ -231,6 +231,50 @@ describe("ProviderLimitsOverview", () => {
     }
   });
 
+  // Factory and Cursor report "not set up yet" as an unkeyed unavailable
+  // snapshot with no buckets. That card is the only place the user learns what
+  // to do, so it must render with the reason spelled out rather than a bare
+  // "no quota buckets" line (FRO-206).
+  it("renders an unavailable provider card with an actionable reason instead of a bare empty state", () => {
+    const factory = snapshot({
+      provider: "factory",
+      account_key: "unavailable",
+      account_label: "",
+      status: "unavailable",
+      buckets: [],
+      error_note: "credential_missing",
+    });
+    const cursor = snapshot({
+      provider: "cursor",
+      account_key: "unavailable",
+      account_label: "",
+      status: "unavailable",
+      buckets: [],
+      error_note: "reauth_required",
+    });
+
+    renderWithI18n(
+      <ProviderLimitsOverview
+        overview={{ accounts: [factory, cursor], daemons: [] }}
+        history={[]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    const cards = screen.getAllByRole("article");
+    expect(cards).toHaveLength(2);
+    expect(screen.getByText("Factory")).toBeTruthy();
+    expect(screen.getByText("Cursor")).toBeTruthy();
+    expect(
+      screen.getByText("No token is connected. Open Details and add one to collect usage data."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("The local session expired. Sign in with the provider's CLI again."),
+    ).toBeTruthy();
+    expect(screen.queryByText("No quota buckets are available.")).toBeNull();
+  });
+
   it("collapses a legacy snapshot within one daemon without merging different daemons", () => {
     const legacy = snapshot({
       daemon_id: "daemon-1",

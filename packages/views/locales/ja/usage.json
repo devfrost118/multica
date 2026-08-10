@@ -86,7 +86,9 @@
       "onboarding_required": "使用量データを取得するには、プロバイダーの CLI でセットアップを完了してください。",
       "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。",
       "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。",
-      "unsupported_platform": "この OS では使用量データの取得はサポートされていません。"
+      "unsupported_platform": "この OS では使用量データの取得はサポートされていません。",
+      "credential_missing": "トークンが接続されていません。「詳細」を開いてトークンを追加すると、使用量データを取得できます。",
+      "credential_invalid": "保存されたトークンが拒否されました。「詳細」を開いて置き換えてください。"
     },
     "thresholds": {
       "title": "アラート",
