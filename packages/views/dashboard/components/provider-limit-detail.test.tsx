@@ -341,5 +341,40 @@ describe("ProviderLimitDetail", () => {
       });
     });
   });
+
+  it("hides mutation controls while Factory credentials are still pending", () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: undefined,
+      error: null,
+      isPending: true,
+      isError: false,
+    });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Replace" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(screen.queryByLabelText("Factory API token")).toBeNull();
+    expect(credentialMocks.save).not.toHaveBeenCalled();
+  });
+
+  it("hides mutation controls when Factory credentials query errors without data", () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: undefined,
+      error: new Error("credentials unavailable"),
+      isPending: false,
+      isError: true,
+    });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Replace" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(screen.queryByLabelText("Factory API token")).toBeNull();
+    expect(screen.getByRole("alert").textContent).toMatch(/Credential action failed/i);
+    expect(credentialMocks.save).not.toHaveBeenCalled();
+  });
 });
 

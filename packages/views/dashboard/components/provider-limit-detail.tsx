@@ -138,25 +138,30 @@ const UNKEYED_ACCOUNT_KEY = "unavailable";
 /** Resolve which Factory credential belongs to a limit card.
  * Keyed snapshots use exact account_key match. Unkeyed snapshots may
  * temporarily lack a real account key: with exactly one credential we
- * bind that sole row; with several we refuse to guess (ambiguous). */
+ * bind that sole row; with several we refuse to guess (ambiguous).
+ * `credentials === undefined` means the query has not resolved yet (or
+ * failed without data) — never treat that as a confirmed empty list. */
 function resolveFactoryCredential(
   credentials: ProviderCredential[] | undefined,
   accountKey: string,
-): { credential?: ProviderCredential; ambiguous: boolean } {
-  const rows = credentials ?? [];
+): { credential?: ProviderCredential; ambiguous: boolean; resolved: boolean } {
+  if (credentials === undefined) {
+    return { ambiguous: false, resolved: false };
+  }
   if (accountKey !== UNKEYED_ACCOUNT_KEY) {
     return {
-      credential: rows.find((item) => item.account_key === accountKey),
+      credential: credentials.find((item) => item.account_key === accountKey),
       ambiguous: false,
+      resolved: true,
     };
   }
-  if (rows.length === 1) {
-    return { credential: rows[0], ambiguous: false };
+  if (credentials.length === 1) {
+    return { credential: credentials[0], ambiguous: false, resolved: true };
   }
-  if (rows.length > 1) {
-    return { ambiguous: true };
+  if (credentials.length > 1) {
+    return { ambiguous: true, resolved: true };
   }
-  return { ambiguous: false };
+  return { ambiguous: false, resolved: true };
 }
 
 function FactoryCredentialSection({ wsId, record }: { wsId: string; record: ProviderLimitSnapshot }) {
@@ -166,12 +171,13 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
   const deleteCredential = useDeleteProviderCredential(wsId);
   const [token, setToken] = useState("");
   const [accountLabel, setAccountLabel] = useState("");
-  const { credential, ambiguous } = resolveFactoryCredential(credentialsQuery.data, record.account_key);
+  const { credential, ambiguous, resolved } = resolveFactoryCredential(credentialsQuery.data, record.account_key);
+  const showMutationControls = resolved && !ambiguous;
   const pending = saveCredential.isPending || deleteCredential.isPending;
   const error = saveCredential.error ?? deleteCredential.error ?? credentialsQuery.error;
 
   const submit = async () => {
-    if (!token.trim() || ambiguous) return;
+    if (!token.trim() || !showMutationControls) return;
     try {
       await saveCredential.mutateAsync({
         id: credential?.id,
@@ -185,7 +191,7 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
   };
 
   const remove = async () => {
-    if (!credential) return;
+    if (!credential || !showMutationControls) return;
     try {
       await deleteCredential.mutateAsync(credential.id);
       setToken("");
@@ -216,7 +222,7 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
           {credential.last_validation_note && <p>{credential.last_validation_note}</p>}
         </div>
       )}
-      {!ambiguous && (
+      {showMutationControls && (
         <>
           {!credential && (
             <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
