@@ -300,8 +300,11 @@ func snapshotFromUsage(response usageResponse, subject, email string, checkedAt 
 		},
 		Buckets: make([]providerlimits.Bucket, 0, 4),
 	}
-	snapshot.Buckets = appendPercentBucket(snapshot.Buckets, "auto", "Composer / Auto", usage.AutoPercentUsed, resetsAt)
-	snapshot.Buckets = appendPercentBucket(snapshot.Buckets, "api", "Named / API models", usage.APIPercentUsed, resetsAt)
+	// Labels stay inside the boundary allowlist (letters, digits, space,
+	// underscore, hyphen); a separator such as "/" is dropped by the daemon
+	// sanitizer and the resulting empty label fails ingest validation.
+	snapshot.Buckets = appendPercentBucket(snapshot.Buckets, "auto", "Composer and Auto", usage.AutoPercentUsed, resetsAt)
+	snapshot.Buckets = appendPercentBucket(snapshot.Buckets, "api", "Named and API models", usage.APIPercentUsed, resetsAt)
 	snapshot.Buckets = appendPercentBucket(snapshot.Buckets, "total", "Combined usage", usage.TotalPercentUsed, resetsAt)
 	if usage.TotalSpend.Valid || usage.Limit.Valid || usage.IncludedSpend.Valid || usage.BonusSpend.Valid {
 		bucket := providerlimits.Bucket{

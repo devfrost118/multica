@@ -91,6 +91,41 @@ func TestAdapterReadsCursorSessionReadOnlyAndUsesOnlyUsageEndpoints(t *testing.T
 	}
 }
 
+// The collector sanitizes every snapshot before it crosses the daemon
+// boundary, and the ingest endpoint rejects a whole report when any bucket
+// arrives without a label. A Cursor bucket label must therefore survive
+// sanitization, otherwise a successful Cursor probe silently discards the
+// snapshots of every other provider in the same batch (FRO-206).
+func TestAdapterBucketLabelsSurviveBoundarySanitization(t *testing.T) {
+	now := time.Date(2026, time.July, 23, 12, 0, 0, 0, time.UTC)
+	transport := &recordingTransport{responses: map[string]string{
+		"GET /api/auth/me": `{"email":"dev@example.com"}`,
+		"POST /api/dashboard/get-current-period-usage": `{
+			"billingCycleEnd":"2026-08-01T00:00:00Z",
+			"planUsage":{"autoPercentUsed":25,"apiPercentUsed":35,"totalPercentUsed":45,"totalSpend":1200,"limit":2000}
+		}`,
+	}}
+
+	snapshots, err := NewAdapter(Config{
+		StateDBPath: writeStateDB(t, testJWT(t, "workos|user_123", now.Add(time.Hour))),
+		Client:      &http.Client{Transport: transport},
+		Now:         func() time.Time { return now },
+	}).Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+
+	sanitized := providerlimits.SanitizeSnapshots(snapshots, providerlimits.SanitizationCaps{})
+	if len(sanitized) != 1 || len(sanitized[0].Buckets) != len(snapshots[0].Buckets) {
+		t.Fatalf("sanitized snapshot = %#v, want every collected bucket preserved", sanitized)
+	}
+	for index, bucket := range sanitized[0].Buckets {
+		if bucket.Label != snapshots[0].Buckets[index].Label {
+			t.Fatalf("bucket %q label = %q, want the collected label %q", bucket.ID, bucket.Label, snapshots[0].Buckets[index].Label)
+		}
+	}
+}
+
 func TestAdapterMissingOrExpiredSessionRequiresReauthWithoutNetwork(t *testing.T) {
 	now := time.Date(2026, time.July, 23, 12, 0, 0, 0, time.UTC)
 	for _, testCase := range []struct {

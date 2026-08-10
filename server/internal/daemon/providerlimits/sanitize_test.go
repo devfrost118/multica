@@ -131,6 +131,46 @@ func TestSanitizeSnapshots_AppliesSnapshotBucketAndTextCaps(t *testing.T) {
 	}
 }
 
+// A bucket label the allowlist cannot represent must never reach transport as
+// an empty string: the ingest endpoint rejects the entire report when one
+// bucket carries an empty label, so a single adapter's label would silently
+// drop every provider's snapshot for that collection (FRO-206).
+func TestSanitizeSnapshots_NeverEmitsBucketWithoutLabel(t *testing.T) {
+	t.Parallel()
+
+	snapshot := testSnapshot("cursor")
+	snapshot.Buckets = []Bucket{
+		{ID: "auto", Label: "Composer / Auto", Unit: UnitPercent, Status: StatusOK},
+		{ID: "total", Label: "Combined usage", Unit: UnitPercent, Status: StatusOK},
+	}
+
+	sanitized := SanitizeSnapshots([]AccountSnapshot{snapshot}, SanitizationCaps{})
+	if len(sanitized[0].Buckets) != 2 {
+		t.Fatalf("bucket count = %d, want both buckets preserved: %#v", len(sanitized[0].Buckets), sanitized[0].Buckets)
+	}
+	if got := sanitized[0].Buckets[0]; got.ID != "auto" || got.Label != "auto" {
+		t.Fatalf("unrepresentable label = %#v, want fallback to the safe bucket id", got)
+	}
+	if got := sanitized[0].Buckets[1].Label; got != "Combined usage" {
+		t.Fatalf("representable label = %q, want it untouched", got)
+	}
+}
+
+func TestSanitizeSnapshots_DropsBucketWithoutSafeIdentity(t *testing.T) {
+	t.Parallel()
+
+	snapshot := testSnapshot("cursor")
+	snapshot.Buckets = []Bucket{
+		{ID: `{"raw":"bucket"}`, Label: "Bearer secret", Unit: UnitPercent, Status: StatusOK},
+		{ID: "total", Label: "Combined usage", Unit: UnitPercent, Status: StatusOK},
+	}
+
+	sanitized := SanitizeSnapshots([]AccountSnapshot{snapshot}, SanitizationCaps{})
+	if len(sanitized[0].Buckets) != 1 || sanitized[0].Buckets[0].ID != "total" {
+		t.Fatalf("buckets = %#v, want only the identifiable bucket", sanitized[0].Buckets)
+	}
+}
+
 func TestSanitizeSnapshots_AllowsOnlyReasonCodesForDiagnostics(t *testing.T) {
 	t.Parallel()
 

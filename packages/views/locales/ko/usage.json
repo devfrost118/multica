@@ -86,7 +86,9 @@
       "onboarding_required": "사용량 데이터를 수집하려면 공급자 CLI에서 설정을 완료하세요.",
       "usage_unavailable": "사용량 데이터를 수집하지 못했습니다. 다시 시도하세요.",
       "rate_limited": "공급자가 확인 빈도를 일시적으로 제한했습니다.",
-      "unsupported_platform": "이 운영체제에서는 사용량 수집을 지원하지 않습니다."
+      "unsupported_platform": "이 운영체제에서는 사용량 수집을 지원하지 않습니다.",
+      "credential_missing": "연결된 토큰이 없습니다. '자세히'를 열고 토큰을 추가하면 사용량 데이터를 수집합니다.",
+      "credential_invalid": "저장된 토큰이 거부되었습니다. '자세히'를 열고 토큰을 교체하세요."
     },
     "thresholds": {
       "title": "알림",
