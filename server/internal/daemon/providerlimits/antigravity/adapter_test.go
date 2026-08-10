@@ -153,33 +153,86 @@ func TestAdapterReportsIndependentBucketPerQuotaFamily(t *testing.T) {
 }
 
 // The bucket set is a stored contract: history keys series by bucket id, so a
-// family that reports nothing this cycle must not silently drop its bar.
+// family that reports nothing this cycle must keep its identity without looking
+// like a healthy unused 0/100 bar.
 func TestAdapterKeepsBothFamilyBucketsWhenOneFamilyIsAbsent(t *testing.T) {
 	now := time.Date(2026, time.July, 27, 17, 0, 0, 0, time.UTC)
-	models := map[string]any{
-		"gemini-3.6-flash-high": map[string]any{
-			"quotaInfo": map[string]any{"remainingFraction": 0.25, "resetTime": testResetTime},
-		},
-	}
-	body, err := json.Marshal(map[string]any{"models": models})
-	if err != nil {
-		t.Fatalf("marshal fixture: %v", err)
-	}
-	_, baseURL := newFakeService(t, map[string]route{
-		loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
-		fetchAvailableModelsPath: {status: http.StatusOK, body: string(body)},
+
+	t.Run("gemini_only", func(t *testing.T) {
+		models := map[string]any{
+			"gemini-3.6-flash-high": map[string]any{
+				"quotaInfo": map[string]any{"remainingFraction": 0.25, "resetTime": testResetTime},
+			},
+		}
+		body, err := json.Marshal(map[string]any{"models": models})
+		if err != nil {
+			t.Fatalf("marshal fixture: %v", err)
+		}
+		_, baseURL := newFakeService(t, map[string]route{
+			loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
+			fetchAvailableModelsPath: {status: http.StatusOK, body: string(body)},
+		})
+
+		snapshots, err := newTestAdapter(baseURL, now, validCredential(now)).Collect(context.Background())
+		if err != nil {
+			t.Fatalf("Collect() error = %v", err)
+		}
+		assertStableFamilyContract(t, snapshots[0].Buckets, geminiBucketID, 75)
 	})
 
-	snapshots, err := newTestAdapter(baseURL, now, validCredential(now)).Collect(context.Background())
-	if err != nil {
-		t.Fatalf("Collect() error = %v", err)
+	t.Run("claude_only", func(t *testing.T) {
+		models := map[string]any{
+			"claude-sonnet-4-6": map[string]any{
+				"quotaInfo": map[string]any{"remainingFraction": 0.4, "resetTime": testResetTime},
+			},
+		}
+		body, err := json.Marshal(map[string]any{"models": models})
+		if err != nil {
+			t.Fatalf("marshal fixture: %v", err)
+		}
+		_, baseURL := newFakeService(t, map[string]route{
+			loadCodeAssistPath:       {status: http.StatusOK, body: loadCodeAssistFixture(testProject)},
+			fetchAvailableModelsPath: {status: http.StatusOK, body: string(body)},
+		})
+
+		snapshots, err := newTestAdapter(baseURL, now, validCredential(now)).Collect(context.Background())
+		if err != nil {
+			t.Fatalf("Collect() error = %v", err)
+		}
+		assertStableFamilyContract(t, snapshots[0].Buckets, claudeBucketID, 60)
+	})
+}
+
+// assertStableFamilyContract checks the fixed session_claude → session_gemini
+// identity: the present family keeps its reading, the absent one stays in the
+// set as an unavailable bucket with no fabricated 0/100 values.
+func assertStableFamilyContract(t *testing.T, buckets []providerlimits.Bucket, presentID string, used float64) {
+	t.Helper()
+	if len(buckets) != 2 {
+		t.Fatalf("bucket count = %d: %#v", len(buckets), buckets)
 	}
-	buckets := snapshots[0].Buckets
-	if len(buckets) != 1 || buckets[0].ID != geminiBucketID {
-		t.Fatalf("buckets = %#v", buckets)
+	if buckets[0].ID != claudeBucketID || buckets[1].ID != geminiBucketID {
+		t.Fatalf("bucket ids = %q, %q", buckets[0].ID, buckets[1].ID)
 	}
-	if buckets[0].UsedValue == nil || *buckets[0].UsedValue != 75 {
-		t.Fatalf("gemini family used = %#v", buckets[0])
+	for _, bucket := range buckets {
+		if bucket.ID == presentID {
+			if bucket.Status != providerlimits.StatusOK {
+				t.Fatalf("present family status = %#v", bucket)
+			}
+			if bucket.UsedValue == nil || *bucket.UsedValue != used {
+				t.Fatalf("present family used = %#v", bucket)
+			}
+			continue
+		}
+		if bucket.Status != providerlimits.StatusUnavailable {
+			t.Fatalf("absent family must not look healthy: %#v", bucket)
+		}
+		if bucket.UsedValue != nil || bucket.RemainingValue != nil || bucket.LimitValue != nil {
+			t.Fatalf("absent family fabricated quota values: %#v", bucket)
+		}
+		if bucket.ResetsAt != nil {
+			t.Fatalf("absent family exposed a reset: %#v", bucket)
+		}
 	}
 }
 

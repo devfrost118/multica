@@ -63,6 +63,26 @@ describe("selectCanonicalBuckets", () => {
     expect(selected.map((entry) => entry.used_value)).toEqual([10, 50]);
   });
 
+  // Version skew: an older daemon still writes the pre-family "session" id.
+  // Dropping it unconditionally empties the card until that daemon upgrades.
+  it("keeps the legacy Antigravity session bucket when family buckets are absent", () => {
+    const selected = selectCanonicalBuckets("antigravity", [
+      bucket({ id: "session", label: "Limit session", used_value: 14, remaining_value: 86 }),
+    ]);
+
+    expect(selected.map((entry) => entry.id)).toEqual(["session"]);
+    expect(selected.map((entry) => entry.used_value)).toEqual([14]);
+  });
+
+  it("keeps Antigravity family order when only one family is present", () => {
+    const selected = selectCanonicalBuckets("antigravity", [
+      bucket({ id: "session_gemini", label: "Limit session Gemini", used_value: 50, remaining_value: 50 }),
+      bucket({ id: "session", label: "Limit session" }),
+    ]);
+
+    expect(selected.map((entry) => entry.id)).toEqual(["session_gemini"]);
+  });
+
   it("keeps the three Claude quotas in display order and drops legacy windows", () => {
     const selected = selectCanonicalBuckets("claude", legacyClaudeBuckets);
 
@@ -129,5 +149,44 @@ describe("withCanonicalBuckets", () => {
     const claude = snapshot({ buckets: [bucket({ id: "spend" })] });
 
     expect(withCanonicalBuckets([claude])[0]?.buckets).toEqual([]);
+  });
+
+  it("keeps legacy Antigravity session when history has no family buckets yet", () => {
+    const legacyOnly = snapshot({
+      provider: "antigravity",
+      account_key: "account-antigravity",
+      buckets: [bucket({ id: "session", label: "Limit session" })],
+    });
+
+    expect(withCanonicalBuckets([legacyOnly])[0]?.buckets.map((entry) => entry.id)).toEqual(["session"]);
+  });
+
+  // Once family buckets appear for the account, the superseded session series
+  // must leave history/detail so a third obsolete tab never shows up.
+  it("hides legacy Antigravity session across mixed history once families exist", () => {
+    const legacy = snapshot({
+      provider: "antigravity",
+      account_key: "account-antigravity",
+      checked_at: "2026-07-19T09:00:00Z",
+      buckets: [bucket({ id: "session", label: "Limit session" })],
+    });
+    const families = snapshot({
+      provider: "antigravity",
+      account_key: "account-antigravity",
+      checked_at: "2026-07-19T10:00:00Z",
+      buckets: [
+        bucket({ id: "session", label: "Limit session" }),
+        bucket({ id: "session_claude", label: "Limit session Claude", used_value: 10, remaining_value: 90 }),
+        bucket({ id: "session_gemini", label: "Limit session Gemini", used_value: 50, remaining_value: 50 }),
+      ],
+    });
+
+    const [canonicalLegacy, canonicalFamilies] = withCanonicalBuckets([legacy, families]);
+
+    expect(canonicalLegacy?.buckets).toEqual([]);
+    expect(canonicalFamilies?.buckets.map((entry) => entry.id)).toEqual([
+      "session_claude",
+      "session_gemini",
+    ]);
   });
 });
