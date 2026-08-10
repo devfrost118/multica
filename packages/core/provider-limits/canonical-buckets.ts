@@ -9,15 +9,75 @@ import type { ProviderLimitBucket, ProviderLimitSnapshot } from "../types";
 // reason: it reported one "session" bucket until a controlled quota check
 // showed the Claude/GPT and Gemini pools drain independently. Providers absent
 // from this map are passed through untouched.
-const CANONICAL_BUCKET_IDS: Record<string, readonly string[]> = {
-  claude: ["session", "weekly_all", "weekly_scoped"],
-  antigravity: ["session_claude", "session_gemini"],
-};
+const CLAUDE_CANONICAL_IDS = ["session", "weekly_all", "weekly_scoped"] as const;
+
+const ANTIGRAVITY_FAMILY_IDS = ["session_claude", "session_gemini"] as const;
+const ANTIGRAVITY_LEGACY_SESSION = "session";
 
 const LEGACY_LIMIT_PREFIX = "limit-";
 
 function canonicalBucketId(id: string): string {
   return id.startsWith(LEGACY_LIMIT_PREFIX) ? id.slice(LEGACY_LIMIT_PREFIX.length) : id;
+}
+
+function indexCanonicalBuckets(
+  buckets: readonly ProviderLimitBucket[],
+  allowedIds: readonly string[],
+): Map<string, ProviderLimitBucket> {
+  const byId = new Map<string, ProviderLimitBucket>();
+  for (const bucket of buckets) {
+    const id = canonicalBucketId(bucket.id);
+    if (!allowedIds.includes(id) || byId.has(id)) continue;
+    byId.set(id, bucket.id === id ? bucket : { ...bucket, id });
+  }
+  return byId;
+}
+
+function selectFixedCanonicalBuckets(
+  buckets: readonly ProviderLimitBucket[],
+  canonicalIds: readonly string[],
+): ProviderLimitBucket[] {
+  const byId = indexCanonicalBuckets(buckets, canonicalIds);
+  return canonicalIds.flatMap((id) => {
+    const bucket = byId.get(id);
+    return bucket ? [bucket] : [];
+  });
+}
+
+function hasAntigravityFamilyBucket(buckets: readonly ProviderLimitBucket[]): boolean {
+  return buckets.some((bucket) =>
+    (ANTIGRAVITY_FAMILY_IDS as readonly string[]).includes(canonicalBucketId(bucket.id)),
+  );
+}
+
+function antigravityAccountKey(snapshot: ProviderLimitSnapshot): string {
+  return `${snapshot.provider}:${snapshot.account_key}`;
+}
+
+// Family ids are the stable contract. Legacy "session" is only a fallback for
+// old-daemon rows that never saw a family reading; once any family bucket is
+// present for the same snapshot, session is dropped so it cannot become a
+// third series.
+function selectAntigravityBuckets(
+  buckets: readonly ProviderLimitBucket[],
+  hideLegacySession: boolean,
+): ProviderLimitBucket[] {
+  const allowedIds = hideLegacySession
+    ? ANTIGRAVITY_FAMILY_IDS
+    : ([...ANTIGRAVITY_FAMILY_IDS, ANTIGRAVITY_LEGACY_SESSION] as const);
+  const byId = indexCanonicalBuckets(buckets, allowedIds);
+  const families = ANTIGRAVITY_FAMILY_IDS.flatMap((id) => {
+    const bucket = byId.get(id);
+    return bucket ? [bucket] : [];
+  });
+  if (families.length > 0) {
+    return families;
+  }
+  if (hideLegacySession) {
+    return [];
+  }
+  const legacy = byId.get(ANTIGRAVITY_LEGACY_SESSION);
+  return legacy ? [legacy] : [];
 }
 
 // Returns the buckets a provider is allowed to display, in canonical display
@@ -26,30 +86,42 @@ export function selectCanonicalBuckets(
   provider: string,
   buckets: readonly ProviderLimitBucket[],
 ): ProviderLimitBucket[] {
-  const canonicalIds = CANONICAL_BUCKET_IDS[provider];
-  if (!canonicalIds) return [...buckets];
-
-  const byId = new Map<string, ProviderLimitBucket>();
-  for (const bucket of buckets) {
-    const id = canonicalBucketId(bucket.id);
-    if (!canonicalIds.includes(id) || byId.has(id)) continue;
-    byId.set(id, bucket.id === id ? bucket : { ...bucket, id });
+  if (provider === "claude") {
+    return selectFixedCanonicalBuckets(buckets, CLAUDE_CANONICAL_IDS);
   }
-  return canonicalIds.flatMap((id) => {
-    const bucket = byId.get(id);
-    return bucket ? [bucket] : [];
-  });
+  if (provider === "antigravity") {
+    return selectAntigravityBuckets(buckets, false);
+  }
+  return [...buckets];
 }
 
 // Applies selectCanonicalBuckets across a snapshot list so the overview, its
 // cards, and the detail dialog all read the same bucket set. Snapshots of
-// providers without a canonical set are returned by reference.
+// providers without a canonical set are returned by reference. For Antigravity,
+// legacy "session" is suppressed for an account once any snapshot in the batch
+// already carries family buckets — otherwise history/detail grows a third tab.
 export function withCanonicalBuckets(
   snapshots: readonly ProviderLimitSnapshot[],
 ): ProviderLimitSnapshot[] {
-  return snapshots.map((snapshot) =>
-    CANONICAL_BUCKET_IDS[snapshot.provider]
-      ? { ...snapshot, buckets: selectCanonicalBuckets(snapshot.provider, snapshot.buckets) }
-      : snapshot,
-  );
+  const antigravityAccountsWithFamilies = new Set<string>();
+  for (const snapshot of snapshots) {
+    if (snapshot.provider !== "antigravity") continue;
+    if (hasAntigravityFamilyBucket(snapshot.buckets)) {
+      antigravityAccountsWithFamilies.add(antigravityAccountKey(snapshot));
+    }
+  }
+
+  return snapshots.map((snapshot) => {
+    if (snapshot.provider === "claude") {
+      return { ...snapshot, buckets: selectCanonicalBuckets(snapshot.provider, snapshot.buckets) };
+    }
+    if (snapshot.provider === "antigravity") {
+      const hideLegacy = antigravityAccountsWithFamilies.has(antigravityAccountKey(snapshot));
+      return {
+        ...snapshot,
+        buckets: selectAntigravityBuckets(snapshot.buckets, hideLegacy),
+      };
+    }
+    return snapshot;
+  });
 }
