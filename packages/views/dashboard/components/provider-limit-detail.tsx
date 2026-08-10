@@ -21,7 +21,7 @@ import {
   useProviderCredentials,
   useSaveProviderCredential,
 } from "@multica/core/provider-limits";
-import type { ProviderLimitSnapshot } from "@multica/core/types";
+import type { ProviderCredential, ProviderLimitSnapshot } from "@multica/core/types";
 import { useT } from "../../i18n";
 import { Clock3 } from "lucide-react";
 import {
@@ -133,6 +133,37 @@ export function ProviderLimitDetail({
   );
 }
 
+const UNKEYED_ACCOUNT_KEY = "unavailable";
+
+/** Resolve which Factory credential belongs to a limit card.
+ * Keyed snapshots use exact account_key match. Unkeyed snapshots may
+ * temporarily lack a real account key: with exactly one credential we
+ * bind that sole row; with several we refuse to guess (ambiguous).
+ * `credentials === undefined` means the query has not resolved yet (or
+ * failed without data) — never treat that as a confirmed empty list. */
+function resolveFactoryCredential(
+  credentials: ProviderCredential[] | undefined,
+  accountKey: string,
+): { credential?: ProviderCredential; ambiguous: boolean; resolved: boolean } {
+  if (credentials === undefined) {
+    return { ambiguous: false, resolved: false };
+  }
+  if (accountKey !== UNKEYED_ACCOUNT_KEY) {
+    return {
+      credential: credentials.find((item) => item.account_key === accountKey),
+      ambiguous: false,
+      resolved: true,
+    };
+  }
+  if (credentials.length === 1) {
+    return { credential: credentials[0], ambiguous: false, resolved: true };
+  }
+  if (credentials.length > 1) {
+    return { ambiguous: true, resolved: true };
+  }
+  return { ambiguous: false, resolved: true };
+}
+
 function FactoryCredentialSection({ wsId, record }: { wsId: string; record: ProviderLimitSnapshot }) {
   const { t } = useT("usage");
   const credentialsQuery = useProviderCredentials(wsId, record.provider === "factory");
@@ -140,12 +171,13 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
   const deleteCredential = useDeleteProviderCredential(wsId);
   const [token, setToken] = useState("");
   const [accountLabel, setAccountLabel] = useState("");
-  const credential = credentialsQuery.data?.find((item) => item.account_key === record.account_key);
+  const { credential, ambiguous, resolved } = resolveFactoryCredential(credentialsQuery.data, record.account_key);
+  const showMutationControls = resolved && !ambiguous;
   const pending = saveCredential.isPending || deleteCredential.isPending;
   const error = saveCredential.error ?? deleteCredential.error ?? credentialsQuery.error;
 
   const submit = async () => {
-    if (!token.trim()) return;
+    if (!token.trim() || !showMutationControls) return;
     try {
       await saveCredential.mutateAsync({
         id: credential?.id,
@@ -159,7 +191,7 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
   };
 
   const remove = async () => {
-    if (!credential) return;
+    if (!credential || !showMutationControls) return;
     try {
       await deleteCredential.mutateAsync(credential.id);
       setToken("");
@@ -172,8 +204,17 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
     <section className="space-y-2 border-t pt-3" aria-label={t(($) => $.provider_limits.credentials.title)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium">{t(($) => $.provider_limits.credentials.title)}</p>
-        <Badge variant={credential ? "secondary" : "outline"}>{credential ? t(($) => $.provider_limits.credentials.connected) : t(($) => $.provider_limits.credentials.not_connected)}</Badge>
+        <Badge variant={credential ? "secondary" : "outline"}>
+          {credential
+            ? t(($) => $.provider_limits.credentials.connected)
+            : ambiguous
+              ? t(($) => $.provider_limits.credentials.awaiting_account)
+              : t(($) => $.provider_limits.credentials.not_connected)}
+        </Badge>
       </div>
+      {ambiguous && (
+        <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.credentials.awaiting_account_help)}</p>
+      )}
       {credential && (
         <div className="text-xs text-muted-foreground">
           <p>{t(($) => $.provider_limits.credentials.fingerprint, { value: credential.fingerprint })}</p>
@@ -181,14 +222,18 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
           {credential.last_validation_note && <p>{credential.last_validation_note}</p>}
         </div>
       )}
-      {!credential && (
-        <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
+      {showMutationControls && (
+        <>
+          {!credential && (
+            <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
+          )}
+          <input aria-label={t(($) => $.provider_limits.credentials.token)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" type="password" autoComplete="off" value={token} placeholder={credential ? t(($) => $.provider_limits.credentials.replacement_token) : t(($) => $.provider_limits.credentials.token)} onChange={(event) => setToken(event.target.value)} />
+          <div className="flex gap-2">
+            <Button type="button" size="sm" disabled={pending || !token.trim()} onClick={() => void submit()}>{credential ? t(($) => $.provider_limits.credentials.replace) : t(($) => $.provider_limits.credentials.connect)}</Button>
+            {credential && <Button type="button" size="sm" variant="destructive" disabled={pending} onClick={() => void remove()}>{t(($) => $.provider_limits.credentials.remove)}</Button>}
+          </div>
+        </>
       )}
-      <input aria-label={t(($) => $.provider_limits.credentials.token)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" type="password" autoComplete="off" value={token} placeholder={credential ? t(($) => $.provider_limits.credentials.replacement_token) : t(($) => $.provider_limits.credentials.token)} onChange={(event) => setToken(event.target.value)} />
-      <div className="flex gap-2">
-        <Button type="button" size="sm" disabled={pending || !token.trim()} onClick={() => void submit()}>{credential ? t(($) => $.provider_limits.credentials.replace) : t(($) => $.provider_limits.credentials.connect)}</Button>
-        {credential && <Button type="button" size="sm" variant="destructive" disabled={pending} onClick={() => void remove()}>{t(($) => $.provider_limits.credentials.remove)}</Button>}
-      </div>
       {error && <p role="alert" className="text-xs text-destructive">{t(($) => $.provider_limits.credentials.action_failed)}</p>}
     </section>
   );

@@ -142,6 +142,8 @@
       "connect": "接続",
       "replace": "置換",
       "remove": "削除",
+      "awaiting_account": "アカウント待ち",
+      "awaiting_account_help": "デーモンがこのカードの Factory アカウントを特定するのを待っています。次の probe の後に更新してください。今すぐ別の credential を作ると重複の恐れがあります。",
       "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。"
     }
   },

@@ -142,6 +142,8 @@
       "connect": "Connect",
       "replace": "Replace",
       "remove": "Remove",
+      "awaiting_account": "Awaiting account",
+      "awaiting_account_help": "Waiting for the daemon to identify which Factory account this card belongs to. Refresh after the next probe — creating another credential now would risk a duplicate.",
       "action_failed": "Credential action failed. Check permissions and try again."
     }
   },

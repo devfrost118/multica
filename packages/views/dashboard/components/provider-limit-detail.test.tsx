@@ -222,5 +222,159 @@ describe("ProviderLimitDetail", () => {
     expect(document.body.textContent).not.toContain(rawToken);
     expect(document.body.innerHTML).not.toContain(rawToken);
   });
+
+  function factoryCredential(overrides: Record<string, unknown> = {}) {
+    return {
+      id: "credential-1",
+      provider: "factory",
+      account_key: "hashed-factory-account",
+      account_label: "Factory account",
+      fingerprint: "abc123def456",
+      last_validation_status: "valid",
+      last_validated_at: "2026-07-23T10:00:00Z",
+      last_validation_note: "",
+      created_at: "2026-07-23T09:00:00Z",
+      updated_at: "2026-07-23T10:00:00Z",
+      ...overrides,
+    };
+  }
+
+  it("links an unkeyed Factory snapshot to the sole existing credential for Replace", async () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: [factoryCredential({ id: "existing-cred", account_key: "hashed-factory-account" })],
+      error: null,
+    });
+    credentialMocks.save.mockResolvedValue({ id: "existing-cred" });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.getByText("Connected")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Replace" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+
+    const tokenInput = screen.getByLabelText("Factory API token") as HTMLInputElement;
+    fireEvent.change(tokenInput, { target: { value: "replacement-token" } });
+    fireEvent.click(screen.getByRole("button", { name: "Replace" }));
+
+    await waitFor(() => {
+      expect(credentialMocks.save).toHaveBeenCalledWith({
+        id: "existing-cred",
+        request: {
+          provider: "factory",
+          token: "replacement-token",
+          account_label: undefined,
+        },
+      });
+    });
+  });
+
+  it("keeps Connect/create when an unkeyed Factory snapshot has no credentials", async () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({ data: [], error: null });
+    credentialMocks.save.mockResolvedValue({ id: "new-cred" });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.getByText("Not connected")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Connect" })).toBeTruthy();
+
+    const tokenInput = screen.getByLabelText("Factory API token") as HTMLInputElement;
+    fireEvent.change(tokenInput, { target: { value: "new-factory-token" } });
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }));
+
+    await waitFor(() => {
+      expect(credentialMocks.save).toHaveBeenCalledWith({
+        id: undefined,
+        request: {
+          provider: "factory",
+          token: "new-factory-token",
+          account_label: undefined,
+        },
+      });
+    });
+  });
+
+  it("blocks blind Create when an unkeyed Factory snapshot has multiple credentials", () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: [
+        factoryCredential({ id: "cred-a", account_key: "hash-a", fingerprint: "aaaa" }),
+        factoryCredential({ id: "cred-b", account_key: "hash-b", fingerprint: "bbbb" }),
+      ],
+      error: null,
+    });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Replace" })).toBeNull();
+    expect(screen.getByText(/Waiting for the daemon to identify which Factory account this card belongs to/i)).toBeTruthy();
+    expect(credentialMocks.save).not.toHaveBeenCalled();
+  });
+
+  it("keeps exact-match behavior for a keyed Factory snapshot", async () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: [
+        factoryCredential({ id: "other-cred", account_key: "other-hash", fingerprint: "other" }),
+        factoryCredential({ id: "matched-cred", account_key: "factory-account", fingerprint: "matched" }),
+      ],
+      error: null,
+    });
+    credentialMocks.save.mockResolvedValue({ id: "matched-cred" });
+
+    openDetail(snapshot({ provider: "factory", account_key: "factory-account" }), []);
+
+    expect(screen.getByText("Connected")).toBeTruthy();
+    expect(screen.getByText("Fingerprint: matched")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Replace" })).toBeTruthy();
+
+    const tokenInput = screen.getByLabelText("Factory API token") as HTMLInputElement;
+    fireEvent.change(tokenInput, { target: { value: "keyed-replace-token" } });
+    fireEvent.click(screen.getByRole("button", { name: "Replace" }));
+
+    await waitFor(() => {
+      expect(credentialMocks.save).toHaveBeenCalledWith({
+        id: "matched-cred",
+        request: {
+          provider: "factory",
+          token: "keyed-replace-token",
+          account_label: undefined,
+        },
+      });
+    });
+  });
+
+  it("hides mutation controls while Factory credentials are still pending", () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: undefined,
+      error: null,
+      isPending: true,
+      isError: false,
+    });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Replace" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(screen.queryByLabelText("Factory API token")).toBeNull();
+    expect(credentialMocks.save).not.toHaveBeenCalled();
+  });
+
+  it("hides mutation controls when Factory credentials query errors without data", () => {
+    credentialMocks.useProviderCredentials.mockReturnValue({
+      data: undefined,
+      error: new Error("credentials unavailable"),
+      isPending: false,
+      isError: true,
+    });
+
+    openDetail(snapshot({ provider: "factory", account_key: "unavailable" }), []);
+
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Replace" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(screen.queryByLabelText("Factory API token")).toBeNull();
+    expect(screen.getByRole("alert").textContent).toMatch(/Credential action failed/i);
+    expect(credentialMocks.save).not.toHaveBeenCalled();
+  });
 });
 
