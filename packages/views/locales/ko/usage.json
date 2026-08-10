@@ -142,6 +142,8 @@
       "connect": "연결",
       "replace": "교체",
       "remove": "삭제",
+      "awaiting_account": "계정 확인 중",
+      "awaiting_account_help": "데몬이 이 카드의 Factory 계정을 확인할 때까지 기다립니다. 다음 probe 후 새로고침하세요. 지금 다른 credential을 만들면 중복될 수 있습니다.",
       "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요."
     }
   },

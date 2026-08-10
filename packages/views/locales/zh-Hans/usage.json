@@ -142,6 +142,8 @@
       "connect": "连接",
       "replace": "替换",
       "remove": "删除",
+      "awaiting_account": "等待账户",
+      "awaiting_account_help": "正在等待守护进程识别此卡片对应的 Factory 账户。下次探测后刷新——现在再创建凭据可能产生重复。",
       "action_failed": "操作失败。请检查权限后重试。"
     }
   },
