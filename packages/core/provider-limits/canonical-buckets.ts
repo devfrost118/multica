@@ -5,10 +5,13 @@ import type { ProviderLimitBucket, ProviderLimitSnapshot } from "../types";
 // build wrote. Claude is the case that bites — earlier builds emitted the three
 // real quotas under "limit-"-prefixed ids alongside five_hour / seven_day /
 // spend windows that duplicate or dilute them, so a Claude card fed straight
-// from a row can show six bars. Providers absent from this map are passed
-// through untouched.
+// from a row can show six bars. Antigravity has the same shape for a different
+// reason: it reported one "session" bucket until a controlled quota check
+// showed the Claude/GPT and Gemini pools drain independently. Providers absent
+// from this map are passed through untouched.
 const CANONICAL_BUCKET_IDS: Record<string, readonly string[]> = {
   claude: ["session", "weekly_all", "weekly_scoped"],
+  antigravity: ["session_claude", "session_gemini"],
 };
 
 const LEGACY_LIMIT_PREFIX = "limit-";

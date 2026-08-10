@@ -147,7 +147,7 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 	if err := a.post(ctx, token, fetchAvailableModelsPath, fetchAvailableModelsRequest{Project: project}, &models); err != nil {
 		return a.snapshotsForRequestError(checkedAt, err)
 	}
-	bucket, ok := sessionBucket(models.Models)
+	buckets, ok := sessionBuckets(models.Models)
 	if !ok {
 		return []providerlimits.AccountSnapshot{unavailableSnapshot(checkedAt, "usage_unavailable")}, nil
 	}
@@ -159,7 +159,7 @@ func (a *Adapter) Collect(ctx context.Context) ([]providerlimits.AccountSnapshot
 		CheckedAt:    checkedAt,
 		Status:       providerlimits.StatusOK,
 		Source:       snapshotSource(),
-		Buckets:      []providerlimits.Bucket{bucket},
+		Buckets:      buckets,
 	}
 	a.storeLastGood(snapshot)
 	return []providerlimits.AccountSnapshot{snapshot}, nil
