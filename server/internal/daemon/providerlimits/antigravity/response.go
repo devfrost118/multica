@@ -139,7 +139,9 @@ type familyReading struct {
 // sessionBuckets reports one bucket per quota family. Within a family the
 // lowest fraction is the real consumption and the earliest resetTime is when it
 // recovers; across families nothing is combined, because they drain and reset
-// independently. Returns false only when no family produced a usable reading.
+// independently. A family with no usable model this cycle still appears, marked
+// unavailable with nil values, so the stored id set stays fixed. Returns false
+// only when no family produced a usable reading.
 func sessionBuckets(models map[string]modelEntry) ([]providerlimits.Bucket, bool) {
 	readings := make(map[string]*familyReading, len(bucketOrder))
 	for modelID, entry := range models {
@@ -168,6 +170,16 @@ func sessionBuckets(models map[string]modelEntry) ([]providerlimits.Bucket, bool
 	for _, entry := range bucketOrder {
 		reading, ok := readings[entry.id]
 		if !ok || !reading.seen {
+			// Keep the fixed family identity even when this cycle had no usable
+			// model for the pool. Nil values + unavailable status are an honest
+			// "no reading" — fabricating 0/100 would look like a healthy unused bar.
+			buckets = append(buckets, providerlimits.Bucket{
+				ID:     entry.id,
+				Label:  entry.label,
+				Unit:   providerlimits.UnitPercent,
+				Status: providerlimits.StatusUnavailable,
+				Note:   "usage_unavailable",
+			})
 			continue
 		}
 		used := math.Round((1 - reading.lowestFraction) * 100)
@@ -189,7 +201,14 @@ func sessionBuckets(models map[string]modelEntry) ([]providerlimits.Bucket, bool
 			Status:         providerlimits.StatusOK,
 		})
 	}
-	return buckets, len(buckets) > 0
+	seenAny := false
+	for _, reading := range readings {
+		if reading.seen {
+			seenAny = true
+			break
+		}
+	}
+	return buckets, seenAny
 }
 
 func planName(assist codeAssistResponse) string {
