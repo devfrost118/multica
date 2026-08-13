@@ -24,6 +24,7 @@ jobs:
       pull-requests: read
     outputs:
       frontend: ${{ steps.decide.outputs.frontend }}
+      backend: ${{ steps.decide.outputs.backend }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -56,6 +57,13 @@ jobs:
               - 'scripts/local-env.sh'
               - '.env.example'
               - 'docker-compose.selfhost.yml'
+            backend:
+              - 'server/**'
+              - '.github/workflows/ci.yml'
+              - 'scripts/test-go.sh'
+              - 'scripts/test-go.test.sh'
+              - 'scripts/helm-config.test.sh'
+              - 'scripts/go-test-with-agent-cli-guard.sh'
 
       - name: Decide
         id: decide
@@ -68,11 +76,17 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           FRONTEND_CHANGED: ${{ steps.filter.outputs.frontend }}
+          BACKEND_CHANGED: ${{ steps.filter.outputs.backend }}
         run: |
           if [ "$EVENT_NAME" != "pull_request" ] || [ "$FRONTEND_CHANGED" = "true" ]; then
             echo "frontend=true" >> "$GITHUB_OUTPUT"
           else
             echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$EVENT_NAME" != "pull_request" ] || [ "$BACKEND_CHANGED" = "true" ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend=false" >> "$GITHUB_OUTPUT"
           fi
 
   # The frontend validation is split across two runners on purpose. Both
@@ -299,10 +313,16 @@ jobs:
         run: bash scripts/test-go.sh --race
 
   # FRO-241: stress test for handler fixture teardown. The regular backend
-  # job runs the handler suite once; this job runs it 20 times to verify the
-  # teardown no longer flakes on agent_owner_id_fkey. Acceptance #2 requires
-  # -count=20; 20 handler-suite runs also satisfy #3's minimum-10-runs bar.
+  # job runs the handler suite once; this job runs it 20 independent times
+  # (each its own process with its own TestMain setup+teardown) to verify
+  # the teardown no longer flakes on agent_owner_id_fkey. Acceptance #2/#3
+  # require repeated runs; -count=20 would only repeat test bodies inside
+  # one TestMain, exercising teardown exactly once — a shell loop of
+  # -count=1 gives 20 real teardown cycles. Gated on backend-relevant paths
+  # so frontend-only PRs don't carry the extra CI cost.
   backend-stress:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -345,7 +365,11 @@ jobs:
 
       - name: Stress test handler teardown (FRO-241 acceptance #2/#3)
         working-directory: server
-        run: go test ./internal/handler -count=20 -timeout=30m
+        run: |
+          for i in $(seq 1 20); do
+            echo "=== handler suite iteration $i/20 ==="
+            go test ./internal/handler -count=1 -timeout=10m || exit 1
+          done
 
   windows-execenv:
     # The environment-preparation deadline owns a process tree, not just a Go
