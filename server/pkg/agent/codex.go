@@ -2005,6 +2005,20 @@ func codexRequestContextError(ctx context.Context) error {
 	return ctx.Err()
 }
 
+// codexRequestFailure prefers an already-canceled/deadline context over a
+// concurrent process-exit (or other transport) error. Go's select chooses
+// randomly among ready cases, so near-simultaneous cancellation and process
+// exit must resolve to a stable context error for callers.
+func codexRequestFailure(ctx context.Context, err error) error {
+	if ctx.Err() != nil && (err == nil || isCodexTransportError(err)) {
+		return codexRequestContextError(ctx)
+	}
+	if err == nil {
+		return errCodexProcessExited
+	}
+	return err
+}
+
 func (c *codexClient) request(ctx context.Context, method string, params any) (json.RawMessage, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -2021,7 +2035,7 @@ func (c *codexClient) request(ctx context.Context, method string, params any) (j
 	if c.processErr != nil {
 		err := c.processErr
 		c.mu.Unlock()
-		return nil, err
+		return nil, codexRequestFailure(requestCtx, err)
 	}
 	if c.processDone == nil {
 		c.processDone = make(chan struct{})
@@ -2051,7 +2065,7 @@ func (c *codexClient) request(ctx context.Context, method string, params any) (j
 		c.mu.Lock()
 		delete(c.pending, id)
 		c.mu.Unlock()
-		return nil, fmt.Errorf("write %s: %w", method, err)
+		return nil, codexRequestFailure(requestCtx, fmt.Errorf("write %s: %w", method, err))
 	}
 	if method == "turn/start" {
 		threadID := ""
@@ -2063,24 +2077,24 @@ func (c *codexClient) request(ctx context.Context, method string, params any) (j
 
 	select {
 	case res := <-pr.ch:
-		return res.result, res.err
+		if res.err != nil {
+			return nil, codexRequestFailure(requestCtx, res.err)
+		}
+		return res.result, nil
 	case <-processDone:
 		select {
 		case res := <-pr.ch:
-			return res.result, res.err
+			if res.err != nil {
+				return nil, codexRequestFailure(requestCtx, res.err)
+			}
+			return res.result, nil
 		default:
 		}
 		c.mu.Lock()
 		delete(c.pending, id)
 		err := c.processErr
 		c.mu.Unlock()
-		if requestCtx.Err() != nil {
-			return nil, codexRequestContextError(requestCtx)
-		}
-		if err == nil {
-			err = errCodexProcessExited
-		}
-		return nil, err
+		return nil, codexRequestFailure(requestCtx, err)
 	case <-requestCtx.Done():
 		c.mu.Lock()
 		delete(c.pending, id)

@@ -1361,37 +1361,103 @@ func TestCodexRequestFailsImmediatelyAfterProcessExit(t *testing.T) {
 	}
 }
 
+func TestCodexRequestFailurePrefersContextOverProcessExit(t *testing.T) {
+	t.Parallel()
+
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	if got := codexRequestFailure(canceled, errCodexProcessExited); !errors.Is(got, context.Canceled) {
+		t.Fatalf("canceled ctx + process exit = %v, want context.Canceled", got)
+	}
+	if got := codexRequestFailure(canceled, nil); !errors.Is(got, context.Canceled) {
+		t.Fatalf("canceled ctx + nil err = %v, want context.Canceled", got)
+	}
+	if got := codexRequestFailure(canceled, fmt.Errorf("write turn/start: %w", errors.New("broken pipe"))); !errors.Is(got, context.Canceled) {
+		t.Fatalf("canceled ctx + write err = %v, want context.Canceled", got)
+	}
+
+	active := context.Background()
+	if got := codexRequestFailure(active, errCodexProcessExited); !errors.Is(got, errCodexProcessExited) {
+		t.Fatalf("active ctx + process exit = %v, want errCodexProcessExited", got)
+	}
+	if got := codexRequestFailure(active, nil); !errors.Is(got, errCodexProcessExited) {
+		t.Fatalf("active ctx + nil err = %v, want errCodexProcessExited", got)
+	}
+	rpcErr := errors.New("rpc failed")
+	if got := codexRequestFailure(canceled, rpcErr); !errors.Is(got, rpcErr) {
+		t.Fatalf("canceled ctx + non-transport err = %v, want rpc error preserved", got)
+	}
+}
+
 func TestCodexRequestPrefersContextCancellationOverProcessExit(t *testing.T) {
 	t.Parallel()
 
-	c, fs, _ := newTestCodexClient(t)
-	processExitMarked := make(chan error, 1)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	t.Run("cancellation_then_near_simultaneous_process_exit", func(t *testing.T) {
+		t.Parallel()
 
-	go func() {
-		deadline := time.Now().Add(2 * time.Second)
-		for {
-			if len(fs.Lines()) >= 1 {
-				cancel()
-				c.markProcessExited(errCodexProcessExited)
-				processExitMarked <- nil
-				return
-			}
-			if time.Now().After(deadline) {
-				processExitMarked <- fmt.Errorf("timed out waiting for request write")
-				return
-			}
-			time.Sleep(5 * time.Millisecond)
+		var c *codexClient
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		fs := &fakeStdinWithHook{}
+		fs.afterWrite = func() {
+			// Cancel first, then deliver process exit on the pending channel and
+			// processDone. request()'s select may observe either signal first;
+			// the contract must still return context.Canceled.
+			cancel()
+			c.markProcessExited(errCodexProcessExited)
 		}
-	}()
+		c = &codexClient{
+			cfg:         Config{Logger: slog.Default()},
+			stdin:       fs,
+			pending:     make(map[int]*pendingRPC),
+			processDone: make(chan struct{}),
+		}
 
-	_, err := c.request(ctx, "thread/start", map[string]any{})
-	if markErr := <-processExitMarked; markErr != nil {
-		t.Fatal(markErr)
+		_, err := c.request(ctx, "thread/start", map[string]any{})
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("request error = %v, want context.Canceled", err)
+		}
+		assertCodexRequestFullyReaped(t, c)
+	})
+
+	t.Run("process_exit_first_with_active_context", func(t *testing.T) {
+		t.Parallel()
+
+		var c *codexClient
+		fs := &fakeStdinWithHook{}
+		fs.afterWrite = func() {
+			c.markProcessExited(errCodexProcessExited)
+		}
+		c = &codexClient{
+			cfg:         Config{Logger: slog.Default()},
+			stdin:       fs,
+			pending:     make(map[int]*pendingRPC),
+			processDone: make(chan struct{}),
+		}
+
+		_, err := c.request(context.Background(), "thread/start", map[string]any{})
+		if !errors.Is(err, errCodexProcessExited) {
+			t.Fatalf("request error = %v, want errCodexProcessExited", err)
+		}
+		assertCodexRequestFullyReaped(t, c)
+	})
+}
+
+func assertCodexRequestFullyReaped(t *testing.T, c *codexClient) {
+	t.Helper()
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if len(c.pending) != 0 {
+		t.Fatalf("expected empty pending map after terminal request, got %d", len(c.pending))
 	}
-	if !errors.Is(err, context.Canceled) {
-		t.Fatalf("request error = %v, want context.Canceled", err)
+	if c.processDone == nil {
+		t.Fatal("processDone channel missing")
+	}
+	select {
+	case <-c.processDone:
+	default:
+		t.Fatal("processDone should be closed after process exit")
 	}
 }
 
