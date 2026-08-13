@@ -156,20 +156,90 @@ func setupHandlerTestFixture(ctx context.Context, pool *pgxpool.Pool) (string, s
 }
 
 func cleanupHandlerTestFixture(ctx context.Context, pool *pgxpool.Pool) error {
+	return cleanupHandlerTestFixtureIdent(ctx, pool, handlerTestEmail, handlerTestWorkspaceSlug)
+}
+
+// cleanupHandlerTestFixtureIdent removes a handler-test fixture identified by
+// user email and workspace slug. Order matters: squad.leader_id is ON DELETE
+// RESTRICT against agent, and agent.owner_id / agent_runtime.owner_id /
+// agent.archived_by do not cascade from "user", so dependents must be cleared
+// before workspace + user deletes. All steps are idempotent.
+func cleanupHandlerTestFixtureIdent(ctx context.Context, pool *pgxpool.Pool, email, workspaceSlug string) error {
+	wrap := func(step string, err error) error {
+		if err == nil {
+			return nil
+		}
+		return fmt.Errorf("cleanup handler test fixture email=%s slug=%s step=%s: %w", email, workspaceSlug, step, err)
+	}
+
+	userByEmail := `SELECT id FROM "user" WHERE email = $1`
+	workspaceBySlug := `SELECT id FROM workspace WHERE slug = $1`
+
+	// agent.archived_by REFERENCES "user"(id) without ON DELETE CASCADE.
+	if _, err := pool.Exec(ctx, `
+		UPDATE agent SET archived_by = NULL
+		WHERE archived_by IN (`+userByEmail+`)
+	`, email); err != nil {
+		return wrap("clear agent.archived_by", err)
+	}
+
+	// Lift squad.leader_id ON DELETE RESTRICT before removing agents.
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM squad
+		WHERE leader_id IN (
+			SELECT id FROM agent WHERE owner_id IN (`+userByEmail+`)
+		)
+	`, email); err != nil {
+		return wrap("delete squads by fixture-owned leaders", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM squad
+		WHERE workspace_id IN (`+workspaceBySlug+`)
+	`, workspaceSlug); err != nil {
+		return wrap("delete squads in fixture workspace", err)
+	}
+
+	// Remove owner-scoped rows regardless of workspace (partial fails may leave
+	// agents/runtimes outside the fixture slug).
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM agent WHERE owner_id IN (`+userByEmail+`)
+	`, email); err != nil {
+		return wrap("delete agents by owner", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM agent WHERE workspace_id IN (`+workspaceBySlug+`)
+	`, workspaceSlug); err != nil {
+		return wrap("delete agents in fixture workspace", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM agent_runtime WHERE owner_id IN (`+userByEmail+`)
+	`, email); err != nil {
+		return wrap("delete agent_runtimes by owner", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		DELETE FROM agent_runtime WHERE workspace_id IN (`+workspaceBySlug+`)
+	`, workspaceSlug); err != nil {
+		return wrap("delete agent_runtimes in fixture workspace", err)
+	}
+
 	var hasClientUsageTable bool
 	if err := pool.QueryRow(ctx, `SELECT to_regclass('client_usage_daily') IS NOT NULL`).Scan(&hasClientUsageTable); err != nil {
-		return err
+		return wrap("check client_usage_daily", err)
 	}
 	if hasClientUsageTable {
-		if _, err := pool.Exec(ctx, `DELETE FROM client_usage_daily WHERE user_id IN (SELECT id FROM "user" WHERE email = $1)`, handlerTestEmail); err != nil {
-			return err
+		if _, err := pool.Exec(ctx, `
+			DELETE FROM client_usage_daily
+			WHERE user_id IN (`+userByEmail+`)
+		`, email); err != nil {
+			return wrap("delete client_usage_daily", err)
 		}
 	}
-	if _, err := pool.Exec(ctx, `DELETE FROM workspace WHERE slug = $1`, handlerTestWorkspaceSlug); err != nil {
-		return err
+
+	if _, err := pool.Exec(ctx, `DELETE FROM workspace WHERE slug = $1`, workspaceSlug); err != nil {
+		return wrap("delete workspace", err)
 	}
-	if _, err := pool.Exec(ctx, `DELETE FROM "user" WHERE email = $1`, handlerTestEmail); err != nil {
-		return err
+	if _, err := pool.Exec(ctx, `DELETE FROM "user" WHERE email = $1`, email); err != nil {
+		return wrap("delete user", err)
 	}
 	return nil
 }
