@@ -431,8 +431,9 @@ var antigravityBlockedArgs = map[string]blockedArgMode{
 //	    [--conversation <id>] [--add-dir <cwd>]
 //
 // agy 1.0.6 added a `--model` flag (MUL-3125), so opts.Model is now wired
-// through when set. The value is the exact human display string `agy models`
-// prints (e.g. "Claude Opus 4.6 (Thinking)"), NOT a provider/model slug —
+// through when set. The value is the catalog ID from `agy models` (first
+// column when the CLI prints `id\tdisplay name`; historically a display
+// string such as "Claude Opus 4.6 (Thinking)"), NOT a provider/model slug —
 // it's passed verbatim as a single exec arg, so spaces and parens need no
 // shell quoting. agy still exposes no --system-prompt; runtime instructions
 // are delivered via AGENTS.md in the task workdir.
@@ -475,9 +476,11 @@ func buildAntigravityArgs(prompt, logPath string, timeout time.Duration, opts Ex
 // returns nil otherwise. An empty `available` means discovery couldn't produce
 // a catalog (agy missing, transient failure) — we fail OPEN there and let agy
 // resolve the value, so a discovery hiccup never blocks a run. The match is
-// exact because agy's --model wants the precise display string; a near-miss
-// (extra space, dropped suffix) is correctly rejected since agy would silently
-// no-op on it anyway.
+// exact ID equality against the normalized catalog IDs (first column of each
+// `agy models` row); prefix/substring near-misses are correctly rejected since
+// agy would silently no-op on them anyway. The diagnostic echoes the requested
+// ID and the normalized available ID list separately so tab-separated display
+// rows cannot obscure whether the configured ID was present.
 func antigravityModelError(model string, available []Model) error {
 	if model == "" || len(available) == 0 {
 		return nil
@@ -490,8 +493,8 @@ func antigravityModelError(model string, available []Model) error {
 		ids = append(ids, m.ID)
 	}
 	return fmt.Errorf(
-		"antigravity model %q is not available from `agy models`; pick one of: %s",
-		model, strings.Join(ids, ", "),
+		"antigravity model %q is not available from `agy models`; requested ID: %q; available IDs: [%s]",
+		model, model, strings.Join(ids, ", "),
 	)
 }
 

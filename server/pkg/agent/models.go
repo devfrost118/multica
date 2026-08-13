@@ -1341,17 +1341,16 @@ func acpModelLabel(name, modelID string) string {
 }
 
 // discoverAntigravityModels runs `agy models` and returns the catalog the
-// installed Antigravity CLI advertises (one display name per line).
+// installed Antigravity CLI advertises.
 //
 // Unlike cursor / pi / opencode there is deliberately NO static fallback.
-// agy's `--model` takes the exact human display string (e.g.
-// "Claude Opus 4.6 (Thinking)") and silently no-ops on any value it doesn't
-// recognise — empty output, exit 0 — so a guessed static list would risk
-// offering a model the installed CLI can't honour, turning a typo into a
-// "successful" empty run. On any discovery failure we return an empty
-// catalog instead; agent.model stays unset and agy resolves its own
-// default. cachedDiscovery never caches empty results, so this retries on
-// the next request once the cause clears.
+// agy's `--model` takes a catalog value (model ID, or historically a display
+// string) and silently no-ops on any value it doesn't recognise — empty
+// output, exit 0 — so a guessed static list would risk offering a model the
+// installed CLI can't honour, turning a typo into a "successful" empty run.
+// On any discovery failure we return an empty catalog instead; agent.model
+// stays unset and agy resolves its own default. cachedDiscovery never caches
+// empty results, so this retries on the next request once the cause clears.
 func discoverAntigravityModels(ctx context.Context, executablePath string) ([]Model, error) {
 	if executablePath == "" {
 		executablePath = "agy"
@@ -1372,28 +1371,52 @@ func discoverAntigravityModels(ctx context.Context, executablePath string) ([]Mo
 	return parseAntigravityModels(string(out)), nil
 }
 
-// parseAntigravityModels turns `agy models` output — one model display name
-// per line — into Model entries. The display string IS the value `--model`
-// expects, so ID and Label are identical and the daemon ships opts.Model
-// verbatim. Blank and duplicate lines are skipped.
+// parseAntigravityModels turns `agy models` output into Model entries.
+//
+// Each non-empty line contributes one model. The canonical ID is the first
+// column when the line is tab-separated (`id\tdisplay name`); otherwise the
+// whole trimmed line is the ID (plain ID or legacy display-name catalogs).
+// Whitespace and trailing `\r` are stripped so CRLF output does not poison
+// equality checks. Label is the display-name column when present, else the
+// ID. Duplicate IDs collapse; blank lines are skipped.
 func parseAntigravityModels(output string) []Model {
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 	var models []Model
 	seen := map[string]bool{}
 	for scanner.Scan() {
-		name := strings.TrimSpace(scanner.Text())
-		if name == "" || seen[name] {
+		line := strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\r"))
+		if line == "" {
 			continue
 		}
-		seen[name] = true
+		id, label := parseAntigravityModelLine(line)
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
 		models = append(models, Model{
-			ID:       name,
-			Label:    name,
+			ID:       id,
+			Label:    label,
 			Provider: "antigravity",
 		})
 	}
 	return models
+}
+
+// parseAntigravityModelLine splits one `agy models` row into ID and Label.
+// Split is on the first tab only so display names may contain tabs without
+// shifting the ID column.
+func parseAntigravityModelLine(line string) (id string, label string) {
+	idPart, display, found := strings.Cut(line, "\t")
+	id = strings.TrimSpace(strings.TrimSuffix(idPart, "\r"))
+	if !found {
+		return id, id
+	}
+	label = strings.TrimSpace(strings.TrimSuffix(display, "\r"))
+	if label == "" {
+		return id, id
+	}
+	return id, label
 }
 
 // discoverGrokModels spins up `grok agent --always-approve stdio` and parses

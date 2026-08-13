@@ -501,6 +501,16 @@ func TestAntigravityModelError(t *testing.T) {
 	if !strings.Contains(err.Error(), "agy models") {
 		t.Errorf("error should point the user at `agy models`: %v", err)
 	}
+	if !strings.Contains(err.Error(), `requested ID: "Totally Made Up Model"`) {
+		t.Errorf("error should echo requested ID distinctly: %v", err)
+	}
+	if !strings.Contains(err.Error(), "available IDs:") {
+		t.Errorf("error should list normalized available IDs: %v", err)
+	}
+	if !strings.Contains(err.Error(), "Gemini 3.5 Flash (Medium)") ||
+		!strings.Contains(err.Error(), "Claude Opus 4.6 (Thinking)") {
+		t.Errorf("error should include catalog IDs: %v", err)
+	}
 
 	// Near-miss (trailing space / dropped suffix) → still rejected, because agy
 	// needs the exact display string and would no-op on anything else.
@@ -509,6 +519,80 @@ func TestAntigravityModelError(t *testing.T) {
 	}
 	if err := antigravityModelError("Claude Opus 4.6", catalog); err == nil {
 		t.Error("near-miss model (dropped suffix) should be rejected")
+	}
+}
+
+// TestAntigravityModelErrorPrefixNegative pins strict ID equality: a shorter
+// ID must not be accepted as a prefix of a longer catalog entry (FRO-240).
+func TestAntigravityModelErrorPrefixNegative(t *testing.T) {
+	t.Parallel()
+
+	catalog := parseAntigravityModels("gemini-3.6-flash-high\tGemini 3.6 Flash (High)\n")
+	if err := antigravityModelError("gemini-3.6-flash-high", catalog); err != nil {
+		t.Fatalf("exact ID should be accepted: %v", err)
+	}
+	if err := antigravityModelError("gemini-3.6-flash", catalog); err == nil {
+		t.Fatal("prefix ID gemini-3.6-flash must not match gemini-3.6-flash-high")
+	}
+}
+
+// TestAntigravityModelErrorFRO240Regression covers the real preflight failure
+// shape from task runs 2c055955-7270-4d72-9ec6-a6291bfdf543 and
+// e3600f1b-5dcd-4b2f-827c-a42b4f4e1da3: configured ID gemini-3.6-flash-high was
+// rejected while the same ID appeared in `agy models` as a tab-separated line.
+// After the fix, parsing that catalog must accept the configured ID; the
+// diagnostic for a true miss must still surface requested ID and available IDs
+// without embedding raw tab-separated display rows.
+func TestAntigravityModelErrorFRO240Regression(t *testing.T) {
+	t.Parallel()
+
+	// Real catalog line shape observed in the failing runs.
+	rawAgyModels := "gemini-3.6-flash-high\tGemini 3.6 Flash (High)\n"
+	catalog := parseAntigravityModels(rawAgyModels)
+
+	if err := antigravityModelError("gemini-3.6-flash-high", catalog); err != nil {
+		t.Fatalf("configured ID from FRO-238/239 runs must be accepted after ID parsing: %v", err)
+	}
+
+	// Document the pre-fix failure text: comparing against the whole raw line
+	// would reject the configured ID even though the ID column matches.
+	buggyCatalog := []Model{{
+		ID:       strings.TrimSpace(strings.TrimSuffix(rawAgyModels, "\n")),
+		Label:    strings.TrimSpace(strings.TrimSuffix(rawAgyModels, "\n")),
+		Provider: "antigravity",
+	}}
+	buggyErr := antigravityModelError("gemini-3.6-flash-high", buggyCatalog)
+	if buggyErr == nil {
+		t.Fatal("pre-fix whole-line catalog should still reject configured ID (documents the bug)")
+	}
+	buggyMsg := buggyErr.Error()
+	if !strings.Contains(buggyMsg, `requested ID: "gemini-3.6-flash-high"`) {
+		t.Errorf("diagnostic must echo requested ID: %v", buggyErr)
+	}
+	if !strings.Contains(buggyMsg, "available IDs:") {
+		t.Errorf("diagnostic must list available IDs: %v", buggyErr)
+	}
+	// The bug symptom: available list carried the tab-separated display row.
+	if !strings.Contains(buggyMsg, "gemini-3.6-flash-high\tGemini 3.6 Flash (High)") {
+		t.Errorf("pre-fix catalog ID in diagnostic should retain the tab-separated row: %v", buggyErr)
+	}
+
+	// A true miss against a correctly parsed catalog must not reintroduce tabs
+	// into the available-ID list.
+	miss := antigravityModelError("gemini-3.6-flash", catalog)
+	if miss == nil {
+		t.Fatal("unrelated ID should still be rejected")
+	}
+	missMsg := miss.Error()
+	if strings.Contains(missMsg, "\t") {
+		t.Errorf("normalized available IDs must not embed tab-separated display rows: %v", miss)
+	}
+	if !strings.Contains(missMsg, `requested ID: "gemini-3.6-flash"`) {
+		t.Errorf("miss diagnostic must echo requested ID: %v", miss)
+	}
+	if !strings.Contains(missMsg, "available IDs: [gemini-3.6-flash-high]") &&
+		!strings.Contains(missMsg, "available IDs: gemini-3.6-flash-high") {
+		t.Errorf("miss diagnostic must list normalized available IDs: %v", miss)
 	}
 }
 

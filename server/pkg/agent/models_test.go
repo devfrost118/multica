@@ -1186,9 +1186,11 @@ func TestAntigravityModelSelectionSupported(t *testing.T) {
 	}
 }
 
-// TestParseAntigravityModels covers the `agy models` line-per-name format:
-// each non-blank line becomes a Model whose ID and Label are the verbatim
-// display string `--model` expects, duplicates collapse, and blanks drop.
+// TestParseAntigravityModels covers the `agy models` formats the daemon must
+// accept: legacy display-name-only lines, plain model IDs, and the tab-
+// separated `id\tdisplay name` shape that triggered FRO-240. ID is always the
+// first column (split on the first tab); Label is the display name when
+// present, otherwise the ID. Duplicates collapse by ID; blank lines drop.
 func TestParseAntigravityModels(t *testing.T) {
 	t.Parallel()
 
@@ -1213,6 +1215,57 @@ func TestParseAntigravityModels(t *testing.T) {
 		if !reflect.DeepEqual(got[i], want[i]) {
 			t.Errorf("model[%d] = %+v, want %+v", i, got[i], want[i])
 		}
+	}
+}
+
+// TestParseAntigravityModelsTabSeparated is the FRO-240 acceptance fixture:
+// `agy models` returns `id\tdisplay name`, and the configured model ID must
+// match the first column only — never the whole line.
+func TestParseAntigravityModelsTabSeparated(t *testing.T) {
+	t.Parallel()
+
+	out := "gemini-3.6-flash-high\tGemini 3.6 Flash (High)\n"
+	got := parseAntigravityModels(out)
+	want := []Model{
+		{ID: "gemini-3.6-flash-high", Label: "Gemini 3.6 Flash (High)", Provider: "antigravity"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("parseAntigravityModels tab-separated = %+v, want %+v", got, want)
+	}
+}
+
+// TestParseAntigravityModelsPlainID keeps one-ID-per-line catalogs working
+// without a display-name column.
+func TestParseAntigravityModelsPlainID(t *testing.T) {
+	t.Parallel()
+
+	got := parseAntigravityModels("gemini-3.6-flash-high\n")
+	want := []Model{
+		{ID: "gemini-3.6-flash-high", Label: "gemini-3.6-flash-high", Provider: "antigravity"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("parseAntigravityModels plain ID = %+v, want %+v", got, want)
+	}
+}
+
+// TestParseAntigravityModelsCRLFEmptyAndMultiple pins deterministic handling
+// of CRLF endings, blank lines, and multi-model catalogs.
+func TestParseAntigravityModelsCRLFEmptyAndMultiple(t *testing.T) {
+	t.Parallel()
+
+	out := "gemini-3.6-flash-high\tGemini 3.6 Flash (High)\r\n" +
+		"\r\n" +
+		"  gemini-3.5-flash\tGemini 3.5 Flash  \r\n" +
+		"claude-opus-4-6-thinking\r\n" +
+		"\n"
+	got := parseAntigravityModels(out)
+	want := []Model{
+		{ID: "gemini-3.6-flash-high", Label: "Gemini 3.6 Flash (High)", Provider: "antigravity"},
+		{ID: "gemini-3.5-flash", Label: "Gemini 3.5 Flash", Provider: "antigravity"},
+		{ID: "claude-opus-4-6-thinking", Label: "claude-opus-4-6-thinking", Provider: "antigravity"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("parseAntigravityModels CRLF/multi = %+v, want %+v", got, want)
 	}
 }
 
