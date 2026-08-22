@@ -122,9 +122,9 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	// CreateProcess command-line limit.
 	args = append(args, prompt)
 
-	cmd := exec.CommandContext(runCtx, execPath, args...)
+	cmd := b.cfg.commandAt(execPath).exec(runCtx, args...)
 	hideAgentWindow(cmd)
-	b.cfg.Logger.Info("agent command", "exec", execPath, "args_count", len(args))
+	b.cfg.logAgentCommand(cmd, newAgentCommandLogArgs(args))
 	if opts.Cwd != "" {
 		cmd.Dir = opts.Cwd
 	}

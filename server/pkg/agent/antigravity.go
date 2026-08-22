@@ -473,9 +473,11 @@ func buildAntigravityArgs(prompt, logPath string, timeout time.Duration, opts Ex
 // returns nil otherwise. An empty `available` means discovery couldn't produce
 // a catalog (agy missing, transient failure) — we fail OPEN there and let agy
 // resolve the value, so a discovery hiccup never blocks a run. The match is
-// exact because agy's --model wants the precise catalog identifier; a near-miss
-// (extra space, dropped suffix) is correctly rejected since agy would silently
-// no-op on it anyway.
+// exact ID equality against the normalized catalog IDs (first column of each
+// `agy models` row); prefix/substring near-misses are correctly rejected since
+// agy would silently no-op on them anyway. The diagnostic echoes the requested
+// ID and the normalized available ID list separately so tab-separated display
+// rows cannot obscure whether the configured ID was present.
 func antigravityModelError(model string, available []Model) error {
 	if model == "" || len(available) == 0 {
 		return nil
@@ -488,8 +490,8 @@ func antigravityModelError(model string, available []Model) error {
 		ids = append(ids, m.ID)
 	}
 	return fmt.Errorf(
-		"antigravity model %q is not available from `agy models`; pick one of: %s",
-		model, strings.Join(ids, ", "),
+		"antigravity model %q is not available from `agy models`; requested ID: %q; available IDs: [%s]",
+		model, model, strings.Join(ids, ", "),
 	)
 }
 
