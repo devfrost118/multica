@@ -294,6 +294,32 @@ type ProjectResourceData struct {
 // while sharing the canonical JSON shape with the runtime app metadata package.
 type ConnectedAppData = runtimeapps.ConnectedApp
 
+// ProjectEnvironmentData is the claim-time snapshot of an allowlisted project
+// environment, including plaintext secrets for subprocess env injection.
+type ProjectEnvironmentData struct {
+	Name       string            `json:"name"`
+	Kind       string            `json:"kind"`
+	Connection json.RawMessage   `json:"connection"`
+	Secrets    map[string]string `json:"secrets,omitempty"`
+}
+
+// EffectiveRuleData is a claim-time snapshot of one resolved Rule Group rule.
+type EffectiveRuleData struct {
+	ScopeType      string          `json:"scope_type"`
+	RuleGroupID    string          `json:"rule_group_id"`
+	RuleGroupName  string          `json:"rule_group_name"`
+	RuleID         string          `json:"rule_id"`
+	RuleName       string          `json:"rule_name"`
+	Description    string          `json:"description,omitempty"`
+	Content        string          `json:"content"`
+	FileName       string          `json:"file_name,omitempty"`
+	RuntimeHints   json.RawMessage `json:"runtime_hints,omitempty"`
+	RuleSortOrder  int32           `json:"rule_sort_order"`
+	BindingID      string          `json:"binding_id"`
+	BindingSortKey int32           `json:"binding_sort_order"`
+}
+
+
 // ActiveSiblingRunData is bounded claim-time context about another in-flight
 // issue task for the same agent. Queued tasks are intentionally absent because
 // they cannot coordinate yet. It lets the daemon warn a newly claimed run

@@ -1125,6 +1125,8 @@ type ProviderLimitSnapshot struct {
 	ErrorNote              string             `json:"error_note"`
 	ContentHash            string             `json:"content_hash"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+}
+
 type QuickAction struct {
 	ID            pgtype.UUID        `json:"id"`
 	WorkspaceID   pgtype.UUID        `json:"workspace_id"`

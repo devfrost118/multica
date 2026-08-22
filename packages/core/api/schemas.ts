@@ -83,7 +83,22 @@ import type {
   User,
   WebhookDelivery,
   WorkspaceMcpServer,
+
+  ProviderLimitHistoryResponse,
+  ProviderLimitsOverviewResponse,
+  ProviderCredential,
+  RuleGroupSummary,
+  RuleGroupRule,
+  RuleGroupWithRules,
+  RuleGroupBinding,
+  EffectiveRulesResponse,
 } from "../types";
+import type {
+  ListProjectEnvironmentsResponse,
+  ProjectEnvironment,
+  ProjectEnvironmentReveal,
+} from "../types/project";
+
 import type { CloudRuntimeNode } from "../runtimes/cloud-runtime";
 import type { CreateFeedbackResponse } from "../feedback/types";
 
@@ -440,6 +455,79 @@ export const EMPTY_LABEL: Label = {
   usage_count: 0,
   created_at: "",
   updated_at: "",
+};
+
+const ProviderLimitSourceSchema = z.object({
+  kind: z.string().default(""),
+  freshness_seconds: z.number().default(0),
+  confidence: z.string().default(""),
+}).loose();
+
+const ProviderLimitBucketSchema = z.object({
+  id: z.string().default(""),
+  label: z.string().default(""),
+  unit: z.string().default(""),
+  limit_value: z.number().nullable().optional().default(null),
+  used_value: z.number().nullable().optional().default(null),
+  remaining_value: z.number().nullable().optional().default(null),
+  resets_at: z.string().nullable().optional().default(null),
+  status: z.string().default("unavailable"),
+  note: z.string().default(""),
+}).loose();
+
+export const ProviderLimitSnapshotSchema = z.object({
+  runtime_id: z.string().default(""),
+  daemon_id: z.string().default(""),
+  provider: z.string().default(""),
+  account_key: z.string().default(""),
+  account_label: z.string().default(""),
+  checked_at: z.string().default(""),
+  status: z.string().default("unavailable"),
+  source: ProviderLimitSourceSchema.default({
+    kind: "",
+    freshness_seconds: 0,
+    confidence: "",
+  }),
+  buckets: z.array(ProviderLimitBucketSchema).default([]),
+  error_note: z.string().default(""),
+  stale: z.boolean().default(false),
+  last_successful_at: z.string().nullable().optional().default(null),
+  last_attempted_at: z.string().optional().default(""),
+  last_attempt_status: z.string().optional().default(""),
+  last_attempt_source: ProviderLimitSourceSchema.optional(),
+}).loose();
+
+export const ProviderLimitsOverviewResponseSchema = z.object({
+  accounts: z.array(ProviderLimitSnapshotSchema).default([]),
+  daemons: z.array(ProviderLimitSnapshotSchema).default([]),
+}).loose();
+
+export const ProviderLimitHistoryResponseSchema = z.object({
+  snapshots: z.array(ProviderLimitSnapshotSchema).default([]),
+}).loose();
+
+export const ProviderCredentialSchema = z.object({
+  id: z.string(),
+  provider: z.string(),
+  account_key: z.string().default(""),
+  account_label: z.string().default(""),
+  fingerprint: z.string().default(""),
+  last_validated_at: z.string().nullable().optional().default(null),
+  last_validation_status: z.string().default("pending"),
+  last_validation_note: z.string().default(""),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const ProviderCredentialsSchema = z.array(ProviderCredentialSchema);
+export const EMPTY_PROVIDER_CREDENTIALS: ProviderCredential[] = [];
+export const EMPTY_PROVIDER_LIMITS_OVERVIEW: ProviderLimitsOverviewResponse = {
+  accounts: [],
+  daemons: [],
+};
+
+export const EMPTY_PROVIDER_LIMIT_HISTORY: ProviderLimitHistoryResponse = {
+  snapshots: [],
 };
 
 export const ListLabelsResponseSchema = z.object({
@@ -898,6 +986,15 @@ const OptionalStringSchema = z.preprocess(
   (value) => (typeof value === "string" ? value : undefined),
   z.string().optional(),
 );
+
+const OptionalNullableStringSchema = z.preprocess(
+  (value) => (typeof value === "string" || value === null ? value : undefined),
+  z.string().nullable().optional(),
+);
+
+const StringRecordSchema = z.record(z.string(), z.string());
+
+const JsonObjectSchema = z.record(z.string(), z.unknown());
 
 const BooleanWithDefaultSchema = (fallback: boolean) =>
   z.preprocess(
@@ -2213,6 +2310,69 @@ export const InboxItemListSchema = z.array(
 export const EMPTY_INBOX_ITEMS: InboxItem[] = [];
 
 // ---------------------------------------------------------------------------
+// Project environments (`/api/projects/:id/environments`). These records can
+// carry masked secrets in normal CRUD responses and plaintext secrets only in
+// the audited reveal response, so every consumer must pass through schemas
+// before the UI touches the payload. Unknown future fields stay available via
+// `.loose()`, while the allowlist and secret maps are explicitly typed.
+// ---------------------------------------------------------------------------
+
+export const ProjectEnvironmentSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  workspace_id: z.string(),
+  name: z.string(),
+  description: OptionalNullableStringSchema.default(null),
+  config: JsonObjectSchema.default({}),
+  secrets: StringRecordSchema.default({}),
+  allowed_runtime_ids: z.array(z.string()).default([]),
+  created_by: OptionalNullableStringSchema.default(null),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).loose();
+
+export const ProjectEnvironmentRevealSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  workspace_id: z.string(),
+  name: z.string(),
+  secrets: StringRecordSchema.default({}),
+}).loose();
+
+export const ListProjectEnvironmentsResponseSchema = z.object({
+  environments: z.array(ProjectEnvironmentSchema).default([]),
+  total: z.number().default(0),
+}).loose();
+
+export const EMPTY_PROJECT_ENVIRONMENT: ProjectEnvironment = {
+  id: "",
+  project_id: "",
+  workspace_id: "",
+  name: "",
+  description: null,
+  config: {},
+  secrets: {},
+  allowed_runtime_ids: [],
+  created_by: null,
+  created_at: "",
+  updated_at: "",
+};
+
+export const EMPTY_PROJECT_ENVIRONMENT_REVEAL: ProjectEnvironmentReveal = {
+  id: "",
+  project_id: "",
+  workspace_id: "",
+  name: "",
+  secrets: {},
+};
+
+export const EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE: ListProjectEnvironmentsResponse = {
+  environments: [],
+  total: 0,
+};
+
+// ---------------------------------------------------------------------------
+
 // Billing schemas (cloud-billing proxy surface)
 //
 // All billing JSON we receive comes from multica-cloud verbatim — we proxy
@@ -3022,4 +3182,134 @@ export const EMPTY_JOIN_SHARE_LINK_RESPONSE: {
   },
   workspace_id: "",
   workspace_slug: "",
+};
+
+// ---------------------------------------------------------------------------
+// Rule Groups — see server/internal/handler/rule_group.go. Schemas are lenient
+// (string enums, .loose()) so an unknown source_type/scope_type still parses;
+// the typed fallbacks anchor the call-site type via parseWithFallback.
+// ---------------------------------------------------------------------------
+
+const RuleGroupBaseSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  enabled: z.boolean().default(true),
+  source_type: z.string().default("manual"),
+  source_ref: z.record(z.string(), z.unknown()).default({}),
+  version: z.string().nullable().default(null),
+  created_by: z.string().nullable().default(null),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+});
+
+export const RuleGroupSummarySchema = RuleGroupBaseSchema.extend({
+  rule_count: z.number().default(0),
+  binding_count: z.number().default(0),
+}).loose();
+
+export const RuleGroupSummaryListSchema = z.array(RuleGroupSummarySchema);
+
+export const EMPTY_RULE_GROUP_SUMMARY_LIST: RuleGroupSummary[] = [];
+
+export const RuleGroupRuleSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  rule_group_id: z.string(),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  content: z.string().default(""),
+  sort_order: z.number().default(0),
+  enabled: z.boolean().default(true),
+  file_name: z.string().nullable().default(null),
+  tags: z.array(z.string()).default([]),
+  runtime_hints: z.record(z.string(), z.unknown()).default({}),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const RuleGroupRuleListSchema = z.array(RuleGroupRuleSchema);
+
+export const EMPTY_RULE_GROUP_RULE_LIST: RuleGroupRule[] = [];
+
+export const RuleGroupWithRulesSchema = RuleGroupBaseSchema.extend({
+  rules: z.array(RuleGroupRuleSchema).default([]),
+}).loose();
+
+export const EMPTY_RULE_GROUP_WITH_RULES: RuleGroupWithRules = {
+  id: "",
+  workspace_id: "",
+  name: "",
+  description: "",
+  enabled: true,
+  source_type: "manual",
+  source_ref: {},
+  version: null,
+  created_by: null,
+  created_at: "",
+  updated_at: "",
+  rules: [],
+};
+
+export const RuleGroupBindingSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  rule_group_id: z.string(),
+  rule_group_name: z.string().optional(),
+  scope_type: z.string().default("workspace"),
+  scope_id: z.string().nullable().default(null),
+  enabled: z.boolean().default(true),
+  sort_order: z.number().default(0),
+  created_by: z.string().nullable().default(null),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const RuleGroupBindingListSchema = z.array(RuleGroupBindingSchema);
+
+export const EMPTY_RULE_GROUP_BINDING_LIST: RuleGroupBinding[] = [];
+
+const EffectiveRuleLayerGroupSchema = z.object({
+  binding_id: z.string(),
+  rule_group_id: z.string(),
+  name: z.string().default(""),
+  rule_count: z.number().default(0),
+}).loose();
+
+const EffectiveRuleLayerSchema = z.object({
+  scope_type: z.string().default("workspace"),
+  scope_id: z.string().nullable().default(null),
+  groups: z.array(EffectiveRuleLayerGroupSchema).default([]),
+}).loose();
+
+const EffectiveRuleSchema = z.object({
+  id: z.string(),
+  rule_group_id: z.string(),
+  rule_group_name: z.string().default(""),
+  scope_type: z.string().default("workspace"),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  content: z.string().default(""),
+  sort_order: z.number().default(0),
+  file_name: z.string().nullable().default(null),
+  runtime_hints: z.record(z.string(), z.unknown()).default({}),
+}).loose();
+
+export const EffectiveRulesResponseSchema = z.object({
+  workspace_id: z.string().default(""),
+  inputs: z.object({
+    project_id: z.string().nullable().default(null),
+    squad_id: z.string().nullable().default(null),
+    agent_id: z.string().nullable().default(null),
+  }).loose().default({ project_id: null, squad_id: null, agent_id: null }),
+  layers: z.array(EffectiveRuleLayerSchema).default([]),
+  rules: z.array(EffectiveRuleSchema).default([]),
+}).loose();
+
+export const EMPTY_EFFECTIVE_RULES: EffectiveRulesResponse = {
+  workspace_id: "",
+  inputs: { project_id: null, squad_id: null, agent_id: null },
+  layers: [],
+  rules: [],
 };

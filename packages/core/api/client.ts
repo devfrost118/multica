@@ -57,6 +57,7 @@ import type {
   SkillSummary,
   CreateSkillRequest,
   UpdateSkillRequest,
+  SkillDiscoveryResult,
   SetAgentSkillsRequest,
   SetAgentRuntimeSkillEnabledRequest,
   PersonalAccessToken,
@@ -102,6 +103,10 @@ import type {
   CreateProjectResourceRequest,
   UpdateProjectResourceRequest,
   ListProjectResourcesResponse,
+  ProjectEnvironment,
+  ProjectEnvironmentReveal,
+  ProjectEnvironmentRequest,
+  ListProjectEnvironmentsResponse,
   Label,
   IssueProperty,
   IssuePropertyValue,
@@ -204,7 +209,23 @@ import type {
   CreateBillingCheckoutSessionRequest,
   CreateBillingCheckoutSessionResponse,
   BillingCheckoutSessionStatus,
+  ProviderLimitHistoryResponse,
+  ProviderLimitsOverviewResponse,
+  ProviderCredential,
+  SaveProviderCredentialRequest,
   CreateBillingPortalSessionResponse,
+  RuleGroupSummary,
+  RuleGroupWithRules,
+  RuleGroupRule,
+  RuleGroupBinding,
+  RuleGroup,
+  EffectiveRulesResponse,
+  CreateRuleGroupRequest,
+  UpdateRuleGroupRequest,
+  CreateRuleGroupRuleRequest,
+  UpdateRuleGroupRuleRequest,
+  CreateRuleGroupBindingRequest,
+  UpdateRuleGroupBindingRequest,
   WorkspaceSubscriptionEntitlements,
   WorkspaceSubscriptionSummary,
   WorkspaceSubscriptionPrices,
@@ -328,6 +349,29 @@ import {
   WorkspaceSubscriptionSeatReconcileResultSchema,
   WorkspaceSeatPurchasePreviewSchema,
   PurchaseWorkspaceSeatsResponseSchema,
+  ProjectEnvironmentSchema,
+  ProjectEnvironmentRevealSchema,
+  ListProjectEnvironmentsResponseSchema,
+  EMPTY_PROJECT_ENVIRONMENT,
+  EMPTY_PROJECT_ENVIRONMENT_REVEAL,
+  EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE,
+  ProviderLimitHistoryResponseSchema,
+  ProviderLimitsOverviewResponseSchema,
+  ProviderCredentialSchema,
+  ProviderCredentialsSchema,
+  EMPTY_PROVIDER_CREDENTIALS,
+  EMPTY_PROVIDER_LIMIT_HISTORY,
+  EMPTY_PROVIDER_LIMITS_OVERVIEW,
+  RuleGroupSummaryListSchema,
+  EMPTY_RULE_GROUP_SUMMARY_LIST,
+  RuleGroupWithRulesSchema,
+  EMPTY_RULE_GROUP_WITH_RULES,
+  RuleGroupRuleListSchema,
+  EMPTY_RULE_GROUP_RULE_LIST,
+  RuleGroupBindingListSchema,
+  EMPTY_RULE_GROUP_BINDING_LIST,
+  EffectiveRulesResponseSchema,
+  EMPTY_EFFECTIVE_RULES,
   CreateWorkspaceSubscriptionPortalResponseSchema,
   DingTalkInstallationSchema,
   ListDingTalkInstallationsResponseSchema,
@@ -603,6 +647,13 @@ function dingTalkGroupSearch(params: ListDingTalkGroupsParams): string {
   return encoded ? `?${encoded}` : "";
 }
 
+function emptyProviderCredential(): ProviderCredential {
+  return {
+    id: "", provider: "factory", account_key: "", account_label: "", fingerprint: "",
+    last_validated_at: null, last_validation_status: "pending", last_validation_note: "",
+    created_at: "", updated_at: "",
+  };
+}
 export class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
@@ -2050,6 +2101,63 @@ export class ApiClient {
     );
   }
 
+  async getProviderLimits(): Promise<ProviderLimitsOverviewResponse> {
+    const raw = await this.fetch<unknown>("/api/provider-limits");
+    return parseWithFallback(
+      raw,
+      ProviderLimitsOverviewResponseSchema,
+      EMPTY_PROVIDER_LIMITS_OVERVIEW,
+      { endpoint: "GET /api/provider-limits" },
+    );
+  }
+
+  async getProviderLimitHistory(): Promise<ProviderLimitHistoryResponse> {
+    const raw = await this.fetch<unknown>("/api/provider-limits/history");
+    return parseWithFallback(
+      raw,
+      ProviderLimitHistoryResponseSchema,
+      EMPTY_PROVIDER_LIMIT_HISTORY,
+      { endpoint: "GET /api/provider-limits/history" },
+    );
+  }
+
+  async requestProviderLimitsRefresh(runtimeId: string): Promise<void> {
+    await this.fetch("/api/provider-limits/refresh", {
+      method: "POST",
+      body: JSON.stringify({ runtime_id: runtimeId }),
+    });
+  }
+
+  async getProviderCredentials(): Promise<ProviderCredential[]> {
+    const raw = await this.fetch<unknown>("/api/provider-credentials?provider=factory");
+    return parseWithFallback(raw, ProviderCredentialsSchema, EMPTY_PROVIDER_CREDENTIALS, {
+      endpoint: "GET /api/provider-credentials",
+    });
+  }
+
+  async createProviderCredential(request: SaveProviderCredentialRequest): Promise<ProviderCredential> {
+    const raw = await this.fetch<unknown>("/api/provider-credentials", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+    return parseWithFallback(raw, ProviderCredentialSchema, emptyProviderCredential(), {
+      endpoint: "POST /api/provider-credentials",
+    });
+  }
+
+  async replaceProviderCredential(id: string, token: string): Promise<ProviderCredential> {
+    const raw = await this.fetch<unknown>(`/api/provider-credentials/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ token }),
+    });
+    return parseWithFallback(raw, ProviderCredentialSchema, { ...emptyProviderCredential(), id }, {
+      endpoint: "PUT /api/provider-credentials/:id",
+    });
+  }
+
+  async deleteProviderCredential(id: string): Promise<void> {
+    await this.fetch(`/api/provider-credentials/${id}`, { method: "DELETE" });
+  }
   async getDashboardUsageByAgent(
     params: { days?: number; project_id?: string | null; tz?: string },
   ): Promise<DashboardUsageByAgent[]> {
@@ -2930,6 +3038,13 @@ export class ApiClient {
     });
   }
 
+  async discoverSkills(data: { url: string }): Promise<SkillDiscoveryResult> {
+    return this.fetch("/api/skills/discover", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   async listAgentSkills(agentId: string): Promise<SkillSummary[]> {
     return this.fetch(`/api/agents/${agentId}/skills`);
   }
@@ -2951,12 +3066,12 @@ export class ApiClient {
     });
   }
 
-	async setAgentSkillEnabled(agentId: string, skillId: string, enabled: boolean): Promise<void> {
-		await this.fetch(`/api/agents/${agentId}/skills/${skillId}/enabled`, {
-			method: "PUT",
-			body: JSON.stringify({ enabled }),
-		});
-	}
+  async setAgentSkillEnabled(agentId: string, skillId: string, enabled: boolean): Promise<void> {
+    await this.fetch(`/api/agents/${agentId}/skills/${skillId}/enabled`, {
+      method: "PUT",
+      body: JSON.stringify({ enabled }),
+    });
+  }
 
   async setAgentRuntimeSkillEnabled(
     agentId: string,
@@ -2968,11 +3083,11 @@ export class ApiClient {
     });
   }
 
-	async removeAgentSkill(agentId: string, skillId: string): Promise<void> {
-		await this.fetch(`/api/agents/${agentId}/skills/${skillId}`, {
-			method: "DELETE",
-		});
-	}
+  async removeAgentSkill(agentId: string, skillId: string): Promise<void> {
+    await this.fetch(`/api/agents/${agentId}/skills/${skillId}`, {
+      method: "DELETE",
+    });
+  }
 
   // Personal Access Tokens
   async listPersonalAccessTokens(): Promise<PersonalAccessToken[]> {
@@ -3008,7 +3123,7 @@ export class ApiClient {
 
     const rid = createRequestId();
     const start = Date.now();
-    this.logger.info("→ POST /api/upload-file", { rid });
+    this.logger.info("> POST /api/upload-file", { rid });
 
     const res = await fetch(`${this.baseUrl}/api/upload-file`, {
       method: "POST",
@@ -3451,6 +3566,82 @@ export class ApiClient {
     });
   }
 
+  // Project environments
+  async listProjectEnvironments(
+    projectId: string,
+  ): Promise<ListProjectEnvironmentsResponse> {
+    const raw = await this.fetch<unknown>(`/api/projects/${projectId}/environments`);
+    return parseWithFallback(
+      raw,
+      ListProjectEnvironmentsResponseSchema,
+      EMPTY_LIST_PROJECT_ENVIRONMENTS_RESPONSE,
+      { endpoint: "GET /api/projects/:id/environments" },
+    );
+  }
+
+  async createProjectEnvironment(
+    projectId: string,
+    data: ProjectEnvironmentRequest,
+  ): Promise<ProjectEnvironment> {
+    const raw = await this.fetch<unknown>(`/api/projects/${projectId}/environments`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT, project_id: projectId },
+      { endpoint: "POST /api/projects/:id/environments" },
+    );
+  }
+
+  async updateProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+    data: Partial<ProjectEnvironmentRequest>,
+  ): Promise<ProjectEnvironment> {
+    const raw = await this.fetch<unknown>(
+      `/api/projects/${projectId}/environments/${environmentId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+    );
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT, project_id: projectId },
+      { endpoint: "PUT /api/projects/:id/environments/:environmentId" },
+    );
+  }
+
+  async deleteProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+  ): Promise<void> {
+    await this.fetch(`/api/projects/${projectId}/environments/${environmentId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async revealProjectEnvironment(
+    projectId: string,
+    environmentId: string,
+  ): Promise<ProjectEnvironmentReveal> {
+    const raw = await this.fetch<unknown>(
+      `/api/projects/${projectId}/environments/${environmentId}/reveal`,
+    );
+    return parseWithFallback(
+      raw,
+      ProjectEnvironmentRevealSchema,
+      { ...EMPTY_PROJECT_ENVIRONMENT_REVEAL, project_id: projectId },
+      {
+        endpoint: "GET /api/projects/:id/environments/:environmentId/reveal",
+        redactReceived: true,
+      },
+    );
+  }
+
   // Labels
   async listLabels(resourceType: LabelResourceType = "issue"): Promise<ListLabelsResponse> {
     const raw = await this.fetch<unknown>(`/api/labels?resource_type=${resourceType}`);
@@ -3695,67 +3886,155 @@ export class ApiClient {
     });
   }
 
+  // Rule Groups — workspace resolved server-side from the X-Workspace-Slug
+  // header (see server router /api/rule-groups). List/read responses run
+  // through schemas so a contract drift degrades instead of white-screening.
+  async listRuleGroups(): Promise<RuleGroupSummary[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups`);
+    return parseWithFallback(raw, RuleGroupSummaryListSchema, EMPTY_RULE_GROUP_SUMMARY_LIST, {
+      endpoint: "GET /api/rule-groups",
+    }) as RuleGroupSummary[];
+  }
+
+  async getRuleGroup(id: string): Promise<RuleGroupWithRules> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${id}`);
+    return parseWithFallback(raw, RuleGroupWithRulesSchema, EMPTY_RULE_GROUP_WITH_RULES, {
+      endpoint: "GET /api/rule-groups/:id",
+    }) as RuleGroupWithRules;
+  }
+
+  async createRuleGroup(data: CreateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroup(id: string, data: UpdateRuleGroupRequest): Promise<RuleGroup> {
+    return this.fetch(`/api/rule-groups/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroup(id: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${id}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupRules(groupId: string): Promise<RuleGroupRule[]> {
+    const raw = await this.fetch<unknown>(`/api/rule-groups/${groupId}/rules`);
+    return parseWithFallback(raw, RuleGroupRuleListSchema, EMPTY_RULE_GROUP_RULE_LIST, {
+      endpoint: "GET /api/rule-groups/:id/rules",
+    }) as RuleGroupRule[];
+  }
+
+  async createRuleGroupRule(
+    groupId: string,
+    data: CreateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupRule(
+    groupId: string,
+    ruleId: string,
+    data: UpdateRuleGroupRuleRequest,
+  ): Promise<RuleGroupRule> {
+    return this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupRule(groupId: string, ruleId: string): Promise<void> {
+    await this.fetch(`/api/rule-groups/${groupId}/rules/${ruleId}`, { method: "DELETE" });
+  }
+
+  async listRuleGroupBindings(
+    scopeType?: string,
+    scopeId?: string,
+  ): Promise<RuleGroupBinding[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set("scope_type", scopeType);
+    if (scopeId) params.set("scope_id", scopeId);
+    const q = params.toString() ? `?${params.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rule-group-bindings${q}`);
+    return parseWithFallback(raw, RuleGroupBindingListSchema, EMPTY_RULE_GROUP_BINDING_LIST, {
+      endpoint: "GET /api/rule-group-bindings",
+    }) as RuleGroupBinding[];
+  }
+
+  async createRuleGroupBinding(data: CreateRuleGroupBindingRequest): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRuleGroupBinding(
+    id: string,
+    data: UpdateRuleGroupBindingRequest,
+  ): Promise<RuleGroupBinding> {
+    return this.fetch(`/api/rule-group-bindings/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRuleGroupBinding(id: string): Promise<void> {
+    await this.fetch(`/api/rule-group-bindings/${id}`, { method: "DELETE" });
+  }
+
+  async getEffectiveRules(params: {
+    projectId?: string;
+    squadId?: string;
+    agentId?: string;
+  }): Promise<EffectiveRulesResponse> {
+    const search = new URLSearchParams();
+    if (params.projectId) search.set("project_id", params.projectId);
+    if (params.squadId) search.set("squad_id", params.squadId);
+    if (params.agentId) search.set("agent_id", params.agentId);
+    const q = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/rules/effective${q}`);
+    return parseWithFallback(raw, EffectiveRulesResponseSchema, EMPTY_EFFECTIVE_RULES, {
+      endpoint: "GET /api/rules/effective",
+    }) as EffectiveRulesResponse;
+  }
+
   async listLabelsForIssue(issueId: string): Promise<IssueLabelsResponse> {
     const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`);
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "GET /api/issues/{id}/labels",
-    });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "GET /api/issues/{id}/labels" });
   }
 
   async attachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ label_id: labelId }),
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "POST /api/issues/{id}/labels",
-    });
+    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels`, { method: "POST", body: JSON.stringify({ label_id: labelId }) });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "POST /api/issues/{id}/labels" });
   }
 
   async detachLabel(issueId: string, labelId: string): Promise<IssueLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels/${labelId}`, {
-      method: "DELETE",
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: "DELETE /api/issues/{id}/labels/{labelId}",
-    });
+    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/labels/${labelId}`, { method: "DELETE" });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: "DELETE /api/issues/{id}/labels/{labelId}" });
   }
 
-  async listLabelsForResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels`);
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `GET /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels`,
-    });
+  async listLabelsForResource(resourceType: "agent" | "skill", resourceId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels`);
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `GET /api/${path}/{id}/labels` });
   }
 
-  async attachLabelToResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-    labelId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ label_id: labelId }),
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `POST /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels`,
-    });
+  async attachLabelToResource(resourceType: "agent" | "skill", resourceId: string, labelId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels`, { method: "POST", body: JSON.stringify({ label_id: labelId }) });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `POST /api/${path}/{id}/labels` });
   }
 
-  async detachLabelFromResource(
-    resourceType: "agent" | "skill",
-    resourceId: string,
-    labelId: string,
-  ): Promise<ResourceLabelsResponse> {
-    const raw = await this.fetch<unknown>(`/api/${resourceType === "agent" ? "agents" : "skills"}/${resourceId}/labels/${labelId}`, {
-      method: "DELETE",
-    });
-    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, {
-      endpoint: `DELETE /api/${resourceType === "agent" ? "agents" : "skills"}/{id}/labels/{labelId}`,
-    });
+  async detachLabelFromResource(resourceType: "agent" | "skill", resourceId: string, labelId: string): Promise<ResourceLabelsResponse> {
+    const path = resourceType === "agent" ? "agents" : "skills";
+    const raw = await this.fetch<unknown>(`/api/${path}/${resourceId}/labels/${labelId}`, { method: "DELETE" });
+    return parseWithFallback(raw, ResourceLabelsResponseSchema, EMPTY_RESOURCE_LABELS_RESPONSE, { endpoint: `DELETE /api/${path}/{id}/labels/{labelId}` });
   }
 
   // Saved issue views (MUL-4796). Responses go through zod so installed

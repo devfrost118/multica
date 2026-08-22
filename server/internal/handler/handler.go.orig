@@ -35,8 +35,6 @@ import (
 	"github.com/multica-ai/multica/server/internal/issuestatus"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
-	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
-	"github.com/multica-ai/multica/server/internal/providercredentials"
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/storage"
@@ -190,8 +188,6 @@ type Handler struct {
 	ModelListStore        ModelListStore
 	LocalSkillListStore   LocalSkillListStore
 	LocalSkillImportStore LocalSkillImportStore
-	ProviderLimitRefreshStore      ProviderLimitRefreshStore
-	ProviderCredentialRefreshStore ProviderCredentialRefreshStore
 	FeatureFlags          *featureflag.Service
 	// IssueStatusCatalog reads the workspace status catalog. Defaults to
 	// Queries; a test can substitute a counting wrapper to assert HOW MANY
@@ -358,12 +354,6 @@ type Handler struct {
 	// Config); when unconfigured its Enabled() reports false and callers fall
 	// back silently.
 	LLM *llm.Client
-	// ProjectEnvironmentSecrets protects project_environment.secrets at rest.
-	// Its zero value is intentional legacy plaintext mode for installations
-	// that have not opted in by configuring MULTICA_PROJECT_ENV_SECRET_KEY.
-	ProjectEnvironmentSecrets projectenvsecrets.Codec
-	// ProviderCredentials always fails closed without the shared master key.
-	ProviderCredentials providercredentials.Codec
 	// VCSSecretBox encrypts/decrypts per-workspace Git provider access tokens and
 	// webhook secrets at rest (Forgejo / Gitea / GitLab). Nil when
 	// MULTICA_VCS_SECRET_KEY is unset; the connect/webhook handlers return 503
@@ -456,8 +446,6 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 		ModelCatalogCache:            NewInMemoryModelCatalogCache(),
 		LocalSkillListStore:          NewInMemoryLocalSkillListStore(),
 		LocalSkillImportStore:        NewInMemoryLocalSkillImportStore(),
-		ProviderLimitRefreshStore:      NewInMemoryProviderLimitRefreshStore(),
-		ProviderCredentialRefreshStore: NewInMemoryProviderCredentialRefreshStore(),
 		LivenessStore:                NewNoopLivenessStore(),
 		HeartbeatScheduler:           NewPassthroughHeartbeatScheduler(queries),
 		Storage:                      store,
