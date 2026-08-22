@@ -201,7 +201,7 @@ export function BulkSkillImportPanel({
         <div className="space-y-4 py-4">
           <div className="text-center">
             <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-            <p className="mt-3 text-sm font-medium">
+            <p className="mt-3 text-body font-medium">
               {t(($) => $.runtime_import.bulk_progress, { completed, total })}
             </p>
           </div>
@@ -216,7 +216,7 @@ export function BulkSkillImportPanel({
 
     if (reading) {
       return (
-        <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 py-10 text-body text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           {t(($) => $.bulk_import.folder_reading)}
         </div>
@@ -231,10 +231,10 @@ export function BulkSkillImportPanel({
           className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-12 text-center hover:bg-accent/40"
         >
           <FolderUp className="h-6 w-6 text-muted-foreground" />
-          <span className="text-sm font-medium">
+          <span className="text-body font-medium">
             {t(($) => $.bulk_import.folder_pick)}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-caption text-muted-foreground">
             {t(($) => $.bulk_import.folder_drop_hint)}
           </span>
         </button>
@@ -243,7 +243,7 @@ export function BulkSkillImportPanel({
 
     if (source === "github" && candidates.length === 0) {
       return (
-        <div className="py-8 text-center text-sm text-muted-foreground">
+        <div className="py-8 text-center text-body text-muted-foreground">
           {t(($) => $.bulk_import.empty_hint)}
         </div>
       );
@@ -252,7 +252,7 @@ export function BulkSkillImportPanel({
     return (
       <div className="space-y-2">
         {truncated && (
-          <p className="rounded-md bg-warning/10 px-3 py-2 text-xs text-muted-foreground">
+          <p className="rounded-md bg-warning/10 px-3 py-2 text-caption text-muted-foreground">
             {t(($) => $.bulk_import.capped_notice, {
               count: candidates.length,
             })}
@@ -265,7 +265,7 @@ export function BulkSkillImportPanel({
             onChange={toggleAll}
             className="cursor-pointer accent-primary"
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-caption text-muted-foreground">
             {t(($) => $.runtime_import.select_all, {
               count: candidates.length,
             })}
@@ -298,7 +298,7 @@ export function BulkSkillImportPanel({
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">{c.name}</span>
+                  <span className="truncate text-body font-medium">{c.name}</span>
                   {exists && (
                     <Badge variant="outline">
                       {t(($) => $.bulk_import.already_exists)}
@@ -306,11 +306,11 @@ export function BulkSkillImportPanel({
                   )}
                 </div>
                 {c.description && (
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  <p className="mt-1 line-clamp-2 text-caption text-muted-foreground">
                     {c.description}
                   </p>
                 )}
-                <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
+                <p className="mt-1 truncate font-mono text-caption text-muted-foreground">
                   {c.path}
                 </p>
               </div>
@@ -332,7 +332,7 @@ export function BulkSkillImportPanel({
       <div
         className={`shrink-0 space-y-2 border-b px-5 py-3 ${importing ? "pointer-events-none opacity-60" : ""}`}
       >
-        <span className="text-xs text-muted-foreground">
+        <span className="text-caption text-muted-foreground">
           {t(($) => $.bulk_import.source_label)}
         </span>
         <div className="flex gap-2">
@@ -345,7 +345,7 @@ export function BulkSkillImportPanel({
                 setCandidates([]);
                 setError("");
               }}
-              className={`rounded-md border px-3 py-1.5 text-xs ${
+              className={`rounded-md border px-3 py-1.5 text-caption ${
                 source === s
                   ? "border-primary bg-primary/5 font-medium"
                   : "text-muted-foreground hover:border-foreground/30"
@@ -371,7 +371,7 @@ export function BulkSkillImportPanel({
               setError("");
             }}
             placeholder={t(($) => $.bulk_import.github_url_placeholder)}
-            className="font-mono text-sm"
+            className="font-mono text-body"
             onKeyDown={(e) => {
               if (e.key === "Enter") onDiscover();
             }}
@@ -421,7 +421,7 @@ export function BulkSkillImportPanel({
         {error && (
           <div
             role="alert"
-            className="mb-2 flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive"
+            className="mb-2 flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-caption text-destructive"
           >
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             {error}
@@ -434,7 +434,7 @@ export function BulkSkillImportPanel({
       <div className="flex shrink-0 items-center gap-3 border-t bg-muted/30 px-5 py-3">
         {phase === "done" || phase === "cancelled" ? (
           <>
-            <div className="min-w-0 flex-1 text-xs text-muted-foreground">
+            <div className="min-w-0 flex-1 text-caption text-muted-foreground">
               {phase === "cancelled"
                 ? t(($) => $.runtime_import.bulk_cancelled_hint)
                 : t(($) => $.runtime_import.bulk_complete_hint)}
@@ -445,7 +445,7 @@ export function BulkSkillImportPanel({
           </>
         ) : importing ? (
           <>
-            <div className="min-w-0 flex-1 text-xs text-muted-foreground">
+            <div className="min-w-0 flex-1 text-caption text-muted-foreground">
               {t(($) => $.runtime_import.bulk_progress, { completed, total })}
             </div>
             <Button
@@ -504,7 +504,7 @@ function Summary({ results }: { results: BulkResult[] }) {
         {results.map((r) => (
           <div
             key={r.key}
-            className="flex items-center gap-2 rounded px-2 py-1.5 text-xs"
+            className="flex items-center gap-2 rounded px-2 py-1.5 text-caption"
           >
             {r.status === "success" && (
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />
@@ -545,8 +545,8 @@ function Counter({
   }[tone];
   return (
     <div className={`rounded-md px-3 py-2 ${cls}`}>
-      <div className="text-lg font-semibold">{n}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-title font-semibold">{n}</div>
+      <div className="text-caption text-muted-foreground">{label}</div>
     </div>
   );
 }

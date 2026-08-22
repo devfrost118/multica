@@ -95,7 +95,7 @@ export function ProviderLimitDetail({
 
           {bucketOptions.length === 0 ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
+              <p className="text-body text-muted-foreground">{t(($) => $.provider_limits.no_buckets)}</p>
               <ProviderLimitMetadata record={record} history={history} />
             </div>
           ) : (
@@ -113,7 +113,7 @@ export function ProviderLimitDetail({
               )}
 
               {points.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t(($) => $.provider_limits.detail.no_history)}</p>
+                <p className="text-body text-muted-foreground">{t(($) => $.provider_limits.detail.no_history)}</p>
               ) : (
                 <ProviderLimitHistoryChart points={points} unit={activeBucket?.unit ?? ""} />
               )}
@@ -203,7 +203,7 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
   return (
     <section className="space-y-2 border-t pt-3" aria-label={t(($) => $.provider_limits.credentials.title)}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{t(($) => $.provider_limits.credentials.title)}</p>
+        <p className="text-body font-medium">{t(($) => $.provider_limits.credentials.title)}</p>
         <Badge variant={credential ? "secondary" : "outline"}>
           {credential
             ? t(($) => $.provider_limits.credentials.connected)
@@ -213,10 +213,10 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
         </Badge>
       </div>
       {ambiguous && (
-        <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.credentials.awaiting_account_help)}</p>
+        <p className="text-caption text-muted-foreground">{t(($) => $.provider_limits.credentials.awaiting_account_help)}</p>
       )}
       {credential && (
-        <div className="text-xs text-muted-foreground">
+        <div className="text-caption text-muted-foreground">
           <p>{t(($) => $.provider_limits.credentials.fingerprint, { value: credential.fingerprint })}</p>
           <p>{t(($) => $.provider_limits.credentials.validation, { value: credential.last_validation_status })}</p>
           {credential.last_validation_note && <p>{credential.last_validation_note}</p>}
@@ -225,16 +225,16 @@ function FactoryCredentialSection({ wsId, record }: { wsId: string; record: Prov
       {showMutationControls && (
         <>
           {!credential && (
-            <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
+            <input aria-label={t(($) => $.provider_limits.credentials.account_label)} className="w-full rounded-md border bg-background px-3 py-2 text-body" value={accountLabel} maxLength={80} placeholder={t(($) => $.provider_limits.credentials.account_label_placeholder)} onChange={(event) => setAccountLabel(event.target.value)} />
           )}
-          <input aria-label={t(($) => $.provider_limits.credentials.token)} className="w-full rounded-md border bg-background px-3 py-2 text-sm" type="password" autoComplete="off" value={token} placeholder={credential ? t(($) => $.provider_limits.credentials.replacement_token) : t(($) => $.provider_limits.credentials.token)} onChange={(event) => setToken(event.target.value)} />
+          <input aria-label={t(($) => $.provider_limits.credentials.token)} className="w-full rounded-md border bg-background px-3 py-2 text-body" type="password" autoComplete="off" value={token} placeholder={credential ? t(($) => $.provider_limits.credentials.replacement_token) : t(($) => $.provider_limits.credentials.token)} onChange={(event) => setToken(event.target.value)} />
           <div className="flex gap-2">
             <Button type="button" size="sm" disabled={pending || !token.trim()} onClick={() => void submit()}>{credential ? t(($) => $.provider_limits.credentials.replace) : t(($) => $.provider_limits.credentials.connect)}</Button>
             {credential && <Button type="button" size="sm" variant="destructive" disabled={pending} onClick={() => void remove()}>{t(($) => $.provider_limits.credentials.remove)}</Button>}
           </div>
         </>
       )}
-      {error && <p role="alert" className="text-xs text-destructive">{t(($) => $.provider_limits.credentials.action_failed)}</p>}
+      {error && <p role="alert" className="text-caption text-destructive">{t(($) => $.provider_limits.credentials.action_failed)}</p>}
     </section>
   );
 }
@@ -259,7 +259,7 @@ function ProviderLimitMetadata({
   const reason = useProviderLimitReasonLabel(record.error_note);
 
   return (
-    <div className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
+    <div className="space-y-1 border-t pt-3 text-caption text-muted-foreground">
       <p>{sourceLabel(record.source.kind)} · {record.source.confidence || t(($) => $.provider_limits.unknown)}</p>
       <p>{t(($) => $.provider_limits.freshness, { value: formatFreshness(record.source.freshness_seconds) })}</p>
       {lastSuccessfulAt && (
@@ -304,7 +304,7 @@ function PaceSummary({ pace, unit }: { pace: PaceResult; unit: string }) {
   if (!pace.available) {
     const reason = pace.reason ?? "insufficient_points";
     return (
-      <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+      <div className="rounded-md border border-dashed p-3 text-caption text-muted-foreground">
         <p className="font-medium text-foreground">{t(($) => $.provider_limits.detail.pace_title)}</p>
         <p className="mt-1">{unavailableReasons[reason]}</p>
       </div>
@@ -314,7 +314,7 @@ function PaceSummary({ pace, unit }: { pace: PaceResult; unit: string }) {
   const exhausted = pace.runwaySeconds !== undefined && pace.runwaySeconds <= 0;
 
   return (
-    <div className="rounded-md border p-3 text-xs">
+    <div className="rounded-md border p-3 text-caption">
       <div className="flex items-center justify-between gap-2">
         <p className="font-medium">{t(($) => $.provider_limits.detail.pace_title)}</p>
         <Badge variant="secondary">{t(($) => $.provider_limits.detail.estimated)}</Badge>
