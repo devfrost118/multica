@@ -65,6 +65,9 @@ const larkListingRef = vi.hoisted(() => ({
 const slackListingRef = vi.hoisted(() => ({
   current: { installations: [] as unknown[], configured: false },
 }));
+const telegramListingRef = vi.hoisted(() => ({
+  current: { installations: [] as unknown[], configured: false },
+}));
 vi.mock("@multica/core/hooks", () => ({
   useWorkspaceId: () => "ws-1",
 }));
@@ -78,6 +81,12 @@ vi.mock("@multica/core/slack", () => ({
   slackInstallationsOptions: () => ({
     queryKey: ["slack", "installations"],
     queryFn: () => Promise.resolve(slackListingRef.current),
+  }),
+}));
+vi.mock("@multica/core/telegram", () => ({
+  telegramInstallationsOptions: () => ({
+    queryKey: ["telegram", "installations"],
+    queryFn: () => Promise.resolve(telegramListingRef.current),
   }),
 }));
 
@@ -128,7 +137,10 @@ function makeRuntime(provider: string): AgentRuntime {
   };
 }
 
-function renderPane(runtimes: AgentRuntime[]) {
+function renderPane(
+  runtimes: AgentRuntime[],
+  { canEdit = true }: { canEdit?: boolean } = {},
+) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -151,7 +163,7 @@ function renderPane(runtimes: AgentRuntime[]) {
             runtimes={runtimes}
             members={[]}
             onUpdate={vi.fn().mockResolvedValue(undefined)}
-            canEdit
+            canEdit={canEdit}
           />
         </QueryClientProvider>
       </NavigationProvider>
@@ -170,6 +182,7 @@ function openSettings() {
 beforeEach(() => {
   larkListingRef.current = { installations: [], configured: false };
   slackListingRef.current = { installations: [], configured: false };
+  telegramListingRef.current = { installations: [], configured: false };
 });
 
 describe("AgentOverviewPane MCP tab visibility", () => {
@@ -229,9 +242,18 @@ describe("AgentOverviewPane Integrations tab visibility", () => {
     ).toBeInTheDocument();
   });
 
-  it("hides the Integrations tab when neither Lark nor Slack is configured", () => {
-    // Default refs are configured:false; the tab must not appear on
-    // deployments without either integration, the common case.
+  it("shows the Integrations tab when only Telegram is configured", async () => {
+    telegramListingRef.current = { installations: [], configured: true };
+    renderPane([makeRuntime("claude")]);
+    openCapabilities();
+    expect(
+      await screen.findByRole("tab", { name: /^Integrations$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the Integrations tab when no channel integration is configured", () => {
+    // Default refs are configured:false; the tab must not appear on a
+    // deployment without any channel integration, the common case.
     renderPane([makeRuntime("claude")]);
     openCapabilities();
     expect(
@@ -245,5 +267,26 @@ describe("AgentOverviewPane Settings navigation", () => {
     renderPane([makeRuntime("claude")]);
     openSettings();
     expect(screen.getByRole("tab", { name: /^Access$/i })).toBeInTheDocument();
+  });
+});
+
+describe("AgentOverviewPane Environment tab visibility", () => {
+  it("shows the Environment tab to someone who can manage the agent", () => {
+    renderPane([makeRuntime("claude")]);
+    openSettings();
+    expect(
+      screen.getByRole("tab", { name: /^Environment$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the Environment tab from users who cannot manage the agent", () => {
+    // The env endpoints admit the agent owner or a workspace owner/admin
+    // (MUL-5438) — the rule `canEdit` already encodes. Anyone else who opens
+    // the tab hits a guaranteed 403 on "Reveal & edit".
+    renderPane([makeRuntime("claude")], { canEdit: false });
+    openSettings();
+    expect(
+      screen.queryByRole("tab", { name: /^Environment$/i }),
+    ).not.toBeInTheDocument();
   });
 });
