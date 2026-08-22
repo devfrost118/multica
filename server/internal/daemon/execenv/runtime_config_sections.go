@@ -241,6 +241,41 @@ func sanitizeBriefCodeToken(s string) string {
 	return s
 }
 
+
+// writeRuleGroups emits the Rule Groups section: workspace rule-group rules
+// resolved at task claim time. Ported from the legacy verbose brief when the
+// `runtime_brief_slim` flag was retired upstream (MUL-4297); emitted for every
+// task kind, gated only by the presence of resolved rules (△ pattern, like
+// Connected Apps).
+func writeRuleGroups(b *strings.Builder, ctx TaskContextForEnv) {
+	if len(ctx.EffectiveRules) == 0 {
+		return
+	}
+	b.WriteString("## Rule Groups\n\n")
+	b.WriteString("The following workspace rule-group rules were resolved at task claim time. Follow them unless a more specific task instruction conflicts. They are ordered by scope precedence (workspace, project, squad, agent) and configured sort order.\n\n")
+	for _, rule := range ctx.EffectiveRules {
+		content := strings.TrimRight(rule.Content, " \t\r\n")
+		if strings.TrimSpace(content) == "" {
+			continue
+		}
+		scope := rule.ScopeType
+		if scope == "" {
+			scope = "workspace"
+		}
+		if rule.RuleGroupName != "" {
+			fmt.Fprintf(b, "### [%s] %s / %s\n\n", scope, rule.RuleGroupName, rule.RuleName)
+		} else {
+			fmt.Fprintf(b, "### [%s] %s\n\n", scope, rule.RuleName)
+		}
+		if strings.TrimSpace(rule.Description) != "" {
+			b.WriteString(strings.TrimRight(rule.Description, " \t\r\n"))
+			b.WriteString("\n\n")
+		}
+		b.WriteString(content)
+		b.WriteString("\n\n")
+	}
+}
+
 // writeAvailableCommands emits the slim Available Commands section
 // (~3.0k chars vs legacy ~4.4k). Every test-asserted substring is
 // preserved: each `multica issue …` command name, all three `comment add`
@@ -841,6 +876,7 @@ func buildMetaSkillContentSlim(provider string, ctx TaskContextForEnv) string {
 	writeAgentIdentity(&b, ctx)
 	writeRequestingUser(&b, ctx)
 	writeWorkspaceContext(&b, ctx)
+	writeRuleGroups(&b, ctx)
 
 	switch kind {
 	case kindQuickCreate:

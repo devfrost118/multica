@@ -6604,6 +6604,8 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		ProjectTitle:                     task.ProjectTitle,
 		ProjectDescription:               task.ProjectDescription,
 		ProjectResources:                 convertProjectResourcesForEnv(task.ProjectResources),
+		ProjectEnvironments:              convertProjectEnvironmentsForEnv(task.ProjectEnvironments),
+		EffectiveRules:                   convertEffectiveRulesForEnv(task.EffectiveRules),
 		ChatSessionID:                    task.ChatSessionID,
 		ChatChannelType:                  task.ChatChannelType,
 		ChatChannelDeliversFiles:         task.ChatChannelDeliversFiles,
@@ -8505,6 +8507,44 @@ func convertReposForEnv(repos []RepoData) []execenv.RepoContextForEnv {
 	result := make([]execenv.RepoContextForEnv, len(repos))
 	for i, r := range repos {
 		result[i] = execenv.RepoContextForEnv{URL: r.URL, Description: r.Description, Ref: r.Ref}
+	}
+	return result
+}
+
+
+func convertProjectEnvironmentsForEnv(envs []ProjectEnvironmentData) []execenv.ProjectEnvironmentForEnv {
+	if len(envs) == 0 {
+		return nil
+	}
+	result := make([]execenv.ProjectEnvironmentForEnv, len(envs))
+	for i, env := range envs {
+		connection := env.Connection
+		if len(connection) == 0 {
+			connection = json.RawMessage("{}")
+		}
+		result[i] = execenv.ProjectEnvironmentForEnv{
+			Name:       env.Name,
+			Kind:       env.Kind,
+			Connection: connection,
+		}
+	}
+	return result
+}
+
+func convertEffectiveRulesForEnv(rules []EffectiveRuleData) []execenv.EffectiveRuleForEnv {
+	if len(rules) == 0 {
+		return nil
+	}
+	result := make([]execenv.EffectiveRuleForEnv, len(rules))
+	for i, r := range rules {
+		result[i] = execenv.EffectiveRuleForEnv{
+			ScopeType:     r.ScopeType,
+			RuleGroupName: r.RuleGroupName,
+			RuleName:      r.RuleName,
+			Description:   r.Description,
+			Content:       r.Content,
+			FileName:      r.FileName,
+		}
 	}
 	return result
 }

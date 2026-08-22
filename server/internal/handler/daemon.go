@@ -2237,6 +2237,16 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 					resp.ProjectTitle = proj.Title
 					resp.ProjectDescription = proj.Description.String
 				}
+				projectEnvironments, err := h.listProjectEnvironmentsForClaim(r.Context(), issue.ProjectID, runtime.ID)
+				if err != nil {
+					slog.Error("daemon claim: refusing to deliver project environments", "project_id", uuidToString(issue.ProjectID), "runtime_id", uuidToString(runtime.ID), "error", err)
+					return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, &claimBuildFailure{
+						outcome: "error_project_environment_secrets",
+						status:  http.StatusInternalServerError,
+						message: "failed to load project environment secrets",
+					}
+				}
+				resp.ProjectEnvironments = projectEnvironments
 				if rows := h.listProjectResourcesForProject(r.Context(), issue.ProjectID); len(rows) > 0 {
 					out := make([]ProjectResourceData, 0, len(rows))
 					for _, row := range rows {
@@ -2594,6 +2604,16 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 					resp.ProjectID = uuidToString(project.ID)
 					resp.ProjectTitle = project.Title
 					resp.ProjectDescription = project.Description.String
+					projectEnvironments, err := h.listProjectEnvironmentsForClaim(r.Context(), project.ID, runtime.ID)
+					if err != nil {
+						slog.Error("daemon claim: refusing to deliver project environments", "project_id", uuidToString(project.ID), "runtime_id", uuidToString(runtime.ID), "error", err)
+						return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, &claimBuildFailure{
+							outcome: "error_project_environment_secrets",
+							status:  http.StatusInternalServerError,
+							message: "failed to load project environment secrets",
+						}
+					}
+					resp.ProjectEnvironments = projectEnvironments
 					if rows := h.listProjectResourcesForProject(r.Context(), project.ID); len(rows) > 0 {
 						resources := make([]ProjectResourceData, 0, len(rows))
 						for _, row := range rows {
@@ -2844,6 +2864,16 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 						resp.ProjectTitle = proj.Title
 						resp.ProjectDescription = proj.Description.String
 					}
+					projectEnvironments, err := h.listProjectEnvironmentsForClaim(r.Context(), projectUUID, runtime.ID)
+					if err != nil {
+						slog.Error("daemon claim: refusing to deliver project environments", "project_id", uuidToString(projectUUID), "runtime_id", uuidToString(runtime.ID), "error", err)
+						return resp, deliveredCommentIDs, agentSkillCount, builtinSkillCount, &claimBuildFailure{
+							outcome: "error_project_environment_secrets",
+							status:  http.StatusInternalServerError,
+							message: "failed to load project environment secrets",
+						}
+					}
+					resp.ProjectEnvironments = projectEnvironments
 					if rows := h.listProjectResourcesForProject(r.Context(), projectUUID); len(rows) > 0 {
 						out := make([]ProjectResourceData, 0, len(rows))
 						for _, row := range rows {
@@ -3030,6 +3060,27 @@ func (h *Handler) buildClaimedTaskResponse(r *http.Request, task *db.AgentTaskQu
 		)
 	}
 
+	if resp.Agent != nil {
+		var projectID, squadID pgtype.UUID
+		if resp.ProjectID != "" {
+			projectID = parseUUID(resp.ProjectID)
+		}
+		if resp.SquadID != "" {
+			squadID = parseUUID(resp.SquadID)
+		}
+		rules, err := h.Queries.ListEffectiveRules(r.Context(), db.ListEffectiveRulesParams{
+			WorkspaceID: parseUUID(resp.WorkspaceID),
+			ProjectID:   projectID,
+			SquadID:     squadID,
+			AgentID:     task.AgentID,
+		})
+		if err != nil {
+			slog.Warn("task claim: failed to load effective rule groups", "task_id", uuidToString(task.ID), "error", err)
+		} else if len(rules) > 0 {
+			resp.EffectiveRules = effectiveRulesToResponse(rules)
+		}
+	}
+
 	// Last gate before dispatch: refuse to hand a worktree-mode local_directory
 	// task to a daemon that cannot implement the mode.
 	//
@@ -3138,6 +3189,23 @@ func worktreeClaimBlockReason(resources []ProjectResourceData, runtime db.AgentR
 
 // ClaimTaskByRuntime atomically claims the next queued task for a runtime.
 // The response includes the agent's name and skills, fetched fresh from the DB.
+
+func effectiveRulesToResponse(rows []db.ListEffectiveRulesRow) []EffectiveRuleData {
+	out := make([]EffectiveRuleData, 0, len(rows))
+	for _, row := range rows {
+		hints := json.RawMessage(row.RuleRuntimeHints)
+		if len(hints) == 0 {
+			hints = nil
+		}
+		fileName := ""
+		if row.RuleFileName.Valid {
+			fileName = row.RuleFileName.String
+		}
+		out = append(out, EffectiveRuleData{ScopeType: row.ScopeType, RuleGroupID: uuidToString(row.RuleGroupID), RuleGroupName: row.RuleGroupName, RuleID: uuidToString(row.RuleID), RuleName: row.RuleName, Description: row.RuleDescription, Content: row.RuleContent, FileName: fileName, RuntimeHints: hints, RuleSortOrder: row.RuleSortOrder, BindingID: uuidToString(row.BindingID), BindingSortKey: row.BindingSortOrder})
+	}
+	return out
+}
+
 func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 	runtimeID := chi.URLParam(r, "runtimeId")
 	start := time.Now()
