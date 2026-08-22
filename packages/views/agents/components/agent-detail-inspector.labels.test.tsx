@@ -36,6 +36,10 @@ vi.mock("./inspector/service-tier-setting-field", () => ({
   ServiceTierSettingField: () => <div data-testid="service-tier-field" />,
 }));
 
+vi.mock("../../rule-groups/components/rule-groups-binding-section", () => ({
+  RuleGroupsBindingSection: () => null,
+}));
+
 const agent = {
   id: "agent-1",
   workspace_id: "workspace-1",

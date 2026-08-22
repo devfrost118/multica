@@ -321,6 +321,7 @@ var SupportedTypes = []string{
 	"qwenpaw",
 	"mcode",
 	"dim",
+	"droid",
 }
 
 // IsSupportedType reports whether agentType is in the SupportedTypes whitelist.
@@ -421,6 +422,8 @@ func New(agentType string, cfg Config) (Backend, error) {
 		return &qwenpawBackend{cfg: cfg}, nil
 	case "mcode":
 		return &mcodeBackend{cfg: cfg}, nil
+	case "droid":
+		return &droidBackend{cfg: cfg}, nil
 	default:
 		return nil, fmt.Errorf("unknown agent type: %q (supported: %s)", agentType, strings.Join(SupportedTypes, ", "))
 	}

@@ -36,6 +36,7 @@ vi.mock("@tanstack/react-query", () => ({
 }));
 
 vi.mock("@multica/core/projects", () => ({
+  projectEnvironmentsOptions: () => ({ queryKey: ["environments"], queryFn: vi.fn() }),
   projectResourcesOptions: () => ({ queryKey: ["project-resources"], queryFn: vi.fn() }),
   useCreateProjectResource: () => ({ mutateAsync: vi.fn() }),
   useUpdateProjectResource: () => ({ mutateAsync: updateMock }),
@@ -66,6 +67,10 @@ vi.mock("../../platform/use-local-daemon-status", () => ({
   useLocalDaemonStatus: () => ({ daemonId: "daemon-1", deviceName: "MacBook", running: true }),
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+
+vi.mock("./project-environments-section", () => ({
+  ProjectEnvironmentsSection: () => null,
+}));
 
 import { ProjectResourcesSection } from "./project-resources-section";
 

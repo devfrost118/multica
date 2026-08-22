@@ -25,6 +25,12 @@ import (
 
 	"github.com/multica-ai/multica/server/internal/cli"
 	"github.com/multica-ai/multica/server/internal/daemon/execenv"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/antigravity"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/claude"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/codex"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/cursor"
+	"github.com/multica-ai/multica/server/internal/daemon/providerlimits/factory"
 	"github.com/multica-ai/multica/server/internal/daemon/repocache"
 	"github.com/multica-ai/multica/server/internal/selfexec"
 	"github.com/multica-ai/multica/server/pkg/agent"
@@ -360,6 +366,13 @@ type Daemon struct {
 	repoCache  repoCacheBackend
 	skillCache *SkillBundleCache
 	logger     *slog.Logger
+	// providerLimits is the daemon-owned background collector. It remains
+	// independent of task execution environments and forwards only sanitized
+	// snapshots through providerLimitsReporter.
+	providerLimits               *providerlimits.Collector
+	factoryLimits                *factory.Adapter
+	providerCredentialsMu        sync.Mutex
+	providerCredentialsByRuntime map[string][]factory.Credential
 
 	mu           sync.Mutex
 	workspaces   map[string]*workspaceState
@@ -660,6 +673,22 @@ func New(cfg Config, logger *slog.Logger) *Daemon {
 	d.executionEnvironmentCommand = defaultExecutionEnvironmentCommand
 	d.runner = taskRunnerFunc(d.runTask)
 	d.runUpdateFn = d.runUpdate
+	factoryAdapter := factory.NewAdapter(factory.Config{})
+	d.factoryLimits = factoryAdapter
+	d.providerCredentialsByRuntime = make(map[string][]factory.Credential)
+	d.providerLimits = providerlimits.NewCollector(providerlimits.CollectorConfig{
+		Adapters: []providerlimits.Adapter{
+			claude.NewAdapter(claude.Config{}),
+			codex.NewAdapter(codex.Config{}),
+			factoryAdapter,
+			cursor.NewAdapter(cursor.Config{}),
+			antigravity.NewAdapter(antigravity.Config{}),
+		},
+		Reporter: providerLimitsReporter{client: d.client, runtimeIDs: d.allRuntimeIDs},
+		OnError: func(error) {
+			d.logger.Warn("provider limits collection report failed")
+		},
+	})
 	return d
 }
 
@@ -2018,6 +2047,11 @@ func (d *Daemon) Run(ctx context.Context) error {
 	go d.taskWakeupLoop(ctx, taskWakeups)
 	go d.heartbeatLoop(ctx)
 	go d.gcLoop(ctx)
+	go func() {
+		if err := d.providerLimits.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			d.logger.Warn("provider limits collector stopped", "error", err)
+		}
+	}()
 	go d.autoUpdateLoop(ctx)
 	go d.tokenRenewalLoop(ctx)
 
@@ -3926,7 +3960,7 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 	if resp == nil {
 		return
 	}
-	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil {
+	if resp.PendingUpdate != nil || resp.PendingModelList != nil || resp.PendingLocalSkills != nil || resp.PendingLocalSkillImport != nil || resp.PendingProviderCredentials != nil || resp.PendingProviderLimitRefresh != nil {
 		d.logger.Debug("heartbeat: pending actions",
 			"runtime_id", runtimeID,
 			"update", resp.PendingUpdate != nil,
@@ -3947,6 +3981,16 @@ func (d *Daemon) handleHeartbeatActions(ctx context.Context, runtimeID string, r
 		if rt := d.findRuntime(runtimeID); rt != nil {
 			go d.handleLocalSkillList(ctx, *rt, resp.PendingLocalSkills.ID)
 		}
+	}
+	if resp.PendingProviderCredentials != nil && d.factoryLimits != nil {
+		go d.refreshProviderCredentials(ctx, runtimeID)
+	}
+	if resp.PendingProviderLimitRefresh != nil && d.providerLimits != nil {
+		go func(requestID string) {
+			if err := d.providerLimits.CollectRefresh(ctx, requestID); err != nil && !errors.Is(err, context.Canceled) {
+				d.logger.Warn("manual provider limits refresh failed")
+			}
+		}(resp.PendingProviderLimitRefresh.ID)
 	}
 	// Prefer the batch field (new backend); fall back to singular (old backend).
 	if len(resp.PendingLocalSkillImports) > 0 {
@@ -4052,6 +4096,47 @@ func (d *Daemon) handlePendingWorkHint(runtimeID, kind string) {
 	}
 	d.logger.Debug("pending work hint served", "runtime_id", runtimeID, "kind", kind)
 	d.handleHeartbeatActions(ctx, runtimeID, resp)
+}
+
+
+func (d *Daemon) refreshProviderCredentials(ctx context.Context, runtimeID string) {
+	credentials, err := d.client.GetProviderCredentials(ctx, runtimeID)
+	if err != nil {
+		if ctx.Err() == nil {
+			d.logger.Warn("provider credentials refresh failed", "runtime_id", runtimeID)
+		}
+		return
+	}
+	current := make([]factory.Credential, 0, len(credentials))
+	for _, credential := range credentials {
+		if credential.Provider == "factory" {
+			current = append(current, factory.Credential{ID: credential.ID, Token: credential.Token, AccountLabel: credential.AccountLabel})
+		}
+	}
+	d.providerCredentialsMu.Lock()
+	nextByRuntime := make(map[string][]factory.Credential, len(d.providerCredentialsByRuntime)+1)
+	for key, values := range d.providerCredentialsByRuntime {
+		nextByRuntime[key] = append([]factory.Credential(nil), values...)
+	}
+	nextByRuntime[runtimeID] = append([]factory.Credential(nil), current...)
+	d.providerCredentialsByRuntime = nextByRuntime
+	byID := make(map[string]factory.Credential)
+	for _, values := range nextByRuntime {
+		for _, credential := range values {
+			byID[credential.ID] = credential
+		}
+	}
+	combined := make([]factory.Credential, 0, len(byID))
+	for _, credential := range byID {
+		combined = append(combined, credential)
+	}
+	d.providerCredentialsMu.Unlock()
+	d.factoryLimits.ReplaceCredentials(combined)
+	if d.providerLimits != nil {
+		if err := d.providerLimits.CollectRefresh(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			d.logger.Warn("provider limits refresh after credential update failed")
+		}
+	}
 }
 
 // handleModelList resolves the provider's supported models (via static
@@ -7324,6 +7409,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 	if err := configureCodexTaskShellEnvironment(provider, env.CodexHome, os.Environ(), agentEnv, agentCustomEnv, d.logger); err != nil {
 		return TaskResult{}, err
 	}
+	layerProjectEnvironmentSecrets(agentEnv, task.ProjectEnvironments, d.logger)
 	// The overlay is authoritative once built, so nothing on the command line
 	// may re-point HERMES_HOME out of it. Both argv regions are stripped
 	// together, against the same assembled argv the resolver read: a selection
@@ -8930,6 +9016,32 @@ func annotateHermesProviderUnconfigured(errMsg, provider string, overlayActive b
 		return errMsg
 	}
 	return errMsg + hermesProviderUnconfiguredHint
+}
+
+
+func layerProjectEnvironmentSecrets(agentEnv map[string]string, projectEnvironments []ProjectEnvironmentData, logger *slog.Logger) {
+	for _, env := range projectEnvironments {
+		for key, value := range env.Secrets {
+			if isBlockedProjectEnvironmentSecretKey(key) {
+				if logger != nil {
+					logger.Warn("project_environment: blocked key skipped", "key", key, "environment", env.Name)
+				}
+				continue
+			}
+			agentEnv[key] = value
+		}
+	}
+}
+
+func isBlockedProjectEnvironmentSecretKey(key string) bool {
+	trimmed := strings.TrimSpace(key)
+	if trimmed == "" {
+		return true
+	}
+	if strings.EqualFold(trimmed, "HERMES_HOME") {
+		return true
+	}
+	return isBlockedEnvKey(trimmed)
 }
 
 func layerCustomEnvAndHermesHome(agentEnv, customEnv map[string]string, overlayHome string, logger *slog.Logger) {
