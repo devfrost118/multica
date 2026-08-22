@@ -137,7 +137,7 @@ export function RuleGroupsBindingSection({
     <div>
       <button
         type="button"
-        className={`mb-2 flex w-full items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:bg-accent/70 ${isOpen ? "" : "text-muted-foreground hover:text-foreground"}`}
+        className={`mb-2 flex w-full items-center gap-1 rounded-md px-2 py-1 text-caption font-medium transition-colors hover:bg-accent/70 ${isOpen ? "" : "text-muted-foreground hover:text-foreground"}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         {t(($) => $.rule_groups.bindings.section_title)}
@@ -151,7 +151,7 @@ export function RuleGroupsBindingSection({
           {isLoading ? (
             <Skeleton className="h-12 w-full" />
           ) : !bindings || bindings.length === 0 ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               {t(($) => $.rule_groups.bindings.empty)}
             </p>
           ) : (
@@ -159,7 +159,7 @@ export function RuleGroupsBindingSection({
               {bindings.map((b) => (
                 <li
                   key={b.id}
-                  className="flex items-center justify-between gap-2 rounded-md border bg-card p-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-md border bg-card p-2 text-body"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ShieldCheck className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -195,7 +195,7 @@ export function RuleGroupsBindingSection({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-7 text-caption"
                 onClick={() => setAttachOpen(true)}
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -205,7 +205,7 @@ export function RuleGroupsBindingSection({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-xs"
+              className="h-7 text-caption"
               onClick={() => setPreviewOpen(true)}
             >
               <Eye className="mr-1.5 h-3.5 w-3.5" />
@@ -222,11 +222,11 @@ export function RuleGroupsBindingSection({
             <DialogTitle>{t(($) => $.rule_groups.bindings.attach_dialog_title)}</DialogTitle>
           </DialogHeader>
           {!allGroups || allGroups.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-body text-muted-foreground">
               {t(($) => $.rule_groups.bindings.no_groups)}
             </p>
           ) : available.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-body text-muted-foreground">
               {t(($) => $.rule_groups.bindings.none_available)}
             </p>
           ) : (
@@ -237,13 +237,13 @@ export function RuleGroupsBindingSection({
                   type="button"
                   disabled={createBinding.isPending}
                   onClick={() => handleAttach(g.id)}
-                  className="flex w-full items-center gap-2 rounded-md border bg-card p-3 text-left text-sm transition-colors hover:bg-accent/60 disabled:opacity-60"
+                  className="flex w-full items-center gap-2 rounded-md border bg-card p-3 text-left text-body transition-colors hover:bg-accent/60 disabled:opacity-60"
                 >
                   <ShieldCheck className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0">
                     <div className="truncate font-medium">{g.name}</div>
                     {g.description && (
-                      <div className="truncate text-xs text-muted-foreground">
+                      <div className="truncate text-caption text-muted-foreground">
                         {g.description}
                       </div>
                     )}
@@ -332,7 +332,7 @@ function EffectivePreviewDialog({
             <Skeleton className="h-16 w-full" />
           </div>
         ) : layers.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <p className="py-6 text-center text-body text-muted-foreground">
             {t(($) => $.rule_groups.bindings.preview_empty)}
           </p>
         ) : (
@@ -343,20 +343,20 @@ function EffectivePreviewDialog({
               const labelKey = LAYER_LABEL_KEY[layer.scope_type as RuleGroupScopeType];
               return (
               <div key={`${layer.scope_type}:${layer.scope_id ?? "ws"}`}>
-                <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="mb-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
                   {labelKey ? t(($) => $.rule_groups.bindings[labelKey]) : layer.scope_type}
                 </div>
                 <ul className="space-y-1">
                   {layer.groups.map((g) => (
                     <li
                       key={g.binding_id}
-                      className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-sm"
+                      className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-body"
                     >
                       <span className="flex items-center gap-2">
                         <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                         {g.name}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-caption text-muted-foreground">
                         {t(($) => $.rule_groups.rule_count, { count: g.rule_count })}
                       </span>
                     </li>

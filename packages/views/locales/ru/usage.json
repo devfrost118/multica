@@ -1,6 +1,10 @@
 {
   "title": "Использование",
-  "subtitle": "Расход токенов и активность агентов в этой рабочей области.",
+  "tab_usage": "Использование",
+  "header": {
+    "timezone_and_updated": "{{tz}} · обновлен {{time}}",
+    "refresh": "Обновить"
+  },
   "filter": {
     "project_label": "Проект",
     "all_projects": "Все проекты",
@@ -25,30 +29,74 @@
     "title_tokens": "Токены по дням",
     "title_time": "Время работы по дням",
     "title_tasks": "Tasks по дням",
+    "title_errors": "Ежедневные ошибки",
     "metric_cost": "Стоимость",
     "metric_tokens": "Токены",
     "metric_time": "Время",
-    "metric_tasks": "Tasks",
-    "no_data": "Нет активности за этот период."
+    "metric_tasks": "Задачи",
+    "no_data": "Нет активности за этот период.",
+    "metric_label": "Метрика"
   },
   "weekly": {
     "title_cost": "Стоимость по неделям",
     "title_tokens": "Токены по неделям",
     "title_time": "Время работы по неделям",
     "title_tasks": "Tasks по неделям",
+    "title_errors": "Еженедельные ошибки",
     "partial_label": "{{range}} (частично · {{covered}} / 7 дней)"
+  },
+  "errors": {
+    "kpi_failed_label": "Невыполненные задачи · {{days}}D",
+    "kpi_failed_hint": "Из {{total}} работает",
+    "kpi_rate_label": "Частота отказов · {{days}}D",
+    "kpi_agents_label": "Затронутые агенты · {{days}}D",
+    "kpi_agents_hint": "Худшее {{name}} · {{count}}",
+    "tooltip_rate": "Ошибка rate",
+    "class": {
+      "auth": "Авторизация",
+      "rate_limit": "Ограничение скорости",
+      "timeout": "Тайм-аут",
+      "provider": "Поставщик",
+      "runtime": "рантайм",
+      "agent": "агент",
+      "other": "Другой"
+    },
+    "title": "Ошибки",
+    "summary": "{{failed}} из {{total}} не удалось выполнить · {{rate}}",
+    "mix_title": "Набор отказов · {{failed}}",
+    "mix_label": "Микс неудач",
+    "codes_label": "Ошибка codes",
+    "by_agent": "Главные нарушители",
+    "sort_label": "Ранжируйте правонарушителей по",
+    "sort_failed": "Неудачи",
+    "sort_rate": "Ставка",
+    "header_agent": "агент",
+    "header_failed": "Неуспешный",
+    "header_runs": "Бежит",
+    "header_rate": "Ставка",
+    "other_agents": "Другие агенты",
+    "low_sample": "В этом окне выполняется менее {{count}} — эта частота не имеет смысла.",
+    "no_data": "В этом окне нет неудачных запусков.",
+    "show_reasons": "Show ошибка codes",
+    "hide_reasons": "Hide ошибка codes",
+    "show_all": "Показать все {{count}}",
+    "show_less": "Показать топ {{count}}"
   },
   "leaderboard": {
     "title": "Рейтинг",
     "caption": "{{count}} агентов",
+    "caption_with_deleted": "{{count}} агентов · удалено: {{deleted}}",
+    "sort_label": "Ранжируйте агентов по",
+    "deleted_agents": "Удалённые агенты",
+    "other_agents": "Другие агенты",
     "header_agent": "Агент",
     "header_tokens": "Токены",
     "header_cost": "Стоимость",
     "header_time": "Время",
-    "header_tasks": "Tasks",
-    "no_data": "Нет активности агентов за этот период.",
-    "caption_with_deleted": "{{count}} агентов · удалено: {{deleted}}",
-    "deleted_agents": "Удалённые агенты"
+    "header_tasks": "Задачи",
+    "show_all": "Показать все",
+    "show_less": "Показать топ {{count}}",
+    "no_data": "Нет активности агентов за этот период."
   },
   "empty": {
     "title": "Пока нет активности",

@@ -2,11 +2,11 @@
   "title": "Биллинг (тестовая страница)",
   "subtitle": "Прямой проброс к /api/v1/billing/* в multica-cloud. Это не готовый UI — просто все эндпоинты на одной странице, чтобы проверить прокси и поток Stripe.",
   "endpoints": {
-    "balance": "GET /api/cloud-billing/balance",
-    "transactions": "GET /api/cloud-billing/transactions",
-    "batches": "GET /api/cloud-billing/batches",
-    "topups": "GET /api/cloud-billing/topups",
-    "buy": "GET /price-tiers · POST /checkout-sessions · POST /portal-sessions"
+    "balance": "ПОЛУЧИТЕ /api/cloud-billing/balance",
+    "transactions": "ПОЛУЧИТЕ /api/cloud-billing/transactions",
+    "batches": "ПОЛУЧИТЕ /api/cloud-billing/batches",
+    "topups": "ПОЛУЧИТЕ /api/cloud-billing/topups",
+    "buy": "GET /price-tiers · POST /checkout-session · POST /portal-session"
   },
   "balance": {
     "title": "Баланс",
@@ -63,13 +63,218 @@
     "empty": "Пока нет заказов на пополнение.",
     "amount_to_credits": "{{money}} → {{credits}} кредитов",
     "amount_to_credits_with_bonus": "{{money}} → {{credits}} кредитов + {{bonus}} бонусом",
-    "row_meta": "{{date}} · stripe: {{checkout}}",
+    "row_meta": "{{date}} · полоса: {{checkout}}",
     "stripe_empty": "—"
+  },
+  "workspace": {
+    "title": "биллинг",
+    "description": "Manage this рабочая область's plan, limits, human места, and Stripe billing.",
+    "loading": "Загрузка рабочая область billing",
+    "plan": {
+      "free": "Бесплатно",
+      "pro": "Про",
+      "unknown": "Неизвестный план"
+    },
+    "status": {
+      "inactive": "Неактивный",
+      "active": "Активный",
+      "trialing": "испытание",
+      "past_due": "Просроченный платеж",
+      "canceled": "Отменено",
+      "incomplete": "Неполный",
+      "incomplete_expired": "Срок установки истек",
+      "paused": "Приостановлено",
+      "unpaid": "Неоплачиваемый",
+      "unknown": "Неизвестный статус"
+    },
+    "load_failed": {
+      "title": "биллинг is temporarily недоступно",
+      "description": "We couldn't read a trustworthy подписка snapshot. Your plan has not been changed."
+    },
+    "actions": {
+      "retry": "Повторить",
+      "retry_autopilots": "Повторить automation usage",
+      "upgrade": "Обновите до Pro",
+      "manage": "Управление платежами",
+      "add_seats": "Добавить места",
+      "refresh_seats": "Refresh места",
+      "cancel": "Отмена",
+      "continue_to_stripe": "Продолжить полоску"
+    },
+    "errors": {
+      "action_title": "биллинг action failed",
+      "temporarily_unavailable": "биллинг is temporarily недоступно. Повторить in a moment.",
+      "permission_changed": "Your рабочая область role no longer allows this action. Refresh the page to see your current access.",
+      "checkout_response": "Checkout could not open because the server response was unreadable. Повторить without changing your selected interval.",
+      "already_subscribed": "This рабочая область already has a подписка. The current plan has been refreshed.",
+      "checkout_failed": "Checkout could not be created. Повторить in a moment.",
+      "portal_response": "The биллинг Portal could not open because the server response was unreadable.",
+      "portal_unavailable": "The биллинг Portal is not available for this рабочая область. The current plan has been refreshed.",
+      "portal_failed": "The биллинг Portal could not be opened. Повторить in a moment.",
+      "reconcile_response": "Места were refreshed, but the result could not be read. Reload the page to confirm the current count.",
+      "reconcile_failed": "Места could not be refreshed. Member changes are still saved and periodic reconciliation will повторить."
+    },
+    "return": {
+      "cancel_title": "Оформление заказа отменено",
+      "cancel_description": "Никакого изменения плана не произошло.",
+      "portal_title": "биллинг details refreshed",
+      "portal_description": "The latest подписка snapshot is shown below.",
+      "syncing_title": "Activating your подписка",
+      "syncing_description": "Оплата is complete. We're waiting for Stripe to confirm the plan change.",
+      "timeout_description": "Оплата was received, but the подписка is still syncing. Refresh this page in a moment.",
+      "active_title": "Про активен",
+      "active_description": "This рабочая область now has Pro access."
+    },
+    "past_due": {
+      "title": "Оплата needs attention",
+      "description": "Open the биллинг Portal to update your оплата method. The plan badge above shows the access currently available.",
+      "grace_description": "Обновить your оплата method by {{date}} to keep Pro access."
+    },
+    "subscription_notice": {
+      "canceling_title": "Отмена запланирована",
+      "canceling_description": "This подписка is scheduled to cancel on {{date}}. The plan badge above shows the access currently enforced.",
+      "canceling_description_without_date": "This подписка is scheduled to cancel at the end of its current period.",
+      "incomplete_title": "Подписка setup is incomplete",
+      "incomplete_description": "Open billing management to finish or review the оплата setup.",
+      "incomplete_expired_title": "Подписка setup expired",
+      "incomplete_expired_description": "The previous оплата setup expired without activating Pro. Start a new upgrade when ready.",
+      "paused_title": "Подписка is paused",
+      "paused_description": "Откройте управление выставлением счетов, чтобы просмотреть приостановку и доступные варианты восстановления.",
+      "unpaid_title": "Подписка is unpaid",
+      "unpaid_description": "Откройте управление выставлением счетов, чтобы устранить неоплаченный остаток.",
+      "canceled_title": "Подписка is canceled",
+      "canceled_description": "The entitlement badge above shows the plan currently enforced for this рабочая область."
+    },
+    "read_only": {
+      "title": "Доступ к счетам только для чтения",
+      "description": "You can view the рабочая область plan and limits. Only owners and admins can покупка or manage a подписка."
+    },
+    "current": {
+      "title": "Текущий план",
+      "plan": "рабочая область plan",
+      "plan_description": "The entitlement currently enforced for this рабочая область.",
+      "members": "Человеческие члены",
+      "members_description": "Agents and ожидание invitations are not counted as места.",
+      "member_count_one": "{{count}} участник",
+      "member_count_other": "{{count}} участников",
+      "billing_interval": "биллинг interval",
+      "billing_interval_description": "The interval stored for the active подписка.",
+      "period_end": "Текущий период заканчивается",
+      "period_end_description": "The date reported by the current подписка snapshot."
+    },
+    "upgrade": {
+      "title": "Обновите до Pro",
+      "description": "Choose a billing interval, then confirm the current места and final amount in Stripe Checkout.",
+      "interval_label": "биллинг interval",
+      "monthly": "Ежемесячно",
+      "yearly": "Ежегодно",
+      "pro_for_team_one": "Pro for {{count}} human места",
+      "pro_for_team_other": "Pro for {{count}} human места",
+      "price_loading": "Загрузка подписка prices",
+      "unit_price": "{{price}} per human места",
+      "estimated_monthly_total": "Расчетная сумма за месяц: {{price}}",
+      "estimated_yearly_total": "Предполагаемый годовой итог: {{price}}",
+      "price_at_checkout": "The server re-counts human members before покупка. Stripe Checkout shows the authoritative per-места price and total before you pay."
+    },
+    "management": {
+      "title": "Подписка management",
+      "description": "Stripe securely manages оплата methods, invoices, and cancellation.",
+      "portal": "Stripe биллинг Portal",
+      "portal_description": "Open Stripe to manage this рабочая область's подписка.",
+      "portal_unavailable": "No Stripe биллинг Portal is available for this рабочая область."
+    },
+    "limits": {
+      "title": "Использование и ограничения",
+      "description": "Ограничения исходят из текущего права. Использование автоматизации происходит за счет учета квот сервера.",
+      "issues": "Недавние задачи",
+      "issues_description": "В Free сохраняются самые последние активные задачи. Pro не имеет ограничения по размеру окна.",
+      "autopilots": "Успешная автоматизация",
+      "autopilots_description": "Бесплатное пособие сбрасывается каждый календарный месяц UTC. Pro без ограничений.",
+      "unlimited": "Безлимитный",
+      "unavailable": "Недоступно",
+      "per_month": "{{count}} / месяц",
+      "usage_loading": "Загрузка automation usage",
+      "usage_label": "Использование квот автоматизации",
+      "current_usage": "Текущее использование",
+      "reached": "Достигнут лимит",
+      "usage_total": "{{total}} / {{limit}}",
+      "usage_breakdown": "{{used}} завершено · {{reserved}} в процессе",
+      "resets_at": "Сбрасывает {{date}}",
+      "usage_unavailable": "Usage is temporarily недоступно"
+    },
+    "seats": {
+      "title": "Места",
+      "description": "Purchased места cover current human members and ожидание invitations. Agents never use a места.",
+      "human_members": "Used места",
+      "human_members_description": "Подтвержденные участники-люди, потребляющие приобретенную мощность. Обновите после изменения членства, чтобы согласовать подсчет.",
+      "billed": "Purchased места",
+      "billed_description": "The места quantity currently purchased through Stripe.",
+      "pending_invitations": "Ожидание invitations",
+      "pending_invitations_description": "Live invitations reserve purchased места until accepted or expired.",
+      "available": "Available места",
+      "available_description": "Purchased места not used by members or reserved for invitations.",
+      "pending": "Scheduled места quantity",
+      "pending_description": "Меньшее количество, указанное в облачных платежных отчетах за следующий период.",
+      "seat_count_one": "{{count}} места",
+      "seat_count_other": "{{count}} места",
+      "pending_with_date_one": "{{count}} места from {{date}}",
+      "pending_with_date_other": "{{count}} места from {{date}}",
+      "none_pending": "Нет запланированных изменений",
+      "not_subscribed": "No active подписка",
+      "unavailable": "Недоступно",
+      "summary_loading": "Загрузка подписка места details",
+      "summary_unavailable_title": "Some места details are недоступно",
+      "summary_unavailable_description": "The current plan is still shown, but purchased and scheduled места quantities could not be loaded.",
+      "updated": "Места refreshed",
+      "reconciled": "Current members: {{actual}} · billed места: {{billed}}"
+    },
+    "seat_purchase": {
+      "title": "Добавить места",
+      "description": "Введите the number of места to add. A fresh Stripe estimate appears before you confirm.",
+      "additional_label": "Additional места",
+      "additional_hint": "Введите места to add, not the new total.",
+      "preview_loading": "Обновление оценки...",
+      "preview_unreadable": "The estimate could not be read. Change the места count or повторить.",
+      "preview_failed": "The estimate is temporarily недоступно. Повторить in a moment.",
+      "in_progress": "Another места покупка is being processed. Wait for it to finish; contact support if it remains here.",
+      "purchase_unreadable": "The покупка response could not be read. Повторить this quote; the same покупка request will be reused.",
+      "purchase_failed": "Места could not be added. Повторить with the same quote, or refresh if it has expired.",
+      "payment_failed": "Оплата could not be completed. Обновить the оплата method in Stripe, then request a new quote.",
+      "quote_changed": "The места count or estimate changed. Review the refreshed quote before confirming again.",
+      "seats_after": "Места after покупка",
+      "charge_today": "Ориентировочная стоимость сегодня",
+      "next_invoice": "Предполагаемое следующее обновление",
+      "tax_notice": "Stripe determines taxes, credits, and final счёт details. Места become available after Stripe confirms the подписка update.",
+      "confirm_one": "Добавить {{count}} места",
+      "confirm_other": "Добавить {{count}} места",
+      "pending_title": "Места покупка processing",
+      "pending_description_one": "Stripe is confirming the подписка update to {{count}} места.",
+      "pending_description_other": "Stripe is confirming the подписка update to {{count}} места.",
+      "delayed_title": "Места confirmation is taking longer than expected",
+      "delayed_description": "Automatic checking has stopped. The покупка may still complete; check again later or contact support before starting another покупка.",
+      "delayed_description_with_expiry": "Automatic checking has stopped. If the attempt is still ожидание after {{date}}, refresh места to release it and request a new quote; contact support before starting another покупка.",
+      "submitted_one": "A покупка for {{count}} места was submitted. The new capacity appears after Stripe confirms it.",
+      "submitted_other": "A покупка for {{count}} места was submitted. The new capacity appears after Stripe confirms it.",
+      "error_title": "Не удалось обновить оценку."
+    },
+    "confirm": {
+      "title": "Продолжить оформление заказа в Stripe?",
+      "description": "биллинг interval: {{interval}}. Current human members: {{count}}. Stripe will re-count места and show the final amount before оплата."
+    }
   },
   "shared": {
     "request_failed": "Запрос не выполнен",
     "refresh": "Обновить",
     "paging": "страница {{page}} / {{totalPages}} · всего {{total}}",
     "date_dash": "—"
+  },
+  "return_page": {
+    "redirecting": "Returning you to рабочая область billing…",
+    "load_failed_title": "Could not open рабочая область billing",
+    "load_failed_description": "You came back from Stripe, but we could not load your рабочая область list to open the right billing page. Open рабочая область settings → биллинг to check the current state.",
+    "workspace_missing_title": "Could not find that рабочая область",
+    "workspace_missing_description": "You came back from Stripe, but this рабочая область is no longer available to you — it may have been removed, or your access changed. Open биллинг in the рабочая область you expected to check the current state.",
+    "retry": "Попробовать снова",
+    "go_to_app": "Перейти в Мультика"
   }
 }

@@ -6,10 +6,10 @@
     "table": {
       "name": "Название",
       "agent": "Агент",
+      "created_by": "Создатель",
       "mode": "Режим",
       "status": "Статус",
       "last_run": "Последний запуск",
-      "created_by": "Создатель",
       "assignee": "Исполнитель",
       "trigger": "Триггер",
       "next_run": "Следующий запуск",
@@ -27,6 +27,7 @@
   "status": {
     "active": "Активен",
     "paused": "Приостановлен",
+    "paused_runtime_required": "Paused — the assignee needs a рантайм",
     "archived": "В архиве"
   },
   "execution_mode": {
@@ -69,6 +70,8 @@
     "not_found": "Автопилот не найден",
     "pause_aria": "Приостановить автопилот",
     "activate_aria": "Активировать автопилот",
+    "paused_runtime_required": "Paused because the assignee lost its рантайм. Bind a рантайм, then reactivate this autopilot.",
+    "bind_runtime": "Bind рантайм",
     "edit": "Редактировать",
     "run_now": "Запустить сейчас",
     "running": "Выполняется...",
@@ -76,20 +79,25 @@
     "toast_trigger_failed": "Не удалось запустить автопилот",
     "run_blocked_invocation_not_allowed": "Не запущено — у вас нет разрешения использовать агента этого автопилота",
     "run_blocked_runtime_offline": "Не запущено — среда выполнения агента офлайн",
+    "run_blocked_agent_runtime_required": "Not triggered — the агент has no рантайм; bind one to run it",
     "run_blocked_target_unavailable": "Не запущено — агент недоступен",
     "run_blocked_attribution": "Не запущено — не удалось определить ответственного участника для этого запуска",
     "run_blocked_already_active": "Не запущено — этот случай уже покрыт недавним запуском",
+    "run_blocked_quota_exceeded": "Не сработало — достигнут лимит пробега за этот период",
     "run_blocked_generic": "Не запущено — запуск был блокирован",
     "section_properties": "Свойства",
     "section_triggers": "Триггеры",
     "section_run_history": "История запусков",
     "section_danger": "Опасная зона",
     "field_agent": "Агент",
+    "field_created_by": "Создатель",
     "field_output_mode": "Режим вывода",
     "field_project": "Проект",
     "no_project": "Без проекта",
     "project_unavailable": "Проект недоступен",
     "field_prompt": "Промпт",
+    "field_subscribers": "Подписчики",
+    "field_subscribers_none": "Нет",
     "add_trigger": "Добавить триггер",
     "no_triggers": "Триггеры не настроены. Добавьте расписание для автоматического запуска.",
     "no_runs": "Пока нет запусков. Нажмите «Запустить сейчас», чтобы запустить вручную.",
@@ -102,10 +110,21 @@
       "cancel": "Отмена",
       "confirm": "Удалить",
       "deleting": "Удаление..."
-    },
-    "field_created_by": "Создатель",
-    "field_subscribers": "Подписчики",
-    "field_subscribers_none": "Нет"
+    }
+  },
+  "access": {
+    "title": "Управление доступом",
+    "description": "Добавленные участники могут редактировать, запускать и управлять триггерами и вебхуками этого автопилота.",
+    "current_label": "С доступом",
+    "add": "Добавить участника",
+    "search_placeholder": "Поиск участников…",
+    "no_results": "Участники не найдены",
+    "remove_tooltip": "Убрать доступ",
+    "empty": "Доступ пока никому не выдан.",
+    "toast_granted": "Доступ выдан",
+    "toast_revoked": "Доступ убран",
+    "toast_failed": "Не удалось обновить доступ",
+    "owner_note": "Создатель и администраторы рабочей области всегда имеют доступ."
   },
   "run_status": {
     "issue_created": "Задача создана",
@@ -117,7 +136,7 @@
   "run_source": {
     "schedule": "Расписание",
     "manual": "Вручную",
-    "webhook": "Webhook",
+    "webhook": "Вебхук",
     "api": "API"
   },
   "run": {
@@ -130,9 +149,9 @@
   },
   "webhook_payload": {
     "label": "Событие webhook:",
-    "unknown_event": "webhook.received",
-    "payload": "Payload",
-    "content_type": "Content-Type: {{type}}",
+    "unknown_event": "вебхук.получено",
+    "payload": "Полезная нагрузка",
+    "content_type": "Тип контента: {{type}}",
     "copy": "Копировать",
     "copied": "Payload webhook скопирован",
     "copied_short": "Скопировано",
@@ -141,7 +160,7 @@
   },
   "trigger_kind": {
     "schedule": "Расписание",
-    "webhook": "Webhook",
+    "webhook": "Вебхук",
     "api": "API"
   },
   "trigger_row": {
@@ -149,6 +168,9 @@
     "deprecated_badge": "Устарел",
     "next_label": "Далее: {{date}}",
     "webhook_url_label": "URL webhook",
+    "show_url": "Показать URL",
+    "hide_url": "Скрыть URL-адрес",
+    "hidden_url_aria": "URL-адрес вебхука скрыт — нажмите, чтобы показать",
     "copy_url": "Копировать URL",
     "url_copied": "URL webhook скопирован",
     "url_copy_failed": "Не удалось скопировать",
@@ -200,7 +222,7 @@
       "response_status": "Ответ",
       "dedupe_key": "Ключ дедупликации",
       "dedupe_source": "Источник дедупликации",
-      "content_type": "Content-Type",
+      "content_type": "Тип контента",
       "replayed_from": "Повтор из",
       "error_label": "Ошибка",
       "raw_body": "Сырое тело",
@@ -221,7 +243,7 @@
     "title": "Добавить триггер",
     "type_label": "Тип",
     "type_schedule": "Расписание",
-    "type_webhook": "Webhook",
+    "type_webhook": "Вебхук",
     "label_field": "Метка (необязательно)",
     "label_placeholder": "например, Будни, утро",
     "webhook_help": "Multica сгенерирует URL webhook после сохранения. Отправьте на него любой JSON через POST, чтобы запустить этот автопилот.",
@@ -241,7 +263,7 @@
     "collapse": "Свернуть",
     "close": "Закрыть",
     "title_placeholder": "Название автопилота",
-    "runbook_label": "Runbook",
+    "runbook_label": "Ранбук",
     "runbook_hint": "Читается агентом при каждом запуске",
     "description_placeholder": "# Цель\nЧего должен достичь агент?\n\n# Контекст\nДля кого это? Есть ли ограничения?\n\n# Шаги\n1. …\n2. …",
     "auto_run_hint": "После сохранения запускается автоматически, пока не приостановите.",
@@ -265,11 +287,18 @@
     "section_project": "Проект",
     "no_project": "Без проекта",
     "section_output_mode": "Режим вывода",
+    "section_subscribers": "Подписчики",
+    "subscribers_hint": "Автоматически подписаны на каждую issue, созданную этим автопилотом",
+    "subscribers_empty": "Нет подписчиков — добавьте коллегу, чтобы уведомлять его о каждом запуске",
+    "subscribers_add": "Добавить подписчика",
+    "subscribers_search_placeholder": "Поиск участников по имени…",
+    "subscribers_no_results": "Нет подходящих участников",
+    "subscribers_remove_tooltip": "Удалить",
     "section_schedule": "Расписание",
     "section_trigger_kind": "Триггер",
     "trigger_kind_schedule": "Расписание",
-    "trigger_kind_webhook": "Webhook",
-    "section_webhook": "Webhook",
+    "trigger_kind_webhook": "Вебхук",
+    "section_webhook": "Вебхук",
     "webhook_help_create": "Multica сгенерирует URL webhook после создания этого автопилота. Отправьте любой JSON на этот URL через POST, чтобы запустить его.",
     "webhook_help_edit": "Этот автопилот запускается через webhook. Управляйте URL (копирование / смена) на странице автопилота.",
     "webhook_created_title": "Webhook-автопилот готов",
@@ -279,9 +308,15 @@
     "event_filter_label": "Фильтры событий",
     "event_filter_docs_link_label": "Узнать, как работают фильтры событий",
     "event_filter_event_placeholder": "например, workflow_run",
-    "event_filter_actions_placeholder": "completed, failed",
+    "event_filter_actions_placeholder": "завершено, не удалось",
+    "event_filter_add": "Добавить",
+    "event_filter_remove_label": "Удалить filter",
     "event_filter_hint": "Обрабатывать только webhooks, совпадающие с этими событиями. Оставьте пустым, чтобы принимать все.",
     "schedule_disabled_reason": "У этого автопилота несколько расписаний — редактируйте их на странице автопилота.",
+    "schedule_empty": "Нет расписания — этот автопилот запускается только при запуске вручную.",
+    "schedule_add": "Добавить schedule",
+    "error_title_required": "Введите a name for this autopilot.",
+    "error_assignee_required": "Choose the агент or squad that will run this autopilot.",
     "output_modes": {
       "create_issue": {
         "label": "Создавать задачи",
@@ -291,14 +326,7 @@
         "label": "Только запуск",
         "description": "Тихий запуск, задача не создаётся"
       }
-    },
-    "section_subscribers": "Подписчики",
-    "subscribers_hint": "Автоматически подписаны на каждую issue, созданную этим автопилотом",
-    "subscribers_empty": "Нет подписчиков — добавьте коллегу, чтобы уведомлять его о каждом запуске",
-    "subscribers_add": "Добавить подписчика",
-    "subscribers_search_placeholder": "Поиск участников по имени…",
-    "subscribers_no_results": "Нет подходящих участников",
-    "subscribers_remove_tooltip": "Удалить"
+    }
   },
   "schedule_editor": {
     "time_label": "Время",
@@ -322,7 +350,7 @@
       "sat": "Сб"
     },
     "timezone_label": "Часовой пояс",
-    "cron_toggle": "Cron",
+    "cron_toggle": "Крон",
     "cron_click_to_edit": "нажмите для редактирования",
     "cron_hint": "Стандартный cron из 5 полей (мин час день месяц день_недели)",
     "cron_invalid": "Это cron-выражение недействительно.",
@@ -391,7 +419,9 @@
     "select_agent": "Выберите агента",
     "select_assignee": "Выберите агента или отряд",
     "agents_group": "Агенты",
-    "squads_group": "Отряды"
+    "squads_group": "Отряды",
+    "agent_runtime_required": "Bind a рантайм before selecting this агент",
+    "squad_runtime_required": "Bind a рантайм to this squad's leader before selecting it"
   },
   "timezone_picker": {
     "search_placeholder": "Поиск часового пояса..."
@@ -429,19 +459,5 @@
       "confirm": "Удалить навсегда",
       "deleting": "Удаление…"
     }
-  },
-  "access": {
-    "title": "Управление доступом",
-    "description": "Добавленные участники могут редактировать, запускать и управлять триггерами и вебхуками этого автопилота.",
-    "current_label": "С доступом",
-    "add": "Добавить участника",
-    "search_placeholder": "Поиск участников…",
-    "no_results": "Участники не найдены",
-    "remove_tooltip": "Убрать доступ",
-    "empty": "Доступ пока никому не выдан.",
-    "toast_granted": "Доступ выдан",
-    "toast_revoked": "Доступ убран",
-    "toast_failed": "Не удалось обновить доступ",
-    "owner_note": "Создатель и администраторы рабочей области всегда имеют доступ."
   }
 }

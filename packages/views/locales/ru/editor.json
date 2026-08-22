@@ -4,10 +4,17 @@
     "italic": "Курсив",
     "strikethrough": "Зачёркнутый",
     "code": "Код",
+    "highlight": "Выделение",
     "link": "Ссылка",
     "list": "Список",
+    "task_list": "Список задач",
     "quote": "Цитата",
     "url_aria_label": "URL",
+    "link_edit": {
+      "apply": "Применить ссылку",
+      "remove": "Удалить link",
+      "close": "Закрыть редактор ссылок"
+    },
     "heading_dropdown": {
       "text": "Текст",
       "normal_text": "Обычный текст",
@@ -24,9 +31,7 @@
       "tooltip": "Создать подзадачу из выделения",
       "created": "Создано {{identifier}}",
       "create_failed": "Не удалось создать подзадачу"
-    },
-    "highlight": "Выделение",
-    "task_list": "Список задач"
+    }
   },
   "image": {
     "view": "Открыть изображение",
@@ -35,7 +40,17 @@
     "delete": "Удалить",
     "link_copied": "Ссылка скопирована",
     "copy_link_failed": "Не удалось скопировать ссылку",
-    "canvas_label": "Холст изображения. Перетаскивание — панорама, прокрутка — масштаб, двойной клик — исходный размер."
+    "canvas_label": "Холст изображения. Перетаскивание — панорама, прокрутка — масштаб, двойной клик — исходный размер.",
+    "previous": "Предыдущее изображение",
+    "next": "Следующее изображение",
+    "sequence_position": "{{index}} / {{total}}",
+    "unavailable": "Это изображение больше не доступно — пропустил его."
+  },
+  "canvas": {
+    "zoom_in": "Приблизить",
+    "zoom_out": "Отдалить",
+    "zoom_fit": "Вписать в окно",
+    "zoom_actual": "Исходный размер"
   },
   "attachment": {
     "download_failed": "Не удалось получить ссылку для скачивания. Попробуйте через мгновение.",
@@ -62,7 +77,15 @@
     "no_results": "Ничего не найдено",
     "group_current": "Текущая страница",
     "group_recent": "Недавно просмотренные",
-    "group_search": "Результаты поиска"
+    "group_search": "Результаты поиска",
+    "group_cancelled": "Отменено"
+  },
+  "slash_command": {
+    "no_skills_configured": "Skills не настроены",
+    "no_results": "Нет подходящих skills",
+    "commands": {
+      "note": "Добавить заметку — не вызовет агентов"
+    }
   },
   "code_block": {
     "copy_code": "Копировать код",
@@ -75,7 +98,11 @@
   },
   "upload": {
     "failed": "Не удалось загрузить {{filename}}: {{reason}}",
-    "in_progress": "Загрузка…"
+    "in_progress": "Загрузка…",
+    "interrupted": "Загрузка прервана — файл не сохранился. Прикрепите его снова.",
+    "remove": "Удалить",
+    "uploading_label": "Загрузка {{filename}}…",
+    "failed_label": "Не удалось загрузить {{filename}}"
   },
   "title_editor": {
     "title_aria_label": "Заголовок"
@@ -94,18 +121,5 @@
     "export_png": "Скачать PNG",
     "export_svg": "Скачать SVG",
     "export_source": "Скачать .mmd"
-  },
-  "slash_command": {
-    "no_skills_configured": "Skills не настроены",
-    "no_results": "Нет подходящих skills",
-    "commands": {
-      "note": "Добавить заметку — не вызовет агентов"
-    }
-  },
-  "canvas": {
-    "zoom_in": "Приблизить",
-    "zoom_out": "Отдалить",
-    "zoom_fit": "Вписать в окно",
-    "zoom_actual": "Исходный размер"
   }
 }

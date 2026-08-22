@@ -9,6 +9,13 @@
     "archive_all_read": "Архивировать все прочитанные",
     "archive_completed": "Архивировать завершённые"
   },
+  "context_menu": {
+    "mark_read": "Отметить как прочитанное",
+    "mark_unread": "Отметить как непрочитанное",
+    "archive": "Архив",
+    "unarchive": "Разархивировать",
+    "open_in_new_tab": "Открыть в новой вкладке"
+  },
   "list": {
     "empty": "Нет уведомлений",
     "mark_done_tooltip": "Отметить как выполненное",
@@ -21,7 +28,8 @@
     },
     "archived_title": "Архив",
     "archived_empty": "Нет архивных уведомлений",
-    "unarchive_tooltip": "Восстановить из архива"
+    "unarchive_tooltip": "Восстановить из архива",
+    "actions_aria": "Действия по оповещению"
   },
   "detail": {
     "select_prompt": "Выберите уведомление, чтобы посмотреть подробности",
@@ -33,6 +41,7 @@
   },
   "types": {
     "issue_assigned": "Назначено",
+    "issue_subscribed": "Подписан",
     "unassigned": "Снято назначение",
     "assignee_changed": "Исполнитель изменён",
     "status_changed": "Статус изменён",
@@ -49,7 +58,6 @@
     "reaction_added": "Реакция",
     "quick_create_done": "Создано агентом",
     "quick_create_failed": "Не удалось создать агентом",
-    "issue_subscribed": "Подписан",
     "quick_create_unconfirmed": "Создание с агентом не подтверждено"
   },
   "labels": {
@@ -65,8 +73,13 @@
     "created_with_agent": "Создано агентом: {{identifier}}",
     "failed_with_detail": "Ошибка: {{detail}}"
   },
+  "toasts": {
+    "archived": "Уведомление заархивировано",
+    "unarchived": "Уведомление восстановлено"
+  },
   "errors": {
     "mark_read_failed": "Не удалось отметить как прочитанное",
+    "mark_unread_failed": "Не удалось mark as unread",
     "archive_failed": "Не удалось архивировать",
     "mark_done_failed": "Не удалось отметить как выполненное",
     "mark_all_read_failed": "Не удалось отметить все как прочитанные",

@@ -298,10 +298,10 @@ export function ProviderLimitsOverview({
         <div className="flex items-center gap-2">
           <Server className="size-4 text-muted-foreground" />
           <div>
-            <h2 id="provider-limits-title" className="text-sm font-semibold">
+            <h2 id="provider-limits-title" className="text-body font-semibold">
               {t(($) => $.provider_limits.title)}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               {t(($) => $.provider_limits.subtitle)}
             </p>
           </div>
@@ -310,19 +310,19 @@ export function ProviderLimitsOverview({
           <button
             type="button"
             onClick={() => setView("accounts")}
-            className={`rounded-sm px-2.5 py-1 text-xs font-medium ${view === "accounts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+            className={`rounded-sm px-2.5 py-1 text-caption font-medium ${view === "accounts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             {t(($) => $.provider_limits.by_accounts)}
           </button>
           <button
             type="button"
             onClick={() => setView("daemons")}
-            className={`rounded-sm px-2.5 py-1 text-xs font-medium ${view === "daemons" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+            className={`rounded-sm px-2.5 py-1 text-caption font-medium ${view === "daemons" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             {t(($) => $.provider_limits.by_daemon)}
           </button>
         </div>
-        <button type="button" className="rounded-md border px-2.5 py-1 text-xs font-medium disabled:opacity-50" disabled={!refreshRuntimeID || refreshingRuntimeID !== null} onClick={() => void handleRefresh()}>
+        <button type="button" className="rounded-md border px-2.5 py-1 text-caption font-medium disabled:opacity-50" disabled={!refreshRuntimeID || refreshingRuntimeID !== null} onClick={() => void handleRefresh()}>
           {t(($) => $.provider_limits.refresh)}
         </button>
       </div>
@@ -336,18 +336,18 @@ export function ProviderLimitsOverview({
         />
         {isLoading ? (
           <div className="space-y-2" aria-live="polite">
-            <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.loading)}</p>
+            <p className="text-caption text-muted-foreground">{t(($) => $.provider_limits.loading)}</p>
             <Skeleton className="h-28 w-full" />
           </div>
         ) : isError ? (
-          <div className="flex items-center gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground" role="alert">
+          <div className="flex items-center gap-2 rounded-md border border-dashed p-4 text-body text-muted-foreground" role="alert">
             <AlertCircle className="size-4 shrink-0" />
             {t(($) => $.provider_limits.error)}
           </div>
         ) : (
           <>
             {!hasReportedRecords && (
-              <p className="text-xs text-muted-foreground">{t(($) => $.provider_limits.empty)}</p>
+              <p className="text-caption text-muted-foreground">{t(($) => $.provider_limits.empty)}</p>
             )}
             <div className="grid gap-3 lg:grid-cols-2">
               {records.map((record) => (
@@ -382,7 +382,7 @@ function ThresholdSettings({
 }) {
   const { t } = useT("usage");
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md bg-muted/50 px-3 py-2 text-xs">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md bg-muted/50 px-3 py-2 text-caption">
       <span className="flex items-center gap-1 font-medium"><SlidersHorizontal className="size-3" />{t(($) => $.provider_limits.thresholds.title)}</span>
       <label className="flex items-center gap-1 text-muted-foreground">
         {t(($) => $.provider_limits.thresholds.warning)}
@@ -421,11 +421,11 @@ function ProviderLimitCard({
     <article className="rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-sm font-medium">{titleCase(record.provider)}</h3>
+          <h3 className="text-body font-medium">{titleCase(record.provider)}</h3>
           {record.account_label && (
-            <p className="text-xs text-muted-foreground">{subscriptionLabel(record.account_label)}</p>
+            <p className="text-caption text-muted-foreground">{subscriptionLabel(record.account_label)}</p>
           )}
-          <p className="text-xs text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             {lastSuccessfulAt
               ? t(($) => $.provider_limits.updated, {
                   value: formatRelativeAge(lastSuccessfulAt, locale),
@@ -446,7 +446,7 @@ function ProviderLimitCard({
           <BucketRow key={bucket.id} bucket={bucket} warningThreshold={warningThreshold} criticalThreshold={criticalThreshold} />
         ))}
         {record.buckets.length === 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             {reason || t(($) => $.provider_limits.no_buckets)}
           </p>
         )}
@@ -484,15 +484,15 @@ function BucketRow({
   const severity = remaining === null ? "unknown" : remaining <= criticalThreshold ? "critical" : remaining <= warningThreshold ? "warning" : "normal";
   return (
     <div className="rounded bg-muted/40 p-2">
-      <div className="flex items-center justify-between gap-2 text-xs">
+      <div className="flex items-center justify-between gap-2 text-caption">
         <span className="truncate font-medium">{bucket.label}</span>
         <span className={severity === "critical" ? "text-destructive" : "text-muted-foreground"}>
           {used === null ? t(($) => $.provider_limits.unknown) : t(($) => $.provider_limits.used, { value: Math.round(used) })}
         </span>
       </div>
       {used !== null && <div className="mt-1 h-1.5 overflow-hidden rounded bg-background"><div className={severity === "critical" ? "h-full bg-destructive" : "h-full bg-primary"} style={{ width: `${used}%` }} /></div>}
-      {bucket.resets_at && <p className="mt-1 text-xs text-muted-foreground">{t(($) => $.provider_limits.resets_at, { value: new Date(bucket.resets_at).toLocaleString() })}</p>}
-      {bucket.note && <p className="mt-1 text-xs text-muted-foreground">{titleCase(bucket.note)}</p>}
+      {bucket.resets_at && <p className="mt-1 text-caption text-muted-foreground">{t(($) => $.provider_limits.resets_at, { value: new Date(bucket.resets_at).toLocaleString() })}</p>}
+      {bucket.note && <p className="mt-1 text-caption text-muted-foreground">{titleCase(bucket.note)}</p>}
     </div>
   );
 }
@@ -583,7 +583,7 @@ function FreshnessBadge({ record }: { record: ProviderLimitSnapshot }) {
       role="img"
       aria-label={`${labels[level]}: ${hints[level]}`}
       title={hints[level]}
-      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${FRESHNESS_BADGE_CLASS[level]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-medium ${FRESHNESS_BADGE_CLASS[level]}`}
     >
       <span className={`size-1.5 shrink-0 rounded-full ${FRESHNESS_DOT_CLASS[level]}`} />
       {labels[level]}

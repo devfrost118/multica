@@ -53,8 +53,6 @@
   "members_tab": {
     "section_title": "Участники",
     "section_count_one": "{{count}} участник в этом отряде",
-    "section_count_few": "{{count}} участника в этом отряде",
-    "section_count_many": "{{count}} участников в этом отряде",
     "section_count_other": "{{count}} участников в этом отряде",
     "add_member_button": "Добавить участника",
     "create_agent_button": "Создать агента",
@@ -66,23 +64,19 @@
     "status_idle": "Простой",
     "status_offline": "Офлайн",
     "status_unstable": "Нестабильно",
-    "issue_status_blocked": "blocked",
+    "status_archived": "В архиве",
+    "issue_status_blocked": "заблокирован",
     "active_issue_more": "и ещё {{count}}",
-    "last_active_label": "активность {{time}}",
-    "status_archived": "В архиве"
+    "last_active_label": "активность {{time}}"
   },
   "profile_card": {
     "unavailable": "Отряд недоступен",
     "detail_link": "Подробнее →",
     "archived": "В архиве",
     "member_count_one": "{{count}} участник",
-    "member_count_few": "{{count}} участника",
-    "member_count_many": "{{count}} участников",
     "member_count_other": "{{count}} участников",
     "members_section": "Участники",
     "more_members_one": "+{{count}}",
-    "more_members_few": "+{{count}}",
-    "more_members_many": "+{{count}}",
     "more_members_other": "+{{count}}"
   },
   "instructions_tab": {

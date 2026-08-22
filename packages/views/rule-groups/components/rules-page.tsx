@@ -158,9 +158,9 @@ export function RulesPage() {
       <PageHeader className="justify-between px-5">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-          <h1 className="text-sm font-medium">{t(($) => $.rule_groups.page.title)}</h1>
+          <h1 className="text-body font-medium">{t(($) => $.rule_groups.page.title)}</h1>
           {(groups?.length ?? 0) > 0 && (
-            <span className="font-mono text-xs tabular-nums text-muted-foreground/70">
+            <span className="font-mono text-caption tabular-nums text-muted-foreground">
               {groups!.length}
             </span>
           )}
@@ -298,11 +298,11 @@ function GroupSidebar({
     >
       <div className="shrink-0 border-b bg-background p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-micro font-medium uppercase tracking-wider text-muted-foreground">
             {t(($) => $.rule_groups.page.groups_label)}
           </span>
           {!canManage && (
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-micro text-muted-foreground">
               {t(($) => $.rule_groups.manage_hint)}
             </span>
           )}
@@ -313,7 +313,7 @@ function GroupSidebar({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t(($) => $.rule_groups.page.search_placeholder)}
-            className="h-9 pl-8 text-sm"
+            className="h-9 pl-8 text-body"
           />
         </div>
       </div>
@@ -327,8 +327,8 @@ function GroupSidebar({
           </div>
         ) : groups.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-            <ShieldCheck className="h-8 w-8 text-muted-foreground/40" />
-            <p className="mt-3 text-sm text-muted-foreground">
+            <ShieldCheck className="h-8 w-8 text-faint-foreground" />
+            <p className="mt-3 text-body text-muted-foreground">
               {totalGroups === 0
                 ? t(($) => $.rule_groups.empty)
                 : t(($) => $.rule_groups.page.no_results)}
@@ -385,7 +385,7 @@ function GroupRow({
     >
       <span className="flex min-w-0 items-center gap-2">
         <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        <span className="truncate text-sm font-medium">{group.name}</span>
+        <span className="truncate text-body font-medium">{group.name}</span>
         {isBuiltinGroup(group) && (
           <Badge variant="secondary" className="shrink-0">
             {t(($) => $.rule_groups.builtin_badge)}
@@ -397,7 +397,7 @@ function GroupRow({
           </Badge>
         )}
       </span>
-      <span className="flex items-center gap-3 pl-5 text-xs text-muted-foreground">
+      <span className="flex items-center gap-3 pl-5 text-caption text-muted-foreground">
         <span>{t(($) => $.rule_groups.rule_count, { count: group.rule_count })}</span>
         <span>{t(($) => $.rule_groups.binding_count, { count: group.binding_count })}</span>
       </span>
@@ -451,8 +451,8 @@ function GroupDetail({
   if (!group) {
     return (
       <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 text-center">
-        <ShieldCheck className="h-8 w-8 text-muted-foreground/40" />
-        <p className="mt-3 text-sm text-muted-foreground">
+        <ShieldCheck className="h-8 w-8 text-faint-foreground" />
+        <p className="mt-3 text-body text-muted-foreground">
           {t(($) => $.rule_groups.page.select_group)}
         </p>
       </main>
@@ -492,7 +492,7 @@ function GroupDetail({
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h2 className="truncate text-base font-semibold tracking-tight">
+              <h2 className="truncate text-title-sm font-semibold tracking-tight">
                 {group.name}
               </h2>
               {isBuiltin && (
@@ -507,11 +507,11 @@ function GroupDetail({
               )}
             </div>
             {group.description && (
-              <p className="mt-1 text-xs text-muted-foreground break-words">
+              <p className="mt-1 text-caption text-muted-foreground break-words">
                 {group.description}
               </p>
             )}
-            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted-foreground">
               <span>{t(($) => $.rule_groups.rule_count, { count: group.rule_count })}</span>
               <span>{t(($) => $.rule_groups.binding_count, { count: group.binding_count })}</span>
             </div>
@@ -594,7 +594,7 @@ function GroupDetail({
                 <Skeleton className="h-16 w-full" />
               </>
             ) : rules.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
+              <p className="py-10 text-center text-body text-muted-foreground">
                 {t(($) => $.rule_groups.rules.empty)}
               </p>
             ) : (
@@ -605,14 +605,14 @@ function GroupDetail({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="truncate text-sm font-medium">{rule.name}</span>
+                      <span className="truncate text-body font-medium">{rule.name}</span>
                       {rule.file_name && (
-                        <code className="inline-block max-w-full truncate rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        <code className="inline-block max-w-full truncate rounded bg-muted px-1.5 py-0.5 text-micro text-muted-foreground">
                           {rule.file_name}
                         </code>
                       )}
                     </div>
-                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-caption text-muted-foreground">
                       {rule.content}
                     </p>
                   </div>
@@ -705,7 +705,7 @@ function RuleEditor({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">
+      <h3 className="text-body font-semibold">
         {initial
           ? t(($) => $.rule_groups.rules.edit_dialog_title)
           : t(($) => $.rule_groups.rules.create_dialog_title)}
@@ -728,7 +728,7 @@ function RuleEditor({
           onChange={(e) => setContent(e.target.value)}
           placeholder={t(($) => $.rule_groups.rules.content_placeholder)}
           rows={10}
-          className="font-mono text-xs"
+          className="font-mono text-caption"
         />
       </div>
       <div className="space-y-1.5">

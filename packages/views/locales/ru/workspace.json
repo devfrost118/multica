@@ -3,7 +3,7 @@
     "name_label": "Название рабочей области",
     "name_placeholder": "Моя рабочая область",
     "url_label": "URL рабочей области",
-    "url_placeholder": "my-workspace",
+    "url_placeholder": "мое рабочее пространство",
     "submit": "Создать рабочую область",
     "submitting": "Создание...",
     "errors": {

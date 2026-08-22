@@ -8,17 +8,8 @@
     "members": "Участники",
     "projects": "Проекты",
     "issues": "Задачи",
+    "cancelled": "Отменено",
     "recent": "Недавние"
-  },
-  "pages": {
-    "inbox": "Входящие",
-    "my_issues": "Мои задачи",
-    "issues": "Задачи",
-    "projects": "Проекты",
-    "agents": "Агенты",
-    "runtimes": "Среды выполнения",
-    "skills": "Навыки",
-    "settings": "Настройки"
   },
   "commands": {
     "current_theme_aria": "Текущая тема",

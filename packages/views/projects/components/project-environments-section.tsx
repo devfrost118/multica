@@ -86,14 +86,14 @@ export function ProjectEnvironmentsSection({ projectId }: { projectId: string })
     <section className="space-y-2" aria-label={t(($) => $.environments.section_header)}>
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h3 className="text-xs font-medium">{t(($) => $.environments.section_header)}</h3>
-          <p className="text-[11px] text-muted-foreground">{t(($) => $.environments.section_hint)}</p>
+          <h3 className="text-caption font-medium">{t(($) => $.environments.section_header)}</h3>
+          <p className="text-micro text-muted-foreground">{t(($) => $.environments.section_hint)}</p>
         </div>
         <Button
           type="button"
           size="sm"
           variant="ghost"
-          className="h-7 px-2 text-xs"
+          className="h-7 px-2 text-caption"
           onClick={() => setEditing(null)}
         >
           <Plus className="size-3" />
@@ -102,18 +102,18 @@ export function ProjectEnvironmentsSection({ projectId }: { projectId: string })
       </div>
 
       {isLoading ? (
-        <p className="text-xs text-muted-foreground">{t(($) => $.environments.loading)}</p>
+        <p className="text-caption text-muted-foreground">{t(($) => $.environments.loading)}</p>
       ) : isError ? (
-        <p className="text-xs text-destructive">{t(($) => $.environments.load_failed)}</p>
+        <p className="text-caption text-destructive">{t(($) => $.environments.load_failed)}</p>
       ) : environments.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{t(($) => $.environments.empty)}</p>
+        <p className="text-caption text-muted-foreground">{t(($) => $.environments.empty)}</p>
       ) : (
         <div className="space-y-1">
           {environments.map((environment) => (
-            <div key={environment.id} className="group flex items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-accent/50">
+            <div key={environment.id} className="group flex items-center gap-2 rounded-md px-1 py-1 text-caption hover:bg-accent/50">
               <span className="min-w-0 flex-1 truncate font-medium">{environment.name}</span>
               {environment.allowed_runtime_ids.length > 0 && (
-                <span className="text-[10px] text-muted-foreground">{t(($) => $.environments.runtime_count, { count: environment.allowed_runtime_ids.length })}</span>
+                <span className="text-micro text-muted-foreground">{t(($) => $.environments.runtime_count, { count: environment.allowed_runtime_ids.length })}</span>
               )}
               <button
                 type="button"
@@ -271,7 +271,7 @@ function EnvironmentDialog({
               aria-label={t(($) => $.environments.name_label)}
               value={form.name}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="w-full rounded-md border bg-transparent px-3 py-2 text-body outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </Field>
           <Field label={t(($) => $.environments.description_label)}>
@@ -279,7 +279,7 @@ function EnvironmentDialog({
               aria-label={t(($) => $.environments.description_label)}
               value={form.description}
               onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-              className="min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-body outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </Field>
           <Field label={t(($) => $.environments.config_label)} error={errors.config}>
@@ -287,20 +287,20 @@ function EnvironmentDialog({
               aria-label={t(($) => $.environments.config_label)}
               value={form.config}
               onChange={(event) => setForm((current) => ({ ...current, config: event.target.value }))}
-              className="min-h-24 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="min-h-24 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-caption outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </Field>
           <div className="space-y-2">
-            <div className="flex items-center justify-between"><span className="text-sm font-medium">{t(($) => $.environments.secrets_label)}</span><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setForm((current) => ({ ...current, secrets: [...current.secrets, { key: "", value: "" }] }))}><Plus className="size-3" />{t(($) => $.environments.add_secret)}</Button></div>
+            <div className="flex items-center justify-between"><span className="text-body font-medium">{t(($) => $.environments.secrets_label)}</span><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-caption" onClick={() => setForm((current) => ({ ...current, secrets: [...current.secrets, { key: "", value: "" }] }))}><Plus className="size-3" />{t(($) => $.environments.add_secret)}</Button></div>
             {form.secrets.map((secret, index) => {
               const canRename = !existingSecretKeys.has(secret.key);
-              return <div key={`${secret.key}-${index}`} className="flex gap-2"><input aria-label={t(($) => $.environments.secret_name_label)} value={secret.key} disabled={!canRename} onChange={(event) => setSecret(index, { key: event.target.value })} placeholder={t(($) => $.environments.secret_name_label)} className="w-32 rounded-md border bg-transparent px-2 py-1.5 text-xs outline-none disabled:opacity-70" /><input aria-label={t(($) => $.environments.secret_value_label, { name: secret.key || t(($) => $.environments.secret_name_label) })} value={secret.value} onChange={(event) => setSecret(index, { value: event.target.value })} className="min-w-0 flex-1 rounded-md border bg-transparent px-2 py-1.5 text-xs outline-none" /><button type="button" aria-label={t(($) => $.environments.remove_secret_aria, { name: secret.key || t(($) => $.environments.secret_name_label) })} onClick={() => setForm((current) => ({ ...current, secrets: current.secrets.filter((_, secretIndex) => secretIndex !== index) }))} className="rounded-sm p-1 hover:bg-accent"><X className="size-3 text-muted-foreground" /></button></div>;
+              return <div key={`${secret.key}-${index}`} className="flex gap-2"><input aria-label={t(($) => $.environments.secret_name_label)} value={secret.key} disabled={!canRename} onChange={(event) => setSecret(index, { key: event.target.value })} placeholder={t(($) => $.environments.secret_name_label)} className="w-32 rounded-md border bg-transparent px-2 py-1.5 text-caption outline-none disabled:opacity-70" /><input aria-label={t(($) => $.environments.secret_value_label, { name: secret.key || t(($) => $.environments.secret_name_label) })} value={secret.value} onChange={(event) => setSecret(index, { value: event.target.value })} className="min-w-0 flex-1 rounded-md border bg-transparent px-2 py-1.5 text-caption outline-none" /><button type="button" aria-label={t(($) => $.environments.remove_secret_aria, { name: secret.key || t(($) => $.environments.secret_name_label) })} onClick={() => setForm((current) => ({ ...current, secrets: current.secrets.filter((_, secretIndex) => secretIndex !== index) }))} className="rounded-sm p-1 hover:bg-accent"><X className="size-3 text-muted-foreground" /></button></div>;
             })}
-            {errors.secrets && <p className="text-xs text-destructive">{errors.secrets}</p>}
+            {errors.secrets && <p className="text-caption text-destructive">{errors.secrets}</p>}
           </div>
-          <div className="space-y-2"><span className="text-sm font-medium">{t(($) => $.environments.runtimes_label)}</span>{runtimes.length === 0 ? <p className="text-xs text-muted-foreground">{t(($) => $.environments.runtimes_empty)}</p> : runtimes.map((runtime) => <label key={runtime.id} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.allowedRuntimeIds.includes(runtime.id)} onChange={() => setForm((current) => ({ ...current, allowedRuntimeIds: current.allowedRuntimeIds.includes(runtime.id) ? current.allowedRuntimeIds.filter((id) => id !== runtime.id) : [...current.allowedRuntimeIds, runtime.id] }))} />{runtimeLabel(runtime)}</label>)}</div>
+          <div className="space-y-2"><span className="text-body font-medium">{t(($) => $.environments.runtimes_label)}</span>{runtimes.length === 0 ? <p className="text-caption text-muted-foreground">{t(($) => $.environments.runtimes_empty)}</p> : runtimes.map((runtime) => <label key={runtime.id} className="flex items-center gap-2 text-caption"><input type="checkbox" checked={form.allowedRuntimeIds.includes(runtime.id)} onChange={() => setForm((current) => ({ ...current, allowedRuntimeIds: current.allowedRuntimeIds.includes(runtime.id) ? current.allowedRuntimeIds.filter((id) => id !== runtime.id) : [...current.allowedRuntimeIds, runtime.id] }))} />{runtimeLabel(runtime)}</label>)}</div>
           {environment && <Button type="button" variant="outline" size="sm" aria-label={t(($) => $.environments.reveal_aria, { name: environment.name })} onClick={() => void onReveal()} disabled={revealing}>{revealing ? t(($) => $.environments.revealing) : t(($) => $.environments.reveal_button)}</Button>}
-          {errors.submit && <p className="text-xs text-destructive">{errors.submit}</p>}
+          {errors.submit && <p className="text-caption text-destructive">{errors.submit}</p>}
           <DialogFooter><Button type="button" variant="outline" onClick={onClose} disabled={saving}>{t(($) => $.environments.cancel)}</Button><Button type="submit" disabled={saving}>{saving ? t(($) => $.environments.saving) : t(($) => $.environments.save_button)}</Button></DialogFooter>
         </form>
       </DialogContent>
@@ -309,5 +309,5 @@ function EnvironmentDialog({
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return <label className="block space-y-1"><span className="text-sm font-medium">{label}</span>{children}{error && <span className="block text-xs text-destructive">{error}</span>}</label>;
+  return <label className="block space-y-1"><span className="text-body font-medium">{label}</span>{children}{error && <span className="block text-caption text-destructive">{error}</span>}</label>;
 }
