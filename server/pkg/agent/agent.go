@@ -469,6 +469,7 @@ var launchHeaders = map[string]string{
 	"qwenpaw":     "qwenpaw acp",
 	"dim":         "dim acp",
 	"mcode":       "mcode acp",
+	"droid":       "droid exec (stream-json)",
 }
 
 // LaunchHeader returns the user-visible launch skeleton for agentType, or an
