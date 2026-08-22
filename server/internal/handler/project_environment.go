@@ -15,6 +15,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/logger"
 	"github.com/multica-ai/multica/server/internal/projectenvsecrets"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/multica-ai/multica/server/pkg/dbid"
 )
 
 const (
@@ -360,6 +361,7 @@ func (h *Handler) GetProjectEnvironmentReveal(w http.ResponseWriter, r *http.Req
 		"key_count":      len(keys),
 	})
 	if _, err := h.Queries.CreateActivity(r.Context(), db.CreateActivityParams{
+		ID:          dbid.NewV7(),
 		WorkspaceID: project.WorkspaceID,
 		IssueID:     pgtype.UUID{},
 		ActorType:   pgtype.Text{String: "member", Valid: true},
@@ -516,6 +518,7 @@ func (h *Handler) projectEnvironmentSecrets(env db.ProjectEnvironment) (map[stri
 func (h *Handler) auditProjectEnvironmentMutation(w http.ResponseWriter, r *http.Request, qtx *db.Queries, workspaceID, actorID pgtype.UUID, action string, detailsMap map[string]any) bool {
 	details, _ := json.Marshal(detailsMap)
 	if _, err := qtx.CreateActivity(r.Context(), db.CreateActivityParams{
+		ID:          dbid.NewV7(),
 		WorkspaceID: workspaceID,
 		IssueID:     pgtype.UUID{},
 		ActorType:   pgtype.Text{String: "member", Valid: true},
