@@ -217,6 +217,18 @@ export type AssigneeGroupedIssuesFilter = Omit<
 export const ISSUE_PAGE_SIZE = 50;
 
 /**
+ * Hot issue reads opt out of the app-wide `staleTime: Infinity` default.
+ * After a tab switch, session expiry, missed workspace switch, or opening a
+ * cached route after an agent wrote elsewhere, showing stale task/comment
+ * state is worse than paying one HTTP refetch.
+ */
+export const HOT_ISSUE_QUERY_DEFAULTS = {
+  staleTime: 0,
+  refetchOnMount: "always" as const,
+  refetchOnWindowFocus: true,
+};
+
+/**
  * CATEGORIES fetched and paginated into the list/board cache — all 7,
  * `cancelled` included. `cancelled` is a first-class default (MUL-4290), so it
  * lives in the cache and renders like any other column; there is no separate
@@ -343,6 +355,7 @@ export function issueListOptions(wsId: string, sort?: IssueSortParam) {
     queryFn: () => fetchFirstPages({}, sort),
     select: flattenIssueBuckets,
     placeholderData: keepPreviousData,
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -406,6 +419,7 @@ export function projectGanttIssuesOptions(
   return queryOptions({
     queryKey: issueKeys.projectGantt(wsId, projectId, assigneeTypes),
     queryFn: () => fetchProjectGanttIssues(projectId, assigneeTypes),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -413,6 +427,7 @@ export function issueDetailOptions(wsId: string, id: string) {
   return queryOptions({
     queryKey: issueKeys.detail(wsId, id),
     queryFn: () => api.getIssue(id),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -491,7 +506,9 @@ export function childIssuesOptions(wsId: string, id: string) {
     // desktop tab is showing another workspace). The global Infinity
     // staleTime would otherwise reuse an incomplete children snapshot when
     // the parent is opened again, with no later event guaranteed to heal it.
-    refetchOnMount: "always",
+    // HOT_ISSUE_QUERY_DEFAULTS already pins refetchOnMount: "always" (plus
+    // staleTime: 0 and refetchOnWindowFocus), so it covers that case.
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 
@@ -574,6 +591,7 @@ export function issueTimelineOptions(issueId: string) {
   return queryOptions({
     queryKey: issueKeys.timeline(issueId),
     queryFn: () => api.listTimeline(issueId),
+    ...HOT_ISSUE_QUERY_DEFAULTS,
   });
 }
 

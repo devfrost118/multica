@@ -46,7 +46,7 @@
 ### 2026-08-22: v0.4.12 → v0.4.32 (FRO-265)
 
 - Upstream tag `v0.4.32` (`d60775aa9`) merged into fork via `sync/upstream-v0.4.32`.
-- Все 7 активных локальных тем сохранены (project-environments, provider-limits, droid-integration, i18n-russian, rule-groups, stale-issue-inbox-refetch, docker-build-context-ignore-node-modules).
+- Локальные темы сохранены **частично**: handler'ы, клиент и daemon wiring восстановлены follow-up коммитами, но при merge потеряны HTTP-регистрации в `router.go`, монтирование `ProviderLimitsOverview` на dashboard и `HOT_ISSUE_QUERY_DEFAULTS` в `issues/queries.ts` — см. FRO-266.
 - Конфликты (38 файлов): стратегия «theirs + local patch» (локальные topic-аддиции поверх upstream), плюс key-wise merge для locale JSON и union для аддитивных Go/TS типов.
 - RU locale: +1142 ключей, −284 устаревших; parity.test.ts green (212).
 

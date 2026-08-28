@@ -12,6 +12,7 @@ import {
   NumberFlow,
 } from "@multica/ui/components/ui/number-flow";
 import { useWorkspaceId } from "@multica/core/hooks";
+import { api } from "@multica/core/api";
 import type { Agent } from "@multica/core/types";
 import { agentListOptions } from "@multica/core/workspace/queries";
 import { projectListOptions } from "@multica/core/projects/queries";
@@ -24,6 +25,10 @@ import {
   dashboardFailuresDailyOptions,
   dashboardFailuresByAgentOptions,
 } from "@multica/core/dashboard";
+import {
+  providerLimitHistoryOptions,
+  providerLimitOverviewOptions,
+} from "@multica/core/provider-limits";
 import { useCustomPricingStore } from "@multica/core/runtimes/custom-pricing-store";
 import { useViewingTimezone } from "../../common/use-viewing-timezone";
 import { PAGE_GUTTER } from "../../layout/page-header";
@@ -67,6 +72,7 @@ import { ProjectFilter, TimeRangeFilter } from "./dashboard-filters";
 import { UsageTrendCard } from "./usage-trend-card";
 import { Leaderboard } from "./leaderboard";
 import { ErrorsTab } from "./errors-tab";
+import { ProviderLimitsOverview } from "./provider-limits-overview";
 import { cn } from "@multica/ui/lib/utils";
 
 // Stable references — `data ?? []` would create a new empty array on
@@ -80,10 +86,16 @@ const EMPTY_FAILURE_DAILY: import("@multica/core/types").DashboardFailureDaily[]
 const EMPTY_FAILURE_BY_AGENT: import("@multica/core/types").DashboardFailureByAgent[] =
   [];
 const EMPTY_AGENTS: Agent[] = [];
+const EMPTY_PROVIDER_LIMITS: import("@multica/core/types").ProviderLimitsOverviewResponse = {
+  accounts: [],
+  daemons: [],
+};
+const EMPTY_PROVIDER_LIMIT_HISTORY: import("@multica/core/types").ProviderLimitSnapshot[] = [];
 
 type DashboardTab = "usage" | "errors";
 const TAB_QUERY_KEY = "tab";
 const DEFAULT_TAB: DashboardTab = "usage";
+const PROVIDER_LIMITS_REFRESH_SETTLE_MS = 1500;
 
 /** Local time of the most recent successful fetch, in the viewer's timezone.
  *  Every number on this page is bucketed on that timezone, so the header says
@@ -230,6 +242,8 @@ export function DashboardPage() {
   const failuresByAgentQuery = useQuery(
     dashboardFailuresByAgentOptions(wsId, days, projectId, viewTZ),
   );
+  const providerLimitsQuery = useQuery(providerLimitOverviewOptions(wsId));
+  const providerLimitHistoryQuery = useQuery(providerLimitHistoryOptions(wsId));
 
   const dailyUsage = dailyQuery.data ?? EMPTY_DAILY;
   const byAgentUsage = byAgentQuery.data ?? EMPTY_BY_AGENT;
@@ -237,6 +251,12 @@ export function DashboardPage() {
   const runTimeDailyRows = runTimeDailyQuery.data ?? EMPTY_RUNTIME_DAILY;
   const failureDailyRows = failuresDailyQuery.data ?? EMPTY_FAILURE_DAILY;
   const failureByAgentRows = failuresByAgentQuery.data ?? EMPTY_FAILURE_BY_AGENT;
+  const providerLimits = Array.isArray(providerLimitsQuery.data)
+    ? EMPTY_PROVIDER_LIMITS
+    : providerLimitsQuery.data ?? EMPTY_PROVIDER_LIMITS;
+  const providerLimitHistory = Array.isArray(providerLimitHistoryQuery.data?.snapshots)
+    ? providerLimitHistoryQuery.data.snapshots
+    : EMPTY_PROVIDER_LIMIT_HISTORY;
 
   const queryClient = useQueryClient();
   // "Refreshing" covers any of the six rollups being in flight, whichever
@@ -251,6 +271,16 @@ export function DashboardPage() {
     failuresByAgentQuery.isFetching;
   const handleRefresh = () => {
     void queryClient.invalidateQueries({ queryKey: dashboardKeys.all(wsId) });
+  };
+  const refreshProviderLimits = async (runtimeId: string) => {
+    await api.requestProviderLimitsRefresh(runtimeId);
+    await new Promise((resolve) =>
+      window.setTimeout(resolve, PROVIDER_LIMITS_REFRESH_SETTLE_MS),
+    );
+    await Promise.all([
+      providerLimitsQuery.refetch(),
+      providerLimitHistoryQuery.refetch(),
+    ]);
   };
 
   const { tzLabel, updatedLabel } = useDataFreshness(
@@ -527,6 +557,14 @@ export function DashboardPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl p-6">
           <TabsContent value="usage" className="space-y-5">
+            <ProviderLimitsOverview
+              wsId={wsId}
+              overview={providerLimits}
+              history={providerLimitHistory}
+              isLoading={providerLimitsQuery.isLoading}
+              isError={providerLimitsQuery.isError}
+              onRefresh={refreshProviderLimits}
+            />
             {usageLoading ? (
               <DashboardSkeleton />
             ) : usageHasNoData ? (
