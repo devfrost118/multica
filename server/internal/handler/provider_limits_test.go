@@ -70,7 +70,7 @@ func TestReportProviderLimitsPersistsOneSnapshotForDuplicateReports(t *testing.T
 // that onboards the credential (FRO-206). A snapshot that claims a specific
 // account key is still refused when that credential does not exist.
 func TestReportProviderLimitsStoresUnkeyedFactorySnapshotWithoutCredential(t *testing.T) {
-	checkedAt := time.Date(2026, time.July, 28, 12, 0, 0, 0, time.UTC)
+	checkedAt := time.Now().UTC().Add(-time.Hour)
 	payload := map[string]any{"snapshots": []any{
 		providerLimitsFactorySnapshot(checkedAt, "unavailable", "credential_missing"),
 		providerLimitsFactorySnapshot(checkedAt, "00112233445566778899aabbccddeeff", "credential_invalid"),

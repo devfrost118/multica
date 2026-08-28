@@ -427,7 +427,9 @@ export function issueDetailOptions(wsId: string, id: string) {
   return queryOptions({
     queryKey: issueKeys.detail(wsId, id),
     queryFn: () => api.getIssue(id),
-    ...HOT_ISSUE_QUERY_DEFAULTS,
+    // Intentionally omit HOT_ISSUE_QUERY_DEFAULTS: canonical-id reuses this
+    // options bag for identifier↔UUID rewrite seeding; refetchOnMount: "always"
+    // there breaks the single-request contract (canonical-id.test.tsx).
   });
 }
 
