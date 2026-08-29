@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { configStore } from "../config";
 import { ApiClient, ApiError, CHAT_DRAFT_RESTORE_CAPABILITY, clientErrorMessage } from "./client";
+import { setSchemaLogger } from "./schema";
 
 describe("provider limits API", () => {
   it("falls back to empty provider limits when a server response is malformed", async () => {

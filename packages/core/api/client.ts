@@ -227,7 +227,6 @@ import type {
   UpdateRuleGroupRuleRequest,
   CreateRuleGroupBindingRequest,
   UpdateRuleGroupBindingRequest,
-  WorkspaceSubscriptionEntitlements,
   WorkspaceSubscriptionSummary,
   IssueLimitUsage,
   WorkspaceSubscriptionPrices,

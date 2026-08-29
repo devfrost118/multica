@@ -873,6 +873,7 @@ export interface SkillCandidate {
 export interface SkillDiscoveryResult {
   candidates: SkillCandidate[];
   truncated: boolean;
+}
 
 /** Structured body of POST /api/skills/import when uploading an archive. */
 export interface SkillImportResult {
