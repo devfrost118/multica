@@ -22,6 +22,10 @@ vi.mock("@multica/core/api", () => ({
   },
 }));
 
+vi.mock("../../rule-groups/components/rule-groups-binding-section", () => ({
+  RuleGroupsBindingSection: () => null,
+}));
+
 vi.mock("../../common/avatar-upload-control", () => ({
   AvatarUploadControl: () => <div data-testid="avatar-upload" />,
 }));
