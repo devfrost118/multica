@@ -43,6 +43,14 @@
 
 ## Журнал синков
 
+### 2026-08-29: v0.4.32 → v0.4.36 (FRO-268)
+
+- Upstream tag `v0.4.36` (`c1a61e1e8`) merged into fork via `sync/upstream-v0.4.36`.
+- Конфликты (18 файлов): union fork-local + upstream (ProjectEnvironments/EffectiveRules/droid + IssueStatuses/zeroclaw/local skill import); locale JSON key-wise; create-skill-dialog Method = local∪bulk.
+- RU locale: +196 ключей переведены; ja/ko/zh-Hans выровнены с upstream plural rules (без мёртвых `_one`); parity.test.ts green (212).
+- Активные темы сохранены; гейт живости — см. отчёт запуска.
+
+
 ### 2026-08-22: v0.4.12 → v0.4.32 (FRO-265)
 
 - Upstream tag `v0.4.32` (`d60775aa9`) merged into fork via `sync/upstream-v0.4.32`.

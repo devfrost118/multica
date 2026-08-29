@@ -1,201 +1,201 @@
 {
-  "title": "분석",
-  "tab_usage": "사용량",
-  "header": {
-    "timezone_and_updated": "{{tz}} · {{time}} 업데이트",
-    "refresh": "새로고침"
-  },
-  "filter": {
-    "project_label": "프로젝트",
-    "all_projects": "모든 프로젝트",
-    "period_label": "기간"
-  },
-  "kpi": {
-    "cost_label": "비용 · {{days}}일",
-    "tokens_label": "토큰 · {{days}}일",
-    "tokens_hint": "입력 {{input}} · 출력 {{output}}",
-    "run_time_label": "실행 시간 · {{days}}일",
-    "run_time_hint": "작업 {{tasks}}개 기준",
-    "tasks_label": "작업 · {{days}}일",
-    "tasks_hint": "실패 {{failed}}개"
+  "daily": {
+    "metric_cost": "비용",
+    "metric_label": "지표",
+    "metric_tasks": "작업",
+    "metric_time": "시간",
+    "metric_tokens": "토큰",
+    "no_data": "이 기간에는 사용량이 없습니다.",
+    "title_cost": "일별 비용",
+    "title_errors": "일별 오류",
+    "title_tasks": "일별 작업",
+    "title_time": "일별 실행 시간",
+    "title_tokens": "일별 토큰"
   },
   "dim": {
-    "label": "단위",
     "daily": "일별",
+    "label": "단위",
     "weekly": "주별"
-  },
-  "daily": {
-    "title_cost": "일별 비용",
-    "title_tokens": "일별 토큰",
-    "title_time": "일별 실행 시간",
-    "title_tasks": "일별 작업",
-    "title_errors": "일별 오류",
-    "metric_cost": "비용",
-    "metric_tokens": "토큰",
-    "metric_time": "시간",
-    "metric_tasks": "작업",
-    "no_data": "이 기간에는 사용량이 없습니다.",
-    "metric_label": "지표"
-  },
-  "weekly": {
-    "title_cost": "주별 비용",
-    "title_tokens": "주별 토큰",
-    "title_time": "주별 실행 시간",
-    "title_tasks": "주별 작업",
-    "title_errors": "주별 오류",
-    "partial_label": "{{range}} (부분 · 7일 중 {{covered}}일)"
-  },
-  "errors": {
-    "kpi_failed_label": "실패한 작업 · {{days}}일",
-    "kpi_failed_hint": "실행 {{total}}회 중",
-    "kpi_rate_label": "실패율 · {{days}}일",
-    "kpi_agents_label": "영향받은 에이전트 · {{days}}일",
-    "kpi_agents_hint": "최다 {{name}} · {{count}}회",
-    "tooltip_rate": "오류율",
-    "class": {
-      "auth": "인증",
-      "rate_limit": "속도 제한",
-      "timeout": "시간 초과",
-      "provider": "프로바이더",
-      "runtime": "런타임",
-      "agent": "에이전트",
-      "other": "기타"
-    },
-    "title": "오류",
-    "summary": "실행 {{total}}회 중 {{failed}}회 실패 · {{rate}}",
-    "mix_title": "실패 구성 · {{failed}}",
-    "mix_label": "실패 구성",
-    "codes_label": "오류 코드",
-    "by_agent": "실패가 많은 에이전트",
-    "sort_label": "오류 순위 기준",
-    "sort_failed": "실패 수",
-    "sort_rate": "실패율",
-    "header_agent": "에이전트",
-    "header_failed": "실패",
-    "header_runs": "실행",
-    "header_rate": "실패율",
-    "other_agents": "기타 에이전트",
-    "low_sample": "이 기간의 실행이 {{count}}회 미만이어서 이 실패율은 의미가 크지 않습니다.",
-    "no_data": "이 기간에는 실패한 실행이 없습니다.",
-    "show_reasons": "오류 코드 표시",
-    "hide_reasons": "오류 코드 숨기기",
-    "show_all": "전체 {{count}}개 보기",
-    "show_less": "상위 {{count}}개만"
-  },
-  "leaderboard": {
-    "title": "리더보드",
-    "caption": "에이전트 {{count}}개",
-    "caption_with_deleted": "에이전트 {{count}}개 · 삭제됨 {{deleted}}개",
-    "sort_label": "에이전트 순위 기준",
-    "deleted_agents": "삭제된 에이전트",
-    "other_agents": "기타 에이전트",
-    "header_agent": "에이전트",
-    "header_tokens": "토큰",
-    "header_cost": "비용",
-    "header_time": "시간",
-    "header_tasks": "작업",
-    "show_all": "전체 보기",
-    "show_less": "상위 {{count}}개만",
-    "no_data": "이 기간에는 에이전트 활동이 없습니다."
-  },
-  "empty": {
-    "title": "아직 사용량이 없습니다",
-    "body": "여기에서 에이전트가 작업을 실행하기 시작하면 토큰 비용과 실행 시간이 이 화면에 표시됩니다."
-  },
-  "provider_limits": {
-    "title": "공급자 한도",
-    "subtitle": "연결된 공급자가 보고한 구독 할당량 창입니다.",
-    "view_label": "공급자 한도 보기",
-    "by_accounts": "계정별",
-    "by_daemon": "데몬별",
-    "loading": "공급자 한도를 불러오는 중…",
-    "refresh": "새로고침",
-    "refreshing": "사용량 데이터를 새로 고치는 중…",
-    "empty": "아직 보고된 공급자 한도가 없습니다.",
-    "error": "공급자 한도를 불러올 수 없습니다.",
-    "unknown": "알 수 없음",
-    "no_buckets": "사용 가능한 할당량 bucket이 없습니다.",
-    "used": "{{value}}% 사용",
-    "freshness": "신선도 {{value}}",
-    "resets_at": "재설정 {{value}}",
-    "checked_at": "확인 {{value}}",
-    "last_good": "마지막 정상: {{value}}",
-    "reason": "사유: {{value}}",
-    "updated": "{{value}} 업데이트",
-    "data_unavailable_checked": "데이터를 사용할 수 없음 · {{value}} 확인",
-    "last_successful_collection": "마지막 성공 수집: {{value}}",
-    "last_attempted_probe": "마지막 확인 시도: {{value}}",
-    "attempt_source": "시도 소스: {{value}}",
-    "last_attempt_status": "최근 시도: {{value}}",
-    "reasons": {
-      "auth_expired": "인증이 만료되었습니다. Codex에 다시 로그인하세요.",
-      "authentication_required": "사용량 데이터를 수집하려면 Codex에 로그인하세요.",
-      "reauth_required": "로컬 세션이 만료되었습니다. 공급자 CLI에서 다시 로그인하세요.",
-      "onboarding_required": "사용량 데이터를 수집하려면 공급자 CLI에서 설정을 완료하세요.",
-      "usage_unavailable": "사용량 데이터를 수집하지 못했습니다. 다시 시도하세요.",
-      "rate_limited": "공급자가 확인 빈도를 일시적으로 제한했습니다.",
-      "unsupported_platform": "이 운영체제에서는 사용량 수집을 지원하지 않습니다.",
-      "credential_missing": "연결된 토큰이 없습니다. '자세히'를 열고 토큰을 추가하면 사용량 데이터를 수집합니다.",
-      "credential_invalid": "저장된 토큰이 거부되었습니다. '자세히'를 열고 토큰을 교체하세요."
-    },
-    "thresholds": {
-      "title": "알림",
-      "warning": "경고",
-      "critical": "심각"
-    },
-    "status": {
-      "ok": "정상",
-      "stale": "오래됨",
-      "partial": "부분",
-      "unavailable": "사용 불가",
-      "error": "오류"
-    },
-    "freshness_level": {
-      "fresh": "최신",
-      "recent": "조금 지남",
-      "aging": "오래됨",
-      "expired": "만료됨"
-    },
-    "freshness_hint": {
-      "fresh": "신선도 유효 기간 이내에 업데이트되었습니다.",
-      "recent": "24시간 이내에 업데이트되었습니다.",
-      "aging": "1~3일 전에 업데이트되었습니다.",
-      "expired": "업데이트된 지 3일이 넘었거나 사용량 데이터를 수집하지 못했습니다."
-    },
-    "detail": {
-      "trigger": "상세 정보",
-      "no_history": "이 bucket에 대한 기록이 아직 없습니다.",
-      "pace_title": "소비 속도 및 예상 잔여 시간",
-      "estimated": "추정값",
-      "pace_value": "약 {{value}} 소비",
-      "runway_value": "이 속도로 약 {{value}} 남음",
-      "runway_exhausted": "이미 한도에 도달했거나 초과했습니다",
-      "unavailable": {
-        "insufficient_points": "비교할 수 있는 snapshot이 아직 충분하지 않습니다.",
-        "stale_data": "최신 snapshot이 오래되어 예측을 신뢰할 수 없습니다. 새로고침하세요.",
-        "not_decreasing": "잔여량이 감소하지 않아 소비 추세를 계산할 수 없습니다.",
-        "zero_elapsed_time": "snapshot 간격이 너무 짧아 소비 속도를 추정할 수 없습니다."
-      }
-    },
-    "credentials": {
-      "title": "Factory 자격 증명",
-      "connected": "연결됨",
-      "not_connected": "연결되지 않음",
-      "fingerprint": "지문: {{value}}",
-      "validation": "검증: {{value}}",
-      "account_label": "Factory 계정 레이블",
-      "account_label_placeholder": "계정 레이블(선택 사항)",
-      "token": "Factory API 토큰",
-      "replacement_token": "교체 토큰",
-      "connect": "연결",
-      "replace": "교체",
-      "remove": "삭제",
-      "awaiting_account": "계정 확인 중",
-      "awaiting_account_help": "데몬이 이 카드의 Factory 계정을 확인할 때까지 기다립니다. 다음 probe 후 새로고침하세요. 지금 다른 credential을 만들면 중복될 수 있습니다.",
-      "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요."
-    }
   },
   "duration": {
     "less_than_minute": "1분 미만"
+  },
+  "empty": {
+    "body": "여기에서 에이전트가 작업을 실행하기 시작하면 토큰 비용과 실행 시간이 이 화면에 표시됩니다.",
+    "title": "아직 사용량이 없습니다"
+  },
+  "errors": {
+    "by_agent": "실패가 많은 에이전트",
+    "class": {
+      "agent": "에이전트",
+      "auth": "인증",
+      "other": "기타",
+      "provider": "프로바이더",
+      "rate_limit": "속도 제한",
+      "runtime": "런타임",
+      "timeout": "시간 초과"
+    },
+    "codes_label": "오류 코드",
+    "header_agent": "에이전트",
+    "header_failed": "실패",
+    "header_rate": "실패율",
+    "header_runs": "실행",
+    "hide_reasons": "오류 코드 숨기기",
+    "kpi_agents_hint": "최다 {{name}} · {{count}}회",
+    "kpi_agents_label": "영향받은 에이전트 · {{days}}일",
+    "kpi_failed_hint": "실행 {{total}}회 중",
+    "kpi_failed_label": "실패한 작업 · {{days}}일",
+    "kpi_rate_label": "실패율 · {{days}}일",
+    "low_sample": "이 기간의 실행이 {{count}}회 미만이어서 이 실패율은 의미가 크지 않습니다.",
+    "mix_label": "실패 구성",
+    "mix_title": "실패 구성 · {{failed}}",
+    "no_data": "이 기간에는 실패한 실행이 없습니다.",
+    "other_agents": "기타 에이전트",
+    "show_all": "전체 {{count}}개 보기",
+    "show_less": "상위 {{count}}개만",
+    "show_reasons": "오류 코드 표시",
+    "sort_failed": "실패 수",
+    "sort_label": "오류 순위 기준",
+    "sort_rate": "실패율",
+    "summary": "실행 {{total}}회 중 {{failed}}회 실패 · {{rate}}",
+    "title": "오류",
+    "tooltip_rate": "오류율"
+  },
+  "filter": {
+    "all_projects": "모든 프로젝트",
+    "period_label": "기간",
+    "project_label": "프로젝트"
+  },
+  "header": {
+    "refresh": "새로고침",
+    "timezone_and_updated": "{{tz}} · {{time}} 업데이트"
+  },
+  "kpi": {
+    "cost_label": "비용 · {{days}}일",
+    "run_time_hint": "작업 {{tasks}}개 기준",
+    "run_time_label": "실행 시간 · {{days}}일",
+    "tasks_hint": "실패 {{failed}}개",
+    "tasks_label": "작업 · {{days}}일",
+    "tokens_hint": "입력 {{input}} · 출력 {{output}}",
+    "tokens_label": "토큰 · {{days}}일"
+  },
+  "leaderboard": {
+    "caption": "에이전트 {{count}}개",
+    "caption_with_deleted": "에이전트 {{count}}개 · 삭제됨 {{deleted}}개",
+    "deleted_agents": "삭제된 에이전트",
+    "header_agent": "에이전트",
+    "header_cost": "비용",
+    "header_tasks": "작업",
+    "header_time": "시간",
+    "header_tokens": "토큰",
+    "no_data": "이 기간에는 에이전트 활동이 없습니다.",
+    "other_agents": "기타 에이전트",
+    "show_all": "전체 보기",
+    "show_less": "상위 {{count}}개만",
+    "sort_label": "에이전트 순위 기준",
+    "title": "리더보드"
+  },
+  "provider_limits": {
+    "attempt_source": "시도 소스: {{value}}",
+    "by_accounts": "계정별",
+    "by_daemon": "데몬별",
+    "checked_at": "확인 {{value}}",
+    "credentials": {
+      "account_label": "Factory 계정 레이블",
+      "account_label_placeholder": "계정 레이블(선택 사항)",
+      "action_failed": "작업에 실패했습니다. 권한을 확인한 후 다시 시도하세요.",
+      "awaiting_account": "계정 확인 중",
+      "awaiting_account_help": "데몬이 이 카드의 Factory 계정을 확인할 때까지 기다립니다. 다음 probe 후 새로고침하세요. 지금 다른 credential을 만들면 중복될 수 있습니다.",
+      "connect": "연결",
+      "connected": "연결됨",
+      "fingerprint": "지문: {{value}}",
+      "not_connected": "연결되지 않음",
+      "remove": "삭제",
+      "replace": "교체",
+      "replacement_token": "교체 토큰",
+      "title": "Factory 자격 증명",
+      "token": "Factory API 토큰",
+      "validation": "검증: {{value}}"
+    },
+    "data_unavailable_checked": "데이터를 사용할 수 없음 · {{value}} 확인",
+    "detail": {
+      "estimated": "추정값",
+      "no_history": "이 bucket에 대한 기록이 아직 없습니다.",
+      "pace_title": "소비 속도 및 예상 잔여 시간",
+      "pace_value": "약 {{value}} 소비",
+      "runway_exhausted": "이미 한도에 도달했거나 초과했습니다",
+      "runway_value": "이 속도로 약 {{value}} 남음",
+      "trigger": "상세 정보",
+      "unavailable": {
+        "insufficient_points": "비교할 수 있는 snapshot이 아직 충분하지 않습니다.",
+        "not_decreasing": "잔여량이 감소하지 않아 소비 추세를 계산할 수 없습니다.",
+        "stale_data": "최신 snapshot이 오래되어 예측을 신뢰할 수 없습니다. 새로고침하세요.",
+        "zero_elapsed_time": "snapshot 간격이 너무 짧아 소비 속도를 추정할 수 없습니다."
+      }
+    },
+    "empty": "아직 보고된 공급자 한도가 없습니다.",
+    "error": "공급자 한도를 불러올 수 없습니다.",
+    "freshness": "신선도 {{value}}",
+    "freshness_hint": {
+      "aging": "1~3일 전에 업데이트되었습니다.",
+      "expired": "업데이트된 지 3일이 넘었거나 사용량 데이터를 수집하지 못했습니다.",
+      "fresh": "신선도 유효 기간 이내에 업데이트되었습니다.",
+      "recent": "24시간 이내에 업데이트되었습니다."
+    },
+    "freshness_level": {
+      "aging": "오래됨",
+      "expired": "만료됨",
+      "fresh": "최신",
+      "recent": "조금 지남"
+    },
+    "last_attempt_status": "최근 시도: {{value}}",
+    "last_attempted_probe": "마지막 확인 시도: {{value}}",
+    "last_good": "마지막 정상: {{value}}",
+    "last_successful_collection": "마지막 성공 수집: {{value}}",
+    "loading": "공급자 한도를 불러오는 중…",
+    "no_buckets": "사용 가능한 할당량 bucket이 없습니다.",
+    "reason": "사유: {{value}}",
+    "reasons": {
+      "auth_expired": "인증이 만료되었습니다. Codex에 다시 로그인하세요.",
+      "authentication_required": "사용량 데이터를 수집하려면 Codex에 로그인하세요.",
+      "credential_invalid": "저장된 토큰이 거부되었습니다. '자세히'를 열고 토큰을 교체하세요.",
+      "credential_missing": "연결된 토큰이 없습니다. '자세히'를 열고 토큰을 추가하면 사용량 데이터를 수집합니다.",
+      "onboarding_required": "사용량 데이터를 수집하려면 공급자 CLI에서 설정을 완료하세요.",
+      "rate_limited": "공급자가 확인 빈도를 일시적으로 제한했습니다.",
+      "reauth_required": "로컬 세션이 만료되었습니다. 공급자 CLI에서 다시 로그인하세요.",
+      "unsupported_platform": "이 운영체제에서는 사용량 수집을 지원하지 않습니다.",
+      "usage_unavailable": "사용량 데이터를 수집하지 못했습니다. 다시 시도하세요."
+    },
+    "refresh": "새로고침",
+    "refreshing": "사용량 데이터를 새로 고치는 중…",
+    "resets_at": "재설정 {{value}}",
+    "status": {
+      "error": "오류",
+      "ok": "정상",
+      "partial": "부분",
+      "stale": "오래됨",
+      "unavailable": "사용 불가"
+    },
+    "subtitle": "연결된 공급자가 보고한 구독 할당량 창입니다.",
+    "thresholds": {
+      "critical": "심각",
+      "title": "알림",
+      "warning": "경고"
+    },
+    "title": "공급자 한도",
+    "unknown": "알 수 없음",
+    "updated": "{{value}} 업데이트",
+    "used": "{{value}}% 사용",
+    "view_label": "공급자 한도 보기"
+  },
+  "tab_usage": "사용량",
+  "title": "분석",
+  "weekly": {
+    "partial_label": "{{range}} (부분 · 7일 중 {{covered}}일)",
+    "title_cost": "주별 비용",
+    "title_errors": "주별 오류",
+    "title_tasks": "주별 작업",
+    "title_time": "주별 실행 시간",
+    "title_tokens": "주별 토큰"
   }
 }

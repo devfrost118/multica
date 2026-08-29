@@ -1,92 +1,107 @@
 {
-  "page": {
-    "title": "インボックス",
-    "back": "インボックス"
-  },
-  "menu": {
-    "mark_all_read": "すべて既読にする",
-    "archive_all": "すべてアーカイブ",
-    "archive_all_read": "既読の項目をすべてアーカイブ",
-    "archive_completed": "完了した項目をアーカイブ"
-  },
   "context_menu": {
+    "archive": "アーカイブ",
     "mark_read": "既読にする",
     "mark_unread": "未読にする",
-    "archive": "アーカイブ",
-    "unarchive": "アーカイブ解除",
-    "open_in_new_tab": "新しいタブで開く"
-  },
-  "list": {
-    "empty": "通知はありません",
-    "mark_done_tooltip": "完了にする",
-    "archive_tooltip": "アーカイブ",
-    "time": {
-      "just_now": "たった今",
-      "minutes": "{{count}}分",
-      "hours": "{{count}}時間",
-      "days": "{{count}}日"
-    },
-    "archived_title": "アーカイブ済み",
-    "archived_empty": "アーカイブされた通知はありません",
-    "unarchive_tooltip": "アーカイブ解除",
-    "actions_aria": "通知の操作"
-  },
-  "detail": {
-    "select_prompt": "詳細を表示する通知を選択してください",
-    "empty": "インボックスは空です",
-    "original_input": "元の入力",
-    "edit_advanced": "詳細フォームで編集",
-    "archive": "アーカイブ",
+    "open_in_new_tab": "新しいタブで開く",
     "unarchive": "アーカイブ解除"
   },
-  "types": {
-    "issue_assigned": "割り当て済み",
-    "issue_subscribed": "購読済み",
-    "unassigned": "割り当て解除",
-    "assignee_changed": "担当者を変更",
-    "status_changed": "ステータスを変更",
-    "priority_changed": "優先度を変更",
-    "start_date_changed": "開始日を変更",
-    "due_date_changed": "期限を変更",
-    "new_comment": "新しいコメント",
-    "mentioned": "メンションされました",
-    "review_requested": "レビューを依頼",
-    "task_completed": "作業完了",
-    "task_failed": "作業失敗",
-    "agent_blocked": "エージェントがブロック",
-    "agent_completed": "エージェントが完了",
-    "reaction_added": "リアクションあり",
-    "quick_create_done": "エージェントで作成",
-    "quick_create_failed": "エージェントでの作成に失敗",
-    "quick_create_unconfirmed": "エージェントでの作成結果は未確認"
-  },
-  "labels": {
-    "set_status_to": "ステータスを変更:",
-    "set_priority_to": "優先度を変更:",
-    "assigned_to": "{{name}} に割り当て",
-    "removed_assignee": "担当者を削除",
-    "set_start_date_to": "開始日: {{date}}",
-    "removed_start_date": "開始日を削除",
-    "set_due_date_to": "期限: {{date}}",
-    "removed_due_date": "期限を削除",
-    "reacted_to_comment": "あなたのコメントに {{emoji}} のリアクションをしました",
-    "created_with_agent": "エージェントで作成: {{identifier}}",
-    "failed_with_detail": "失敗: {{detail}}"
-  },
-  "toasts": {
-    "archived": "通知をアーカイブしました",
-    "unarchived": "通知を元に戻しました"
+  "detail": {
+    "archive": "アーカイブ",
+    "edit_advanced": "詳細フォームで編集",
+    "empty": "インボックスは空です",
+    "original_input": "元の入力",
+    "retry_with_context": "コンテキストを保持して再試行",
+    "select_prompt": "詳細を表示する通知を選択してください",
+    "unarchive": "アーカイブ解除"
   },
   "errors": {
-    "mark_read_failed": "既読にできませんでした",
-    "mark_unread_failed": "未読にできませんでした",
-    "archive_failed": "アーカイブできませんでした",
-    "mark_done_failed": "完了にできませんでした",
-    "mark_all_read_failed": "すべて既読にできませんでした",
     "archive_all_failed": "すべてアーカイブできませんでした",
     "archive_all_read_failed": "既読の項目をアーカイブできませんでした",
     "archive_completed_failed": "完了した項目をアーカイブできませんでした",
-    "unarchive_failed": "アーカイブ解除に失敗しました",
-    "archived_load_failed": "アーカイブ済み通知を読み込めませんでした"
+    "archive_failed": "アーカイブできませんでした",
+    "archived_load_failed": "アーカイブ済み通知を読み込めませんでした",
+    "mark_all_read_failed": "すべて既読にできませんでした",
+    "mark_done_failed": "完了にできませんでした",
+    "mark_read_failed": "既読にできませんでした",
+    "mark_unread_failed": "未読にできませんでした",
+    "source_context_retry_failed": "元のコンテキストで再試行できませんでした",
+    "source_context_retry_unavailable": "このコンテキストは再試行できません。分岐点からやり直してください。",
+    "unarchive_failed": "アーカイブ解除に失敗しました"
+  },
+  "filters": {
+    "active_count_other": "{{count}} 件のフィルター",
+    "clear": "フィルターをクリア",
+    "empty": "フィルターに一致する通知はありません",
+    "from": "送信者",
+    "notification_count_other": "{{count}} 件の通知",
+    "priority": "優先度",
+    "status": "ステータス",
+    "tooltip": "インボックスを絞り込む",
+    "unread_only": "未読のみ"
+  },
+  "labels": {
+    "assigned_to": "{{name}} に割り当て",
+    "created_with_agent": "エージェントで作成: {{identifier}}",
+    "failed_with_detail": "失敗: {{detail}}",
+    "reacted_to_comment": "あなたのコメントに {{emoji}} のリアクションをしました",
+    "removed_assignee": "担当者を削除",
+    "removed_due_date": "期限を削除",
+    "removed_start_date": "開始日を削除",
+    "set_due_date_to": "期限: {{date}}",
+    "set_priority_to": "優先度を変更:",
+    "set_start_date_to": "開始日: {{date}}",
+    "set_status_to": "ステータスを変更:"
+  },
+  "list": {
+    "actions_aria": "通知の操作",
+    "archive_tooltip": "アーカイブ",
+    "archived_empty": "アーカイブされた通知はありません",
+    "archived_title": "アーカイブ済み",
+    "empty": "通知はありません",
+    "mark_done_tooltip": "完了にする",
+    "time": {
+      "days": "{{count}}日",
+      "hours": "{{count}}時間",
+      "just_now": "たった今",
+      "minutes": "{{count}}分"
+    },
+    "unarchive_tooltip": "アーカイブ解除"
+  },
+  "menu": {
+    "archive_all": "すべてアーカイブ",
+    "archive_all_read": "既読の項目をすべてアーカイブ",
+    "archive_completed": "完了した項目をアーカイブ",
+    "mark_all_read": "すべて既読にする"
+  },
+  "page": {
+    "back": "インボックス",
+    "title": "インボックス"
+  },
+  "toasts": {
+    "archived": "通知をアーカイブしました",
+    "source_context_retry_started": "元のコンテキストで再試行を開始しました",
+    "unarchived": "通知を元に戻しました"
+  },
+  "types": {
+    "agent_blocked": "エージェントがブロック",
+    "agent_completed": "エージェントが完了",
+    "assignee_changed": "担当者を変更",
+    "due_date_changed": "期限を変更",
+    "issue_assigned": "割り当て済み",
+    "issue_subscribed": "購読済み",
+    "mentioned": "メンションされました",
+    "new_comment": "新しいコメント",
+    "priority_changed": "優先度を変更",
+    "quick_create_done": "エージェントで作成",
+    "quick_create_failed": "エージェントでの作成に失敗",
+    "quick_create_unconfirmed": "エージェントでの作成結果は未確認",
+    "reaction_added": "リアクションあり",
+    "review_requested": "レビューを依頼",
+    "start_date_changed": "開始日を変更",
+    "status_changed": "ステータスを変更",
+    "task_completed": "作業完了",
+    "task_failed": "作業失敗",
+    "unassigned": "割り当て解除"
   }
 }

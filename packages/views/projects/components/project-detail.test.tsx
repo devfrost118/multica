@@ -9,10 +9,16 @@ import { ProjectDetail } from "./project-detail";
 
 const mocks = vi.hoisted(() => ({
   role: "admin",
+  copyText: vi.fn(),
   deleteProject: vi.fn(),
+  getShareableUrl: vi.fn((path: string) => `https://app.example${path}`),
   push: vi.fn(),
   recordVisit: vi.fn(),
   toastSuccess: vi.fn(),
+}));
+
+vi.mock("@multica/ui/lib/clipboard", () => ({
+  copyText: mocks.copyText,
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -250,6 +256,7 @@ vi.mock("../../layout/animated-right-sidebar", () => ({
   ),
   getAnimatedRightSidebarInitialOpen: () => true,
   rightSidebarPanelMotionProps: {},
+  useRightSidebarShortcut: vi.fn(),
   useAnimatedRightSidebarState: () => ({
     open: true,
     visualOpen: true,
@@ -285,7 +292,8 @@ function renderProjectDetail() {
     back: vi.fn(),
     pathname: "/test-workspace/projects/project-1",
     searchParams: new URLSearchParams(),
-    getShareableUrl: (path) => path,
+    hash: "",
+    getShareableUrl: mocks.getShareableUrl,
   };
 
   renderWithI18n(
@@ -297,10 +305,28 @@ function renderProjectDetail() {
 
 beforeEach(() => {
   mocks.role = "admin";
+  mocks.copyText.mockReset().mockResolvedValue(true);
   mocks.deleteProject.mockReset();
+  mocks.getShareableUrl.mockClear();
   mocks.push.mockReset();
   mocks.recordVisit.mockReset();
   mocks.toastSuccess.mockReset();
+});
+
+describe("ProjectDetail sharing", () => {
+  it("copies the platform shareable URL instead of the renderer URL", async () => {
+    const user = userEvent.setup();
+    renderProjectDetail();
+
+    await user.click(screen.getByRole("button", { name: "Copy link" }));
+
+    expect(mocks.getShareableUrl).toHaveBeenCalledWith(
+      "/test-workspace/projects/project-1",
+    );
+    expect(mocks.copyText).toHaveBeenCalledWith(
+      "https://app.example/test-workspace/projects/project-1",
+    );
+  });
 });
 
 describe("ProjectDetail project deletion", () => {

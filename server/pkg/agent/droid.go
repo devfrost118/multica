@@ -143,7 +143,7 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		return nil, fmt.Errorf("droid stderr pipe: %w", err)
 	}
 
-	if err := cmd.Start(); err != nil {
+	if err := startOwnedProcessTree(cmd, b.cfg.Logger); err != nil {
 		cancel()
 		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 		return nil, fmt.Errorf("start droid: %w", err)
@@ -261,6 +261,7 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 
 		<-stderrDone
 		_ = cmd.Wait()
+		releaseProcessGroup(cmd)
 		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 
 		// If the context expired mid-stream, surface a precise reason
