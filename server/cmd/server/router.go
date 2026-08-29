@@ -1302,6 +1302,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		r.Use(middleware.DaemonAuth(queries, patCache, daemonTokenCache, cloudPATVerifier))
 
 		r.Post("/register", h.DaemonRegister)
+		r.Post("/runtimes/{runtimeId}/provider-limits", h.ReportProviderLimits)
+		r.Get("/runtimes/{runtimeId}/provider-credentials", h.GetDaemonProviderCredentials)
 		r.Post("/deregister", h.DaemonDeregister)
 		r.Post("/heartbeat", h.DaemonHeartbeat)
 		r.Get("/ws", h.DaemonWebSocket)
@@ -1388,6 +1390,13 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(queries, patCache, cloudPATVerifier))
 		r.Use(middleware.RefreshCloudFrontCookies(cfSigner))
+		r.Get("/api/provider-limits", h.GetProviderLimits)
+		r.Get("/api/provider-limits/history", h.GetProviderLimitHistory)
+		r.Post("/api/provider-limits/refresh", h.RequestProviderLimitsRefresh)
+		r.Get("/api/provider-credentials", h.ListProviderCredentials)
+		r.Post("/api/provider-credentials", h.CreateProviderCredential)
+		r.Put("/api/provider-credentials/{credentialId}", h.ReplaceProviderCredential)
+		r.Delete("/api/provider-credentials/{credentialId}", h.DeleteProviderCredential)
 
 		// Plugin Action API. Called by the HOST PAGE on the signed-in user's
 		// session after a surface asks for something over the postMessage
@@ -1851,6 +1860,11 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Post("/resources", h.CreateProjectResource)
 					r.Put("/resources/{resourceId}", h.UpdateProjectResource)
 					r.Delete("/resources/{resourceId}", h.DeleteProjectResource)
+					r.Get("/environments", h.ListProjectEnvironments)
+					r.Post("/environments", h.CreateProjectEnvironment)
+					r.Put("/environments/{envId}", h.UpdateProjectEnvironment)
+					r.Delete("/environments/{envId}", h.DeleteProjectEnvironment)
+					r.Get("/environments/{envId}/reveal", h.GetProjectEnvironmentReveal)
 				})
 			})
 
@@ -2017,6 +2031,36 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Delete("/files/{fileId}", h.DeleteSkillFile)
 				})
 			})
+
+			// Rule Groups — workspace-scoped collections of markdown rules that
+			// can be bound to a workspace, project, squad, or agent. Reads are
+			// open to any workspace member; mutations are gated to owner/admin
+			// human actors inside the handlers (a running agent must not be able
+			// to rewrite the rules that govern it).
+			r.Route("/api/rule-groups", func(r chi.Router) {
+				r.Get("/", h.ListRuleGroups)
+				r.Post("/", h.CreateRuleGroup)
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", h.GetRuleGroup)
+					r.Put("/", h.UpdateRuleGroup)
+					r.Delete("/", h.DeleteRuleGroup)
+					r.Get("/rules", h.ListRuleGroupRules)
+					r.Post("/rules", h.CreateRuleGroupRule)
+					r.Put("/rules/{ruleId}", h.UpdateRuleGroupRule)
+					r.Delete("/rules/{ruleId}", h.DeleteRuleGroupRule)
+				})
+			})
+
+			// Rule Group bindings — assign a rule group to a scope target.
+			r.Route("/api/rule-group-bindings", func(r chi.Router) {
+				r.Get("/", h.ListRuleGroupBindings)
+				r.Post("/", h.CreateRuleGroupBinding)
+				r.Put("/{id}", h.UpdateRuleGroupBinding)
+				r.Delete("/{id}", h.DeleteRuleGroupBinding)
+			})
+
+			// Effective rules for a (project, squad, agent) combination.
+			r.Get("/api/rules/effective", h.GetEffectiveRules)
 
 			// Dashboard — workspace-wide token + run-time rollups for the
 			// "/{slug}/dashboard" page. Optional ?project_id filter scopes
