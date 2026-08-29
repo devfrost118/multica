@@ -261,6 +261,7 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 
 		<-stderrDone
 		_ = cmd.Wait()
+		releaseProcessGroup(cmd)
 		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 
 		// If the context expired mid-stream, surface a precise reason
