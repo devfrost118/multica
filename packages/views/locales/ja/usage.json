@@ -1,201 +1,201 @@
 {
-  "title": "分析",
-  "tab_usage": "使用量",
-  "header": {
-    "timezone_and_updated": "{{tz}} · {{time}} 更新",
-    "refresh": "更新"
-  },
-  "filter": {
-    "project_label": "プロジェクト",
-    "all_projects": "すべてのプロジェクト",
-    "period_label": "期間"
-  },
-  "kpi": {
-    "cost_label": "コスト · {{days}}日",
-    "tokens_label": "トークン · {{days}}日",
-    "tokens_hint": "入力 {{input}} · 出力 {{output}}",
-    "run_time_label": "実行時間 · {{days}}日",
-    "run_time_hint": "{{tasks}} 件の作業全体",
-    "tasks_label": "作業 · {{days}}日",
-    "tasks_hint": "{{failed}} 件失敗"
+  "daily": {
+    "metric_cost": "コスト",
+    "metric_label": "指標",
+    "metric_tasks": "作業",
+    "metric_time": "時間",
+    "metric_tokens": "トークン",
+    "no_data": "この期間に使用量はありません。",
+    "title_cost": "日別コスト",
+    "title_errors": "日別エラー",
+    "title_tasks": "日別作業",
+    "title_time": "日別実行時間",
+    "title_tokens": "日別トークン"
   },
   "dim": {
-    "label": "単位",
     "daily": "日別",
+    "label": "単位",
     "weekly": "週別"
-  },
-  "daily": {
-    "title_cost": "日別コスト",
-    "title_tokens": "日別トークン",
-    "title_time": "日別実行時間",
-    "title_tasks": "日別作業",
-    "title_errors": "日別エラー",
-    "metric_cost": "コスト",
-    "metric_tokens": "トークン",
-    "metric_time": "時間",
-    "metric_tasks": "作業",
-    "no_data": "この期間に使用量はありません。",
-    "metric_label": "指標"
-  },
-  "weekly": {
-    "title_cost": "週別コスト",
-    "title_tokens": "週別トークン",
-    "title_time": "週別実行時間",
-    "title_tasks": "週別作業",
-    "title_errors": "週別エラー",
-    "partial_label": "{{range}} (一部 · 7日中 {{covered}}日)"
-  },
-  "errors": {
-    "kpi_failed_label": "失敗した作業 · {{days}}日",
-    "kpi_failed_hint": "{{total}} 回の実行中",
-    "kpi_rate_label": "失敗率 · {{days}}日",
-    "kpi_agents_label": "影響を受けたエージェント · {{days}}日",
-    "kpi_agents_hint": "最多 {{name}} · {{count}} 回",
-    "tooltip_rate": "エラー率",
-    "class": {
-      "auth": "認証",
-      "rate_limit": "レート制限",
-      "timeout": "タイムアウト",
-      "provider": "プロバイダー",
-      "runtime": "ランタイム",
-      "agent": "エージェント",
-      "other": "その他"
-    },
-    "title": "エラー",
-    "summary": "{{total}} 回中 {{failed}} 回が失敗 · {{rate}}",
-    "mix_title": "失敗の内訳 · {{failed}}",
-    "mix_label": "失敗の内訳",
-    "codes_label": "エラーコード",
-    "by_agent": "失敗の多いエージェント",
-    "sort_label": "失敗の多いエージェントの並び順",
-    "sort_failed": "失敗数",
-    "sort_rate": "失敗率",
-    "header_agent": "エージェント",
-    "header_failed": "失敗",
-    "header_runs": "実行",
-    "header_rate": "失敗率",
-    "other_agents": "その他のエージェント",
-    "low_sample": "この期間の実行が {{count}} 回未満のため、この失敗率は参考になりません。",
-    "no_data": "この期間に失敗した実行はありません。",
-    "show_reasons": "エラーコードを表示",
-    "hide_reasons": "エラーコードを隠す",
-    "show_all": "全 {{count}} 件を表示",
-    "show_less": "上位 {{count}} 件のみ"
-  },
-  "leaderboard": {
-    "title": "リーダーボード",
-    "caption": "{{count}} 件のエージェント",
-    "caption_with_deleted": "{{count}} 件のエージェント · 削除済み {{deleted}} 件",
-    "sort_label": "エージェントの並び順",
-    "deleted_agents": "削除済みエージェント",
-    "other_agents": "その他のエージェント",
-    "header_agent": "エージェント",
-    "header_tokens": "トークン",
-    "header_cost": "コスト",
-    "header_time": "時間",
-    "header_tasks": "作業",
-    "show_all": "すべて表示",
-    "show_less": "上位 {{count}} 件のみ",
-    "no_data": "この期間にエージェントの活動はありません。"
-  },
-  "empty": {
-    "title": "まだ使用量はありません",
-    "body": "ここでエージェントが作業を実行し始めると、トークンの消費と実行時間がこの画面に表示されます。"
-  },
-  "provider_limits": {
-    "title": "プロバイダーの上限",
-    "subtitle": "接続済みプロバイダーから報告されたサブスクリプションのクォータ枠です。",
-    "view_label": "プロバイダー上限の表示",
-    "by_accounts": "アカウント別",
-    "by_daemon": "デーモン別",
-    "loading": "プロバイダーの上限を読み込んでいます…",
-    "refresh": "更新",
-    "refreshing": "使用状況データを更新しています…",
-    "empty": "プロバイダーの上限はまだ報告されていません。",
-    "error": "プロバイダーの上限を読み込めませんでした。",
-    "unknown": "不明",
-    "no_buckets": "利用可能なクォータ枠はありません。",
-    "used": "使用 {{value}}%",
-    "freshness": "鮮度 {{value}}",
-    "resets_at": "リセット {{value}}",
-    "checked_at": "確認 {{value}}",
-    "last_good": "最後に正常: {{value}}",
-    "reason": "理由: {{value}}",
-    "updated": "{{value}}に更新",
-    "data_unavailable_checked": "データを利用できません · {{value}}に確認",
-    "last_successful_collection": "最終成功取得: {{value}}",
-    "last_attempted_probe": "最終確認試行: {{value}}",
-    "attempt_source": "試行元: {{value}}",
-    "last_attempt_status": "最新の試行: {{value}}",
-    "reasons": {
-      "auth_expired": "認証の有効期限が切れました。Codex にもう一度サインインしてください。",
-      "authentication_required": "使用量データを取得するには Codex にサインインしてください。",
-      "reauth_required": "ローカルセッションの有効期限が切れました。プロバイダーの CLI で再度サインインしてください。",
-      "onboarding_required": "使用量データを取得するには、プロバイダーの CLI でセットアップを完了してください。",
-      "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。",
-      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。",
-      "unsupported_platform": "この OS では使用量データの取得はサポートされていません。",
-      "credential_missing": "トークンが接続されていません。「詳細」を開いてトークンを追加すると、使用量データを取得できます。",
-      "credential_invalid": "保存されたトークンが拒否されました。「詳細」を開いて置き換えてください。"
-    },
-    "thresholds": {
-      "title": "アラート",
-      "warning": "警告",
-      "critical": "重大"
-    },
-    "status": {
-      "ok": "正常",
-      "stale": "期限切れ",
-      "partial": "一部",
-      "unavailable": "利用不可",
-      "error": "エラー"
-    },
-    "freshness_level": {
-      "fresh": "最新",
-      "recent": "やや古い",
-      "aging": "古い",
-      "expired": "期限切れ"
-    },
-    "freshness_hint": {
-      "fresh": "鮮度の有効期間内に更新されました。",
-      "recent": "24時間以内に更新されました。",
-      "aging": "1〜3日前に更新されました。",
-      "expired": "更新から3日以上経過、または使用状況データを取得できませんでした。"
-    },
-    "detail": {
-      "trigger": "詳細",
-      "no_history": "このクォータ枠の履歴はまだありません。",
-      "pace_title": "消費ペースと残存見込み",
-      "estimated": "推定",
-      "pace_value": "約 {{value}} 消費",
-      "runway_value": "このペースで約 {{value}} 残存",
-      "runway_exhausted": "すでに上限に達しています",
-      "unavailable": {
-        "insufficient_points": "比較可能なスナップショットがまだ十分にありません。",
-        "stale_data": "最新のスナップショットが古いため、予測は信頼できません。更新してください。",
-        "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
-        "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
-      }
-    },
-    "credentials": {
-      "title": "Factory 認証情報",
-      "connected": "接続済み",
-      "not_connected": "未接続",
-      "fingerprint": "フィンガープリント: {{value}}",
-      "validation": "検証: {{value}}",
-      "account_label": "Factory アカウントラベル",
-      "account_label_placeholder": "アカウントラベル（任意）",
-      "token": "Factory API トークン",
-      "replacement_token": "置換トークン",
-      "connect": "接続",
-      "replace": "置換",
-      "remove": "削除",
-      "awaiting_account": "アカウント待ち",
-      "awaiting_account_help": "デーモンがこのカードの Factory アカウントを特定するのを待っています。次の probe の後に更新してください。今すぐ別の credential を作ると重複の恐れがあります。",
-      "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。"
-    }
   },
   "duration": {
     "less_than_minute": "1分未満"
+  },
+  "empty": {
+    "body": "ここでエージェントが作業を実行し始めると、トークンの消費と実行時間がこの画面に表示されます。",
+    "title": "まだ使用量はありません"
+  },
+  "errors": {
+    "by_agent": "失敗の多いエージェント",
+    "class": {
+      "agent": "エージェント",
+      "auth": "認証",
+      "other": "その他",
+      "provider": "プロバイダー",
+      "rate_limit": "レート制限",
+      "runtime": "ランタイム",
+      "timeout": "タイムアウト"
+    },
+    "codes_label": "エラーコード",
+    "header_agent": "エージェント",
+    "header_failed": "失敗",
+    "header_rate": "失敗率",
+    "header_runs": "実行",
+    "hide_reasons": "エラーコードを隠す",
+    "kpi_agents_hint": "最多 {{name}} · {{count}} 回",
+    "kpi_agents_label": "影響を受けたエージェント · {{days}}日",
+    "kpi_failed_hint": "{{total}} 回の実行中",
+    "kpi_failed_label": "失敗した作業 · {{days}}日",
+    "kpi_rate_label": "失敗率 · {{days}}日",
+    "low_sample": "この期間の実行が {{count}} 回未満のため、この失敗率は参考になりません。",
+    "mix_label": "失敗の内訳",
+    "mix_title": "失敗の内訳 · {{failed}}",
+    "no_data": "この期間に失敗した実行はありません。",
+    "other_agents": "その他のエージェント",
+    "show_all": "全 {{count}} 件を表示",
+    "show_less": "上位 {{count}} 件のみ",
+    "show_reasons": "エラーコードを表示",
+    "sort_failed": "失敗数",
+    "sort_label": "失敗の多いエージェントの並び順",
+    "sort_rate": "失敗率",
+    "summary": "{{total}} 回中 {{failed}} 回が失敗 · {{rate}}",
+    "title": "エラー",
+    "tooltip_rate": "エラー率"
+  },
+  "filter": {
+    "all_projects": "すべてのプロジェクト",
+    "period_label": "期間",
+    "project_label": "プロジェクト"
+  },
+  "header": {
+    "refresh": "更新",
+    "timezone_and_updated": "{{tz}} · {{time}} 更新"
+  },
+  "kpi": {
+    "cost_label": "コスト · {{days}}日",
+    "run_time_hint": "{{tasks}} 件の作業全体",
+    "run_time_label": "実行時間 · {{days}}日",
+    "tasks_hint": "{{failed}} 件失敗",
+    "tasks_label": "作業 · {{days}}日",
+    "tokens_hint": "入力 {{input}} · 出力 {{output}}",
+    "tokens_label": "トークン · {{days}}日"
+  },
+  "leaderboard": {
+    "caption": "{{count}} 件のエージェント",
+    "caption_with_deleted": "{{count}} 件のエージェント · 削除済み {{deleted}} 件",
+    "deleted_agents": "削除済みエージェント",
+    "header_agent": "エージェント",
+    "header_cost": "コスト",
+    "header_tasks": "作業",
+    "header_time": "時間",
+    "header_tokens": "トークン",
+    "no_data": "この期間にエージェントの活動はありません。",
+    "other_agents": "その他のエージェント",
+    "show_all": "すべて表示",
+    "show_less": "上位 {{count}} 件のみ",
+    "sort_label": "エージェントの並び順",
+    "title": "リーダーボード"
+  },
+  "provider_limits": {
+    "attempt_source": "試行元: {{value}}",
+    "by_accounts": "アカウント別",
+    "by_daemon": "デーモン別",
+    "checked_at": "確認 {{value}}",
+    "credentials": {
+      "account_label": "Factory アカウントラベル",
+      "account_label_placeholder": "アカウントラベル（任意）",
+      "action_failed": "操作に失敗しました。権限を確認してもう一度お試しください。",
+      "awaiting_account": "アカウント待ち",
+      "awaiting_account_help": "デーモンがこのカードの Factory アカウントを特定するのを待っています。次の probe の後に更新してください。今すぐ別の credential を作ると重複の恐れがあります。",
+      "connect": "接続",
+      "connected": "接続済み",
+      "fingerprint": "フィンガープリント: {{value}}",
+      "not_connected": "未接続",
+      "remove": "削除",
+      "replace": "置換",
+      "replacement_token": "置換トークン",
+      "title": "Factory 認証情報",
+      "token": "Factory API トークン",
+      "validation": "検証: {{value}}"
+    },
+    "data_unavailable_checked": "データを利用できません · {{value}}に確認",
+    "detail": {
+      "estimated": "推定",
+      "no_history": "このクォータ枠の履歴はまだありません。",
+      "pace_title": "消費ペースと残存見込み",
+      "pace_value": "約 {{value}} 消費",
+      "runway_exhausted": "すでに上限に達しています",
+      "runway_value": "このペースで約 {{value}} 残存",
+      "trigger": "詳細",
+      "unavailable": {
+        "insufficient_points": "比較可能なスナップショットがまだ十分にありません。",
+        "not_decreasing": "残量が減少していないため、消費トレンドは算出されません。",
+        "stale_data": "最新のスナップショットが古いため、予測は信頼できません。更新してください。",
+        "zero_elapsed_time": "スナップショットの間隔が短すぎて消費率を推定できません。"
+      }
+    },
+    "empty": "プロバイダーの上限はまだ報告されていません。",
+    "error": "プロバイダーの上限を読み込めませんでした。",
+    "freshness": "鮮度 {{value}}",
+    "freshness_hint": {
+      "aging": "1〜3日前に更新されました。",
+      "expired": "更新から3日以上経過、または使用状況データを取得できませんでした。",
+      "fresh": "鮮度の有効期間内に更新されました。",
+      "recent": "24時間以内に更新されました。"
+    },
+    "freshness_level": {
+      "aging": "古い",
+      "expired": "期限切れ",
+      "fresh": "最新",
+      "recent": "やや古い"
+    },
+    "last_attempt_status": "最新の試行: {{value}}",
+    "last_attempted_probe": "最終確認試行: {{value}}",
+    "last_good": "最後に正常: {{value}}",
+    "last_successful_collection": "最終成功取得: {{value}}",
+    "loading": "プロバイダーの上限を読み込んでいます…",
+    "no_buckets": "利用可能なクォータ枠はありません。",
+    "reason": "理由: {{value}}",
+    "reasons": {
+      "auth_expired": "認証の有効期限が切れました。Codex にもう一度サインインしてください。",
+      "authentication_required": "使用量データを取得するには Codex にサインインしてください。",
+      "credential_invalid": "保存されたトークンが拒否されました。「詳細」を開いて置き換えてください。",
+      "credential_missing": "トークンが接続されていません。「詳細」を開いてトークンを追加すると、使用量データを取得できます。",
+      "onboarding_required": "使用量データを取得するには、プロバイダーの CLI でセットアップを完了してください。",
+      "rate_limited": "プロバイダーが確認頻度を一時的に制限しています。",
+      "reauth_required": "ローカルセッションの有効期限が切れました。プロバイダーの CLI で再度サインインしてください。",
+      "unsupported_platform": "この OS では使用量データの取得はサポートされていません。",
+      "usage_unavailable": "使用量データを取得できませんでした。もう一度お試しください。"
+    },
+    "refresh": "更新",
+    "refreshing": "使用状況データを更新しています…",
+    "resets_at": "リセット {{value}}",
+    "status": {
+      "error": "エラー",
+      "ok": "正常",
+      "partial": "一部",
+      "stale": "期限切れ",
+      "unavailable": "利用不可"
+    },
+    "subtitle": "接続済みプロバイダーから報告されたサブスクリプションのクォータ枠です。",
+    "thresholds": {
+      "critical": "重大",
+      "title": "アラート",
+      "warning": "警告"
+    },
+    "title": "プロバイダーの上限",
+    "unknown": "不明",
+    "updated": "{{value}}に更新",
+    "used": "使用 {{value}}%",
+    "view_label": "プロバイダー上限の表示"
+  },
+  "tab_usage": "使用量",
+  "title": "分析",
+  "weekly": {
+    "partial_label": "{{range}} (一部 · 7日中 {{covered}}日)",
+    "title_cost": "週別コスト",
+    "title_errors": "週別エラー",
+    "title_tasks": "週別作業",
+    "title_time": "週別実行時間",
+    "title_tokens": "週別トークン"
   }
 }

@@ -1,92 +1,113 @@
 {
-  "page": {
-    "title": "Входящие",
-    "back": "Входящие"
-  },
-  "menu": {
-    "mark_all_read": "Отметить все как прочитанные",
-    "archive_all": "Архивировать все",
-    "archive_all_read": "Архивировать все прочитанные",
-    "archive_completed": "Архивировать завершённые"
-  },
   "context_menu": {
+    "archive": "Архив",
     "mark_read": "Отметить как прочитанное",
     "mark_unread": "Отметить как непрочитанное",
-    "archive": "Архив",
-    "unarchive": "Разархивировать",
-    "open_in_new_tab": "Открыть в новой вкладке"
-  },
-  "list": {
-    "empty": "Нет уведомлений",
-    "mark_done_tooltip": "Отметить как выполненное",
-    "archive_tooltip": "В архив",
-    "time": {
-      "just_now": "только что",
-      "minutes": "{{count}} мин",
-      "hours": "{{count}} ч",
-      "days": "{{count}} д"
-    },
-    "archived_title": "Архив",
-    "archived_empty": "Нет архивных уведомлений",
-    "unarchive_tooltip": "Восстановить из архива",
-    "actions_aria": "Действия по оповещению"
+    "open_in_new_tab": "Открыть в новой вкладке",
+    "unarchive": "Разархивировать"
   },
   "detail": {
-    "select_prompt": "Выберите уведомление, чтобы посмотреть подробности",
+    "archive": "В архив",
+    "edit_advanced": "Редактировать как расширенную форму",
     "empty": "Ваши входящие пусты",
     "original_input": "Исходный ввод",
-    "edit_advanced": "Редактировать как расширенную форму",
-    "archive": "В архив",
+    "retry_with_context": "Повторить с контекстом",
+    "select_prompt": "Выберите уведомление, чтобы посмотреть подробности",
     "unarchive": "Восстановить из архива"
   },
-  "types": {
-    "issue_assigned": "Назначено",
-    "issue_subscribed": "Подписан",
-    "unassigned": "Снято назначение",
-    "assignee_changed": "Исполнитель изменён",
-    "status_changed": "Статус изменён",
-    "priority_changed": "Приоритет изменён",
-    "start_date_changed": "Дата начала изменена",
-    "due_date_changed": "Срок изменён",
-    "new_comment": "Новый комментарий",
-    "mentioned": "Упоминание",
-    "review_requested": "Запрошено ревью",
-    "task_completed": "Task выполнен",
-    "task_failed": "Task не выполнен",
-    "agent_blocked": "Агент заблокирован",
-    "agent_completed": "Агент завершил работу",
-    "reaction_added": "Реакция",
-    "quick_create_done": "Создано агентом",
-    "quick_create_failed": "Не удалось создать агентом",
-    "quick_create_unconfirmed": "Создание с агентом не подтверждено"
-  },
-  "labels": {
-    "set_status_to": "Установить статус",
-    "set_priority_to": "Установить приоритет",
-    "assigned_to": "Назначено: {{name}}",
-    "removed_assignee": "Исполнитель удалён",
-    "set_start_date_to": "Дата начала: {{date}}",
-    "removed_start_date": "Дата начала удалена",
-    "set_due_date_to": "Срок: {{date}}",
-    "removed_due_date": "Срок удалён",
-    "reacted_to_comment": "Реакция {{emoji}} на ваш комментарий",
-    "created_with_agent": "Создано агентом: {{identifier}}",
-    "failed_with_detail": "Ошибка: {{detail}}"
-  },
-  "toasts": {
-    "archived": "Уведомление заархивировано",
-    "unarchived": "Уведомление восстановлено"
-  },
   "errors": {
-    "mark_read_failed": "Не удалось отметить как прочитанное",
-    "mark_unread_failed": "Не удалось mark as unread",
-    "archive_failed": "Не удалось архивировать",
-    "mark_done_failed": "Не удалось отметить как выполненное",
-    "mark_all_read_failed": "Не удалось отметить все как прочитанные",
     "archive_all_failed": "Не удалось архивировать все",
     "archive_all_read_failed": "Не удалось архивировать прочитанные",
     "archive_completed_failed": "Не удалось архивировать завершённые",
-    "unarchive_failed": "Не удалось восстановить из архива",
-    "archived_load_failed": "Не удалось загрузить архивные уведомления"
+    "archive_failed": "Не удалось архивировать",
+    "archived_load_failed": "Не удалось загрузить архивные уведомления",
+    "mark_all_read_failed": "Не удалось отметить все как прочитанные",
+    "mark_done_failed": "Не удалось отметить как выполненное",
+    "mark_read_failed": "Не удалось отметить как прочитанное",
+    "mark_unread_failed": "Не удалось mark as unread",
+    "source_context_retry_failed": "Не удалось повторить с исходным контекстом",
+    "source_context_retry_unavailable": "Этот контекст больше нельзя повторить. Начните снова с точки ветвления.",
+    "unarchive_failed": "Не удалось восстановить из архива"
+  },
+  "filters": {
+    "active_count_few": "{{count}} активных фильтров",
+    "active_count_many": "{{count}} активных фильтров",
+    "active_count_one": "{{count}} активный фильтр",
+    "active_count_other": "{{count}} активных фильтров",
+    "clear": "Сбросить фильтры",
+    "empty": "Нет уведомлений, подходящих под фильтры",
+    "from": "От кого",
+    "notification_count_few": "{{count}} уведомлений",
+    "notification_count_many": "{{count}} уведомлений",
+    "notification_count_one": "{{count}} уведомление",
+    "notification_count_other": "{{count}} уведомлений",
+    "priority": "Приоритет",
+    "status": "Статус",
+    "tooltip": "Фильтр входящих",
+    "unread_only": "Только непрочитанные"
+  },
+  "labels": {
+    "assigned_to": "Назначено: {{name}}",
+    "created_with_agent": "Создано агентом: {{identifier}}",
+    "failed_with_detail": "Ошибка: {{detail}}",
+    "reacted_to_comment": "Реакция {{emoji}} на ваш комментарий",
+    "removed_assignee": "Исполнитель удалён",
+    "removed_due_date": "Срок удалён",
+    "removed_start_date": "Дата начала удалена",
+    "set_due_date_to": "Срок: {{date}}",
+    "set_priority_to": "Установить приоритет",
+    "set_start_date_to": "Дата начала: {{date}}",
+    "set_status_to": "Установить статус"
+  },
+  "list": {
+    "actions_aria": "Действия по оповещению",
+    "archive_tooltip": "В архив",
+    "archived_empty": "Нет архивных уведомлений",
+    "archived_title": "Архив",
+    "empty": "Нет уведомлений",
+    "mark_done_tooltip": "Отметить как выполненное",
+    "time": {
+      "days": "{{count}} д",
+      "hours": "{{count}} ч",
+      "just_now": "только что",
+      "minutes": "{{count}} мин"
+    },
+    "unarchive_tooltip": "Восстановить из архива"
+  },
+  "menu": {
+    "archive_all": "Архивировать все",
+    "archive_all_read": "Архивировать все прочитанные",
+    "archive_completed": "Архивировать завершённые",
+    "mark_all_read": "Отметить все как прочитанные"
+  },
+  "page": {
+    "back": "Входящие",
+    "title": "Входящие"
+  },
+  "toasts": {
+    "archived": "Уведомление заархивировано",
+    "source_context_retry_started": "Повтор запущен с исходным контекстом",
+    "unarchived": "Уведомление восстановлено"
+  },
+  "types": {
+    "agent_blocked": "Агент заблокирован",
+    "agent_completed": "Агент завершил работу",
+    "assignee_changed": "Исполнитель изменён",
+    "due_date_changed": "Срок изменён",
+    "issue_assigned": "Назначено",
+    "issue_subscribed": "Подписан",
+    "mentioned": "Упоминание",
+    "new_comment": "Новый комментарий",
+    "priority_changed": "Приоритет изменён",
+    "quick_create_done": "Создано агентом",
+    "quick_create_failed": "Не удалось создать агентом",
+    "quick_create_unconfirmed": "Создание с агентом не подтверждено",
+    "reaction_added": "Реакция",
+    "review_requested": "Запрошено ревью",
+    "start_date_changed": "Дата начала изменена",
+    "status_changed": "Статус изменён",
+    "task_completed": "Task выполнен",
+    "task_failed": "Task не выполнен",
+    "unassigned": "Снято назначение"
   }
 }

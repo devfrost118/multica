@@ -1,201 +1,201 @@
 {
-  "title": "Использование",
-  "tab_usage": "Использование",
-  "header": {
-    "timezone_and_updated": "{{tz}} · обновлен {{time}}",
-    "refresh": "Обновить"
-  },
-  "filter": {
-    "project_label": "Проект",
-    "all_projects": "Все проекты",
-    "period_label": "Период"
-  },
-  "kpi": {
-    "cost_label": "Стоимость · {{days}} дн.",
-    "tokens_label": "Токены · {{days}} дн.",
-    "tokens_hint": "Ввод {{input}} · Вывод {{output}}",
-    "run_time_label": "Время работы · {{days}} дн.",
-    "run_time_hint": "По {{tasks}} task",
-    "tasks_label": "Tasks · {{days}} дн.",
-    "tasks_hint": "{{failed}} с ошибкой"
+  "daily": {
+    "metric_cost": "Стоимость",
+    "metric_label": "Метрика",
+    "metric_tasks": "Задачи",
+    "metric_time": "Время",
+    "metric_tokens": "Токены",
+    "no_data": "Нет активности за этот период.",
+    "title_cost": "Стоимость по дням",
+    "title_errors": "Ежедневные ошибки",
+    "title_tasks": "Tasks по дням",
+    "title_time": "Время работы по дням",
+    "title_tokens": "Токены по дням"
   },
   "dim": {
-    "label": "Разрез",
     "daily": "По дням",
+    "label": "Разрез",
     "weekly": "По неделям"
-  },
-  "daily": {
-    "title_cost": "Стоимость по дням",
-    "title_tokens": "Токены по дням",
-    "title_time": "Время работы по дням",
-    "title_tasks": "Tasks по дням",
-    "title_errors": "Ежедневные ошибки",
-    "metric_cost": "Стоимость",
-    "metric_tokens": "Токены",
-    "metric_time": "Время",
-    "metric_tasks": "Задачи",
-    "no_data": "Нет активности за этот период.",
-    "metric_label": "Метрика"
-  },
-  "weekly": {
-    "title_cost": "Стоимость по неделям",
-    "title_tokens": "Токены по неделям",
-    "title_time": "Время работы по неделям",
-    "title_tasks": "Tasks по неделям",
-    "title_errors": "Еженедельные ошибки",
-    "partial_label": "{{range}} (частично · {{covered}} / 7 дней)"
-  },
-  "errors": {
-    "kpi_failed_label": "Невыполненные задачи · {{days}}D",
-    "kpi_failed_hint": "Из {{total}} работает",
-    "kpi_rate_label": "Частота отказов · {{days}}D",
-    "kpi_agents_label": "Затронутые агенты · {{days}}D",
-    "kpi_agents_hint": "Худшее {{name}} · {{count}}",
-    "tooltip_rate": "Ошибка rate",
-    "class": {
-      "auth": "Авторизация",
-      "rate_limit": "Ограничение скорости",
-      "timeout": "Тайм-аут",
-      "provider": "Поставщик",
-      "runtime": "рантайм",
-      "agent": "агент",
-      "other": "Другой"
-    },
-    "title": "Ошибки",
-    "summary": "{{failed}} из {{total}} не удалось выполнить · {{rate}}",
-    "mix_title": "Набор отказов · {{failed}}",
-    "mix_label": "Микс неудач",
-    "codes_label": "Ошибка codes",
-    "by_agent": "Главные нарушители",
-    "sort_label": "Ранжируйте правонарушителей по",
-    "sort_failed": "Неудачи",
-    "sort_rate": "Ставка",
-    "header_agent": "агент",
-    "header_failed": "Неуспешный",
-    "header_runs": "Бежит",
-    "header_rate": "Ставка",
-    "other_agents": "Другие агенты",
-    "low_sample": "В этом окне выполняется менее {{count}} — эта частота не имеет смысла.",
-    "no_data": "В этом окне нет неудачных запусков.",
-    "show_reasons": "Show ошибка codes",
-    "hide_reasons": "Hide ошибка codes",
-    "show_all": "Показать все {{count}}",
-    "show_less": "Показать топ {{count}}"
-  },
-  "leaderboard": {
-    "title": "Рейтинг",
-    "caption": "{{count}} агентов",
-    "caption_with_deleted": "{{count}} агентов · удалено: {{deleted}}",
-    "sort_label": "Ранжируйте агентов по",
-    "deleted_agents": "Удалённые агенты",
-    "other_agents": "Другие агенты",
-    "header_agent": "Агент",
-    "header_tokens": "Токены",
-    "header_cost": "Стоимость",
-    "header_time": "Время",
-    "header_tasks": "Задачи",
-    "show_all": "Показать все",
-    "show_less": "Показать топ {{count}}",
-    "no_data": "Нет активности агентов за этот период."
-  },
-  "empty": {
-    "title": "Пока нет активности",
-    "body": "Как только агенты начнут выполнять здесь tasks, их расход токенов и время работы появятся в этом представлении."
-  },
-  "provider_limits": {
-    "title": "Лимиты провайдеров",
-    "subtitle": "Окна квот подписки, сообщаемые подключёнными провайдерами.",
-    "view_label": "Вид лимитов провайдеров",
-    "by_accounts": "По аккаунтам",
-    "by_daemon": "По демону",
-    "loading": "Загрузка лимитов провайдеров…",
-    "refresh": "Обновить",
-    "refreshing": "Обновление данных об использовании…",
-    "empty": "Лимиты провайдеров пока не сообщались.",
-    "error": "Не удалось загрузить лимиты провайдеров.",
-    "unknown": "Неизвестно",
-    "no_buckets": "Нет доступных бакетов квоты.",
-    "used": "Использовано {{value}}%",
-    "freshness": "Актуально ещё {{value}}",
-    "resets_at": "Сброс {{value}}",
-    "checked_at": "Проверено {{value}}",
-    "last_good": "Последний успешный: {{value}}",
-    "reason": "Причина: {{value}}",
-    "updated": "Обновлено {{value}}",
-    "data_unavailable_checked": "Данные недоступны · проверено {{value}}",
-    "last_successful_collection": "Последний успешный сбор: {{value}}",
-    "last_attempted_probe": "Последняя попытка проверки: {{value}}",
-    "attempt_source": "Источник попытки: {{value}}",
-    "last_attempt_status": "Состояние последней попытки: {{value}}",
-    "reasons": {
-      "auth_expired": "Срок действия авторизации истёк. Войдите в Codex снова.",
-      "authentication_required": "Войдите в Codex, чтобы получить данные об использовании.",
-      "reauth_required": "Локальная сессия истекла. Войдите заново через CLI провайдера.",
-      "onboarding_required": "Завершите настройку в CLI провайдера, чтобы собирать данные об использовании.",
-      "usage_unavailable": "Не удалось получить данные об использовании. Повторите проверку.",
-      "rate_limited": "Провайдер временно ограничил частоту проверок.",
-      "unsupported_platform": "Сбор данных об использовании не поддерживается в этой операционной системе.",
-      "credential_missing": "Токен не подключён. Откройте «Подробнее» и добавьте его, чтобы собирать данные об использовании.",
-      "credential_invalid": "Сохранённый токен отклонён. Откройте «Подробнее» и замените его."
-    },
-    "thresholds": {
-      "title": "Оповещения",
-      "warning": "Предупреждение",
-      "critical": "Критично"
-    },
-    "status": {
-      "ok": "OK",
-      "stale": "Устарело",
-      "partial": "Частично",
-      "unavailable": "Недоступно",
-      "error": "Ошибка"
-    },
-    "freshness_level": {
-      "fresh": "Актуально",
-      "recent": "Устаревает",
-      "aging": "Устарело",
-      "expired": "Просрочено"
-    },
-    "freshness_hint": {
-      "fresh": "Обновлено в пределах окна актуальности.",
-      "recent": "Обновлено менее суток назад.",
-      "aging": "Обновлено 1-3 дня назад.",
-      "expired": "Обновлено более 3 дней назад или данные о лимитах собрать не удалось."
-    },
-    "detail": {
-      "trigger": "Подробнее",
-      "no_history": "Для этого бакета пока нет истории.",
-      "pace_title": "Темп и запас",
-      "estimated": "Оценка",
-      "pace_value": "~{{value}} израсходовано",
-      "runway_value": "~{{value}} осталось при таком темпе",
-      "runway_exhausted": "Лимит уже достигнут или превышен",
-      "unavailable": {
-        "insufficient_points": "Пока недостаточно сравнимых снимков.",
-        "stale_data": "Последний снимок устарел — обновите перед тем, как доверять прогнозу.",
-        "not_decreasing": "Остаток не уменьшается, поэтому тренд расхода неприменим.",
-        "zero_elapsed_time": "Снимки сделаны слишком близко по времени, чтобы оценить скорость расхода."
-      }
-    },
-    "credentials": {
-      "title": "Учётные данные Factory",
-      "connected": "Подключено",
-      "not_connected": "Не подключено",
-      "fingerprint": "Отпечаток: {{value}}",
-      "validation": "Проверка: {{value}}",
-      "account_label": "Название аккаунта Factory",
-      "account_label_placeholder": "Название аккаунта (необязательно)",
-      "token": "API-токен Factory",
-      "replacement_token": "Новый токен",
-      "connect": "Подключить",
-      "replace": "Заменить",
-      "remove": "Удалить",
-      "awaiting_account": "Ожидание аккаунта",
-      "awaiting_account_help": "Ожидаем, пока daemon определит, какому аккаунту Factory принадлежит эта карточка. Обновите после следующего probe — создание ещё одного credential сейчас может дать дубликат.",
-      "action_failed": "Не удалось выполнить действие. Проверьте права и повторите попытку."
-    }
   },
   "duration": {
     "less_than_minute": "<1 мин"
+  },
+  "empty": {
+    "body": "Как только агенты начнут выполнять здесь tasks, их расход токенов и время работы появятся в этом представлении.",
+    "title": "Пока нет активности"
+  },
+  "errors": {
+    "by_agent": "Главные нарушители",
+    "class": {
+      "agent": "агент",
+      "auth": "Авторизация",
+      "other": "Другой",
+      "provider": "Поставщик",
+      "rate_limit": "Ограничение скорости",
+      "runtime": "рантайм",
+      "timeout": "Тайм-аут"
+    },
+    "codes_label": "Ошибка codes",
+    "header_agent": "агент",
+    "header_failed": "Неуспешный",
+    "header_rate": "Ставка",
+    "header_runs": "Бежит",
+    "hide_reasons": "Hide ошибка codes",
+    "kpi_agents_hint": "Худшее {{name}} · {{count}}",
+    "kpi_agents_label": "Затронутые агенты · {{days}}D",
+    "kpi_failed_hint": "Из {{total}} работает",
+    "kpi_failed_label": "Невыполненные задачи · {{days}}D",
+    "kpi_rate_label": "Частота отказов · {{days}}D",
+    "low_sample": "В этом окне выполняется менее {{count}} — эта частота не имеет смысла.",
+    "mix_label": "Микс неудач",
+    "mix_title": "Набор отказов · {{failed}}",
+    "no_data": "В этом окне нет неудачных запусков.",
+    "other_agents": "Другие агенты",
+    "show_all": "Показать все {{count}}",
+    "show_less": "Показать топ {{count}}",
+    "show_reasons": "Show ошибка codes",
+    "sort_failed": "Неудачи",
+    "sort_label": "Ранжируйте правонарушителей по",
+    "sort_rate": "Ставка",
+    "summary": "{{failed}} из {{total}} не удалось выполнить · {{rate}}",
+    "title": "Ошибки",
+    "tooltip_rate": "Ошибка rate"
+  },
+  "filter": {
+    "all_projects": "Все проекты",
+    "period_label": "Период",
+    "project_label": "Проект"
+  },
+  "header": {
+    "refresh": "Обновить",
+    "timezone_and_updated": "{{tz}} · обновлен {{time}}"
+  },
+  "kpi": {
+    "cost_label": "Стоимость · {{days}} дн.",
+    "run_time_hint": "По {{tasks}} task",
+    "run_time_label": "Время работы · {{days}} дн.",
+    "tasks_hint": "{{failed}} с ошибкой",
+    "tasks_label": "Tasks · {{days}} дн.",
+    "tokens_hint": "Ввод {{input}} · Вывод {{output}}",
+    "tokens_label": "Токены · {{days}} дн."
+  },
+  "leaderboard": {
+    "caption": "{{count}} агентов",
+    "caption_with_deleted": "{{count}} агентов · удалено: {{deleted}}",
+    "deleted_agents": "Удалённые агенты",
+    "header_agent": "Агент",
+    "header_cost": "Стоимость",
+    "header_tasks": "Задачи",
+    "header_time": "Время",
+    "header_tokens": "Токены",
+    "no_data": "Нет активности агентов за этот период.",
+    "other_agents": "Другие агенты",
+    "show_all": "Показать все",
+    "show_less": "Показать топ {{count}}",
+    "sort_label": "Ранжируйте агентов по",
+    "title": "Рейтинг"
+  },
+  "provider_limits": {
+    "attempt_source": "Источник попытки: {{value}}",
+    "by_accounts": "По аккаунтам",
+    "by_daemon": "По демону",
+    "checked_at": "Проверено {{value}}",
+    "credentials": {
+      "account_label": "Название аккаунта Factory",
+      "account_label_placeholder": "Название аккаунта (необязательно)",
+      "action_failed": "Не удалось выполнить действие. Проверьте права и повторите попытку.",
+      "awaiting_account": "Ожидание аккаунта",
+      "awaiting_account_help": "Ожидаем, пока daemon определит, какому аккаунту Factory принадлежит эта карточка. Обновите после следующего probe — создание ещё одного credential сейчас может дать дубликат.",
+      "connect": "Подключить",
+      "connected": "Подключено",
+      "fingerprint": "Отпечаток: {{value}}",
+      "not_connected": "Не подключено",
+      "remove": "Удалить",
+      "replace": "Заменить",
+      "replacement_token": "Новый токен",
+      "title": "Учётные данные Factory",
+      "token": "API-токен Factory",
+      "validation": "Проверка: {{value}}"
+    },
+    "data_unavailable_checked": "Данные недоступны · проверено {{value}}",
+    "detail": {
+      "estimated": "Оценка",
+      "no_history": "Для этого бакета пока нет истории.",
+      "pace_title": "Темп и запас",
+      "pace_value": "~{{value}} израсходовано",
+      "runway_exhausted": "Лимит уже достигнут или превышен",
+      "runway_value": "~{{value}} осталось при таком темпе",
+      "trigger": "Подробнее",
+      "unavailable": {
+        "insufficient_points": "Пока недостаточно сравнимых снимков.",
+        "not_decreasing": "Остаток не уменьшается, поэтому тренд расхода неприменим.",
+        "stale_data": "Последний снимок устарел — обновите перед тем, как доверять прогнозу.",
+        "zero_elapsed_time": "Снимки сделаны слишком близко по времени, чтобы оценить скорость расхода."
+      }
+    },
+    "empty": "Лимиты провайдеров пока не сообщались.",
+    "error": "Не удалось загрузить лимиты провайдеров.",
+    "freshness": "Актуально ещё {{value}}",
+    "freshness_hint": {
+      "aging": "Обновлено 1-3 дня назад.",
+      "expired": "Обновлено более 3 дней назад или данные о лимитах собрать не удалось.",
+      "fresh": "Обновлено в пределах окна актуальности.",
+      "recent": "Обновлено менее суток назад."
+    },
+    "freshness_level": {
+      "aging": "Устарело",
+      "expired": "Просрочено",
+      "fresh": "Актуально",
+      "recent": "Устаревает"
+    },
+    "last_attempt_status": "Состояние последней попытки: {{value}}",
+    "last_attempted_probe": "Последняя попытка проверки: {{value}}",
+    "last_good": "Последний успешный: {{value}}",
+    "last_successful_collection": "Последний успешный сбор: {{value}}",
+    "loading": "Загрузка лимитов провайдеров…",
+    "no_buckets": "Нет доступных бакетов квоты.",
+    "reason": "Причина: {{value}}",
+    "reasons": {
+      "auth_expired": "Срок действия авторизации истёк. Войдите в Codex снова.",
+      "authentication_required": "Войдите в Codex, чтобы получить данные об использовании.",
+      "credential_invalid": "Сохранённый токен отклонён. Откройте «Подробнее» и замените его.",
+      "credential_missing": "Токен не подключён. Откройте «Подробнее» и добавьте его, чтобы собирать данные об использовании.",
+      "onboarding_required": "Завершите настройку в CLI провайдера, чтобы собирать данные об использовании.",
+      "rate_limited": "Провайдер временно ограничил частоту проверок.",
+      "reauth_required": "Локальная сессия истекла. Войдите заново через CLI провайдера.",
+      "unsupported_platform": "Сбор данных об использовании не поддерживается в этой операционной системе.",
+      "usage_unavailable": "Не удалось получить данные об использовании. Повторите проверку."
+    },
+    "refresh": "Обновить",
+    "refreshing": "Обновление данных об использовании…",
+    "resets_at": "Сброс {{value}}",
+    "status": {
+      "error": "Ошибка",
+      "ok": "OK",
+      "partial": "Частично",
+      "stale": "Устарело",
+      "unavailable": "Недоступно"
+    },
+    "subtitle": "Окна квот подписки, сообщаемые подключёнными провайдерами.",
+    "thresholds": {
+      "critical": "Критично",
+      "title": "Оповещения",
+      "warning": "Предупреждение"
+    },
+    "title": "Лимиты провайдеров",
+    "unknown": "Неизвестно",
+    "updated": "Обновлено {{value}}",
+    "used": "Использовано {{value}}%",
+    "view_label": "Вид лимитов провайдеров"
+  },
+  "tab_usage": "Использование",
+  "title": "Использование",
+  "weekly": {
+    "partial_label": "{{range}} (частично · {{covered}} / 7 дней)",
+    "title_cost": "Стоимость по неделям",
+    "title_errors": "Еженедельные ошибки",
+    "title_tasks": "Tasks по неделям",
+    "title_time": "Время работы по неделям",
+    "title_tokens": "Токены по неделям"
   }
 }

@@ -35,24 +35,24 @@
     "updated_toast_other": "已从来源更新 {{count}} 个 skill"
   },
   "bulk_import": {
-    "source_label": "来源",
-    "source_github": "GitHub 仓库",
-    "source_folder": "本地文件夹",
+    "already_exists": "已存在",
+    "candidates_title": "找到的 skill",
+    "capped_notice": "仅显示前 {{count}} 个；实际更多。",
+    "discover": "查找",
+    "discover_failed": "无法读取该来源。",
+    "discovering": "查找中…",
+    "empty_hint": "每个 skill 是一个包含 SKILL.md 的文件夹。",
+    "empty_no_skills": "未找到 SKILL.md。",
+    "folder_drop_hint": "或把文件夹拖到这里",
+    "folder_pick": "选择文件夹",
+    "folder_reading": "正在读取文件夹…",
+    "folder_too_large": "文件夹过大，浏览器无法读取。",
     "github_url_label": "仓库或文件夹 URL",
     "github_url_placeholder": "github.com/owner/repo 或 .../tree/main/skills",
-    "discover": "查找",
-    "discovering": "查找中…",
-    "folder_pick": "选择文件夹",
-    "folder_drop_hint": "或把文件夹拖到这里",
-    "folder_reading": "正在读取文件夹…",
-    "candidates_title": "找到的 skill",
-    "already_exists": "已存在",
-    "empty_no_skills": "未找到 SKILL.md。",
-    "empty_hint": "每个 skill 是一个包含 SKILL.md 的文件夹。",
-    "capped_notice": "仅显示前 {{count}} 个；实际更多。",
-    "folder_too_large": "文件夹过大，浏览器无法读取。",
-    "discover_failed": "无法读取该来源。",
-    "import_selected": "导入选中的 {{count}} 个"
+    "import_selected": "导入选中的 {{count}} 个",
+    "source_folder": "本地文件夹",
+    "source_github": "GitHub 仓库",
+    "source_label": "来源"
   },
   "create": {
     "back": "返回",
@@ -60,21 +60,21 @@
     "close": "关闭",
     "close_aria": "关闭",
     "local": {
-      "choose_folder": "选择文件夹",
-      "choose_archive": "选择 .skill / .zip",
-      "folder_label": "文件夹",
       "archive_label": "压缩包",
-      "files_other": "{{count}} 个文件",
-      "missing_skill_md": "这个文件夹不是 skill——里面没有 SKILL.md。",
-      "too_large": "这个 skill 太大，无法导入。",
-      "empty": "文件夹是空的。",
-      "too_many_files": "这个 skill 的文件太多，无法导入。",
-      "name_conflict_hint": "导入的 skill 名称已存在——请先删除已有的再重试。",
-      "fallback_error": "导入失败",
       "cancel": "取消",
+      "choose_archive": "选择 .skill / .zip",
+      "choose_folder": "选择文件夹",
+      "empty": "文件夹是空的。",
+      "fallback_error": "导入失败",
+      "files_other": "{{count}} 个文件",
+      "folder_label": "文件夹",
       "import": "导入",
       "importing": "导入中...",
-      "toast_imported": "已导入 skill"
+      "missing_skill_md": "这个文件夹不是 skill——里面没有 SKILL.md。",
+      "name_conflict_hint": "导入的 skill 名称已存在——请先删除已有的再重试。",
+      "toast_imported": "已导入 skill",
+      "too_large": "这个 skill 太大，无法导入。",
+      "too_many_files": "这个 skill 的文件太多，无法导入。"
     },
     "manual": {
       "cancel": "取消",
@@ -91,39 +91,39 @@
     },
     "method": {
       "bulk": {
-        "title": "批量导入",
-        "desc": "从 GitHub 仓库或本地文件夹一次性导入多个 skill。"
+        "desc": "从 GitHub 仓库或本地文件夹一次性导入多个 skill。",
+        "title": "批量导入"
       },
       "chooser": {
-        "desc": "选择一种方式把 skill 添加到工作区。",
+        "desc": "选择添加 skill 的方式。",
         "title": "新建 skill"
       },
       "local": {
-        "title": "从本地导入",
-        "desc": "选择包含 SKILL.md 的文件夹，或 .skill / .zip 压缩包。"
+        "desc": "选择包含 SKILL.md 的文件夹，或 .skill / .zip 压缩包。",
+        "title": "从本地导入"
       },
       "manual": {
         "desc": "从空白 SKILL.md 开始写。",
         "title": "手动创建"
       },
       "runtime": {
-        "desc": "扫描本地运行时，把它磁盘上的 skill 提升到工作区。",
+        "desc": "把本地运行时里已装好的 skill 提升到工作区。",
         "title": "从运行时复制"
       },
       "url": {
-        "desc": "通过 URL 拉取已发布的 skill，文件由服务端拉取。",
+        "desc": "通过 URL 拉取已发布的 skill。",
         "title": "从 URL 导入"
       }
     },
     "method_card": {
-      "manual_title": "手动创建",
-      "manual_desc": "从空白 SKILL.md 开始，自己写指令。",
-      "url_title": "从 URL 导入",
-      "url_desc": "从 ClawHub 或 Skills.sh 拉取已发布的 skill。",
-      "runtime_title": "从运行时复制",
-      "runtime_desc": "把本地运行时里已经装好的 skill 提升过来。",
+      "bulk_desc": "一次导入多个 skill —— GitHub 仓库或本地文件夹。",
       "bulk_title": "批量导入",
-      "bulk_desc": "一次导入多个 skill —— GitHub 仓库或本地文件夹。"
+      "manual_desc": "从空白 SKILL.md 开始，自己写指令。",
+      "manual_title": "手动创建",
+      "runtime_desc": "把本地运行时里已经装好的 skill 提升过来。",
+      "runtime_title": "从运行时复制",
+      "url_desc": "从 ClawHub 或 Skills.sh 拉取已发布的 skill。",
+      "url_title": "从 URL 导入"
     },
     "url": {
       "cancel": "取消",
@@ -270,11 +270,11 @@
   },
   "page": {
     "empty": {
-      "description": "创建第一个 skill、从 URL 导入、或从已连接的运行时复制——之后工作区里每个智能体都能用它。",
+      "description": "创建第一个 skill、从 URL 或本地文件夹导入、或从已连接的运行时复制——之后工作区里每个智能体都能用它。",
       "title": "还没有 skill"
     },
     "intro_banner": {
-      "body": "任何成员都可以创建 skill、从 URL 导入、或从本地运行时复制——之后所有智能体都能用它。",
+      "body": "任何成员都可以创建 skill、从 URL 或本地文件夹导入、或从本地运行时复制——之后所有智能体都能用它。",
       "highlight": "本地运行时里的 skill 在你复制过来之前是私有的。",
       "title": "在工作区内共享。"
     },
