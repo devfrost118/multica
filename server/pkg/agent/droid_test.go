@@ -179,6 +179,169 @@ func TestNormalizeDroidModelID(t *testing.T) {
 	}
 }
 
+func hangingDroidScript() string {
+	if runtime.GOOS != "windows" {
+		return `#!/bin/sh
+while :; do sleep 1; done
+`
+	}
+	return `@echo off
+:loop
+ping -n 2 127.0.0.1 >nul
+goto loop
+`
+}
+
+func newHangingDroidBackend(t *testing.T) Backend {
+	t.Helper()
+	fakeName := "droid"
+	if runtime.GOOS == "windows" {
+		fakeName += ".cmd"
+	}
+	fakePath := filepath.Join(t.TempDir(), fakeName)
+	writeTestExecutable(t, fakePath, []byte(hangingDroidScript()))
+	backend, err := New("droid", Config{ExecutablePath: fakePath, Logger: slog.Default()})
+	if err != nil {
+		t.Fatalf("new hanging droid backend: %v", err)
+	}
+	return backend
+}
+
+func awaitDroidResult(t *testing.T, session *Session, bound time.Duration) Result {
+	t.Helper()
+	go func() {
+		for range session.Messages {
+		}
+	}()
+	select {
+	case result, ok := <-session.Result:
+		if !ok {
+			t.Fatal("result channel closed without a value")
+		}
+		return result
+	case <-time.After(bound):
+		t.Fatalf("no droid result within %s", bound)
+		return Result{}
+	}
+}
+
+func TestDroidExecuteZeroTimeoutDoesNotSynthesizeDeadline(t *testing.T) {
+	t.Parallel()
+
+	// Parent deadline is short so the test finishes quickly. Timeout==0 must
+	// not synthesize a 20-minute child deadline: if it did, expiry of this
+	// short parent would still be reported as "droid timed out after 20m0s".
+	parent, cancel := context.WithTimeout(context.Background(), 80*time.Millisecond)
+	defer cancel()
+
+	session, err := newHangingDroidBackend(t).Execute(parent, "hang", ExecOptions{})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	result := awaitDroidResult(t, session, 3*time.Second)
+
+	if strings.Contains(result.Error, "20m") {
+		t.Fatalf("Timeout==0 synthesized a 20-minute deadline: status=%q error=%q", result.Status, result.Error)
+	}
+	if result.Status == "timeout" {
+		t.Fatalf("Timeout==0 must not report a configured droid timeout; got status=%q error=%q", result.Status, result.Error)
+	}
+	if result.Status != "aborted" {
+		t.Fatalf("parent deadline with Timeout==0: status=%q error=%q, want aborted", result.Status, result.Error)
+	}
+}
+
+func TestDroidExecuteZeroTimeoutHasNoChildDeadline(t *testing.T) {
+	t.Parallel()
+
+	parent, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	session, err := newHangingDroidBackend(t).Execute(parent, "hang", ExecOptions{Timeout: 0})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	go func() {
+		for range session.Messages {
+		}
+	}()
+
+	select {
+	case result := <-session.Result:
+		t.Fatalf("Timeout==0 imposed a child deadline (got result too early): status=%q error=%q", result.Status, result.Error)
+	case <-time.After(250 * time.Millisecond):
+	}
+
+	cancel()
+	select {
+	case result, ok := <-session.Result:
+		if !ok {
+			t.Fatal("result channel closed without a value")
+		}
+		if result.Status != "aborted" {
+			t.Fatalf("after parent cancel: status=%q error=%q, want aborted", result.Status, result.Error)
+		}
+		if strings.Contains(result.Error, "timed out") || strings.Contains(result.Error, "20m") {
+			t.Fatalf("parent cancel reported as deadline expiry: error=%q", result.Error)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("backend did not return after parent cancellation")
+	}
+}
+
+func TestDroidExecutePositiveTimeoutTerminatesChild(t *testing.T) {
+	t.Parallel()
+
+	const timeout = 100 * time.Millisecond
+	session, err := newHangingDroidBackend(t).Execute(context.Background(), "hang", ExecOptions{Timeout: timeout})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	start := time.Now()
+	result := awaitDroidResult(t, session, 3*time.Second)
+	elapsed := time.Since(start)
+
+	if result.Status != "timeout" {
+		t.Fatalf("status=%q error=%q, want timeout", result.Status, result.Error)
+	}
+	want := "droid timed out after " + timeout.String()
+	if result.Error != want {
+		t.Fatalf("error=%q, want %q", result.Error, want)
+	}
+	if elapsed > 2*time.Second {
+		t.Fatalf("positive timeout took %s; child was not terminated by the configured deadline", elapsed)
+	}
+}
+
+func TestDroidExecuteParentCancelWithoutTimeoutIsAborted(t *testing.T) {
+	t.Parallel()
+
+	parent, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	session, err := newHangingDroidBackend(t).Execute(parent, "hang", ExecOptions{})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	time.AfterFunc(50*time.Millisecond, cancel)
+	start := time.Now()
+	result := awaitDroidResult(t, session, 3*time.Second)
+	elapsed := time.Since(start)
+
+	if result.Status != "aborted" {
+		t.Fatalf("status=%q error=%q, want aborted", result.Status, result.Error)
+	}
+	if result.Error != "execution cancelled" {
+		t.Fatalf("error=%q, want %q", result.Error, "execution cancelled")
+	}
+	if strings.Contains(result.Error, "timed out") {
+		t.Fatalf("parent cancellation reported as deadline expiry: error=%q", result.Error)
+	}
+	if elapsed > 2*time.Second {
+		t.Fatalf("parent cancel took %s; child was not aborted promptly", elapsed)
+	}
+}
+
 func TestDroidToolNameFromTitle(t *testing.T) {
 	t.Parallel()
 	// Names mirror what `droid exec --output-format stream-json` emits in
