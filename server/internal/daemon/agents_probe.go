@@ -278,6 +278,14 @@ var probeAgentCLIs = func() map[string]AgentEntry {
 	if e, ok := probe("MULTICA_ZEROCLAW_PATH", "zeroclaw", ""); ok {
 		agents["zeroclaw"] = e
 	}
+	// Factory.ai Droid (`droid exec`) is a fork-local provider. It must go
+	// through probe() like every other CLI so MULTICA_DROID_PATH and the
+	// login-shell fallback apply; dropping this call during an upstream
+	// sync leaves an installed droid invisible to /health and runtime
+	// registration (FRO-275).
+	if e, ok := probe("MULTICA_DROID_PATH", "droid", "MULTICA_DROID_MODEL"); ok {
+		agents["droid"] = e
+	}
 	return agents
 }
 
