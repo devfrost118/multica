@@ -78,10 +78,7 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 	}
 
 	timeout := opts.Timeout
-	if timeout == 0 {
-		timeout = 20 * time.Minute
-	}
-	runCtx, cancel := context.WithTimeout(ctx, timeout)
+	runCtx, cancel := runContext(ctx, timeout)
 
 	args := []string{"exec", "--output-format", "stream-json", "--auto", "medium"}
 	if opts.Cwd != "" {
@@ -264,12 +261,14 @@ func (b *droidBackend) Execute(ctx context.Context, prompt string, opts ExecOpti
 		releaseProcessGroup(cmd)
 		removeDroidSystemPromptFile(b.cfg.Logger, systemPromptFile)
 
-		// If the context expired mid-stream, surface a precise reason
-		// even if droid happened to exit cleanly.
-		if runCtx.Err() == context.DeadlineExceeded {
+		// Report timeout only when an explicitly configured deadline expired.
+		// A zero/negative Timeout follows runContext: no child wall-clock, so
+		// parent cancel or parent deadline is ordinary cancellation (aborted),
+		// not "droid timed out after <duration>".
+		if timeout > 0 && runCtx.Err() == context.DeadlineExceeded {
 			finalStatus = "timeout"
 			finalError = fmt.Sprintf("droid timed out after %s", timeout)
-		} else if runCtx.Err() == context.Canceled && finalStatus == "completed" {
+		} else if runCtx.Err() != nil && finalStatus == "completed" {
 			finalStatus = "aborted"
 			finalError = "execution cancelled"
 		}
