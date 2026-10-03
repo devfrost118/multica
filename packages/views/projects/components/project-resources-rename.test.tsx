@@ -38,9 +38,13 @@ vi.mock("@tanstack/react-query", () => ({
 vi.mock("@multica/core/projects", () => ({
   projectEnvironmentsOptions: () => ({ queryKey: ["environments"], queryFn: vi.fn() }),
   projectResourcesOptions: () => ({ queryKey: ["project-resources"], queryFn: vi.fn() }),
-  useCreateProjectResource: () => ({ mutateAsync: vi.fn() }),
-  useUpdateProjectResource: () => ({ mutateAsync: updateMock }),
-  useDeleteProjectResource: () => ({ mutateAsync: vi.fn() }),
+  useCreateProjectResource: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateProjectResource: () => ({ mutateAsync: updateMock, isPending: false }),
+  useDeleteProjectResource: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useRevealProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 // A backend that predates the capability signal: the client must assume it
@@ -53,6 +57,9 @@ vi.mock("@multica/core/config", () => ({
 vi.mock("@multica/core/runtimes", () => ({
   runtimeListOptions: () => ({ queryKey: ["runtimes"], queryFn: vi.fn() }),
   runtimeAdvertisesLocalWorktree: () => true,
+}));
+vi.mock("@multica/core/runtimes/queries", () => ({
+  runtimeListOptions: () => ({ queryKey: ["runtimes"], queryFn: vi.fn() }),
 }));
 vi.mock("@multica/core/hooks", () => ({ useWorkspaceId: () => "workspace-1" }));
 vi.mock("@multica/core/paths", () => ({
@@ -74,29 +81,21 @@ vi.mock("./project-environments-section", () => ({
 
 import { ProjectResourcesSection } from "./project-resources-section";
 
-describe("ProjectResourcesSection — renaming a worktree local directory", () => {
+describe("ProjectResourcesSection — local directory label after MUL-7525", () => {
   beforeEach(() => updateMock.mockClear());
 
-  // The reported skew, one step further on: backend rolled back below v0.4.25
-  // while the runtimes stay current — a combination the docs call supported.
-  // Such a server replaces the ref with whatever it can parse, so resending it
-  // during an unrelated edit drops execution_mode, answers 200, and the next
-  // task edits the working copy the resource asked to isolate (#7113).
-  it("sends only the label, never a ref the server could strip", async () => {
+  // Upstream v0.6.1 removed the pencil: a folder is identified by its path,
+  // and a rename control beside mode/remove read as a broken edit (MUL-7525).
+  // The old label-only PATCH path is gone, so it cannot resend a stripped ref
+  // on an outdated server (#7113).
+  it("does not expose a rename control that could resend a stripped ref", () => {
     renderWithI18n(<ProjectResourcesSection projectId="p1" />);
-
-    fireEvent.click(screen.getByTitle(/rename/i));
-    const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: "Client Worktree" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-
-    await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
-    const payload = updateMock.mock.calls[0]?.[0] as { data: unknown };
-    expect(payload.data).toEqual({ label: "Client Worktree" });
-    expect(payload.data).not.toHaveProperty("resource_ref");
+    expect(screen.queryByTitle(/rename/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(updateMock).not.toHaveBeenCalled();
   });
 
-  // The new name has to be what the user sees afterwards, which only holds if
+  // The stored name still has to be what the user sees, which only holds if
   // the top-level label outranks the stale one still sitting inside the ref.
   // Full read-order matrix: local-directory-label.test.ts.
   it("shows the top-level label over the one left behind in the ref", () => {
@@ -105,20 +104,27 @@ describe("ProjectResourcesSection — renaming a worktree local directory", () =
     expect(screen.queryByText("Game Client")).not.toBeInTheDocument();
   });
 
-  // Clearing goes through the same label-only path as renaming: an emptied
-  // input must not fall back to resending the ref either, and the server is
-  // the one that drops BOTH label copies so the old name cannot resurrect.
-  it("sends a label-only clear when the input is emptied", async () => {
+  // The remaining write path is mode edit. The server replaces the whole ref,
+  // so this update must spread every stored field — including execution_mode
+  // and the leftover label copy — rather than sending a partial object.
+  it("spreads the stored ref when the remaining edit path writes execution_mode", async () => {
     renderWithI18n(<ProjectResourcesSection projectId="p1" />);
 
-    fireEvent.click(screen.getByTitle(/rename/i));
-    const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: "   " } });
-    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.click(screen.getByTitle(/change how runs use this folder/i));
+    fireEvent.click(screen.getByRole("radio", { name: /edit this folder directly/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^save$/i }));
 
     await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
-    const payload = updateMock.mock.calls[0]?.[0] as { data: unknown };
-    expect(payload.data).toEqual({ label: "" });
-    expect(payload.data).not.toHaveProperty("resource_ref");
+    const payload = updateMock.mock.calls[0]?.[0] as {
+      resourceId: string;
+      data: { resource_ref: Record<string, unknown> };
+    };
+    expect(payload.resourceId).toBe("res-1");
+    expect(payload.data.resource_ref).toEqual({
+      local_path: "/Users/dev/work/game-client",
+      daemon_id: "daemon-1",
+      label: "Game Client",
+      execution_mode: "in_place",
+    });
   });
 });

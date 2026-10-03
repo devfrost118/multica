@@ -35,9 +35,14 @@ vi.mock("@tanstack/react-query", () => ({
 
 vi.mock("@multica/core/projects", () => ({
   projectResourcesOptions: () => ({ queryKey: ["project-resources"], queryFn: vi.fn() }),
-  useCreateProjectResource: () => ({ mutateAsync: vi.fn() }),
-  useUpdateProjectResource: () => ({ mutateAsync: vi.fn() }),
-  useDeleteProjectResource: () => ({ mutateAsync: vi.fn() }),
+  projectEnvironmentsOptions: () => ({ queryKey: ["environments"], queryFn: vi.fn() }),
+  useCreateProjectResource: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateProjectResource: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteProjectResource: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useRevealProjectEnvironment: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("@multica/core/config", () => ({
@@ -48,6 +53,9 @@ vi.mock("@multica/core/config", () => ({
 vi.mock("@multica/core/runtimes", () => ({
   runtimeListOptions: () => ({ queryKey: ["runtimes"], queryFn: vi.fn() }),
   runtimeAdvertisesLocalWorktree: () => true,
+}));
+vi.mock("@multica/core/runtimes/queries", () => ({
+  runtimeListOptions: () => ({ queryKey: ["runtimes"], queryFn: vi.fn() }),
 }));
 vi.mock("@multica/core/hooks", () => ({ useWorkspaceId: () => "workspace-1" }));
 vi.mock("@multica/core/paths", () => ({
