@@ -25,7 +25,7 @@
     },
     "empty": {
       "title": "还没有 skill",
-      "description": "创建第一个 skill、从 URL 或本地文件夹导入、或从已连接的运行时复制——之后工作区里每个智能体都能用它。"
+      "description": "创建或导入一个 skill。"
     },
     "no_matches": {
       "title": "无匹配",
@@ -211,7 +211,7 @@
       "properties_hint": "这些字段与 SKILL.md 的 frontmatter 保持同步。",
       "name": "名称",
       "description": "描述",
-      "description_hint": "{{count}} 个字符。智能体根据这段文字判断是否加载该技能。",
+      "description_hint": "智能体据此决定何时加载 skill。",
       "labels": "标签",
       "used_by_other": "被 {{count}} 个智能体使用",
       "used_by_empty": "还未分配给任何智能体。打开某个智能体的 Skills 标签页进行分配。",

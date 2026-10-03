@@ -46,10 +46,10 @@
 ### 2026-10-03: v0.4.36 → v0.6.1 (FRO-329)
 
 - Upstream tag `v0.6.1` (`2ea01ae4ef55de4310b99af192d2dbd367832883`) merged into fork via `sync/upstream-v0.6.1`.
-- Конфликты: union fork-local + upstream (ProjectEnvironments / EffectiveRules / ActiveSiblingRuns / droid + wakeup/delta fields / codearts / RuntimeProfile); locale JSON key-wise prefer-ours + append-theirs; ru∪fr.
-- Locale: EN/ja/ko/zh-Hans восстановлены из `origin/main` ∪ `v0.6.1` без EN-заглушек; FR — из `v0.6.1` плюс реальные FR для fork-only ключей; RU — сохранены действующие переводы `origin/main`, новые ключи переведены на русский. Штатный `locales/parity.test.ts` — обязательный гейт.
-- Pre-update dump сохранён на TEST-хосте: `/home/frost/backups/multica/pre-update/20261003T111113Z/multica.dump` (не verified: нет `.env`, путь не `/home/frost/backups/pre-update/test/<UTC>/`, нет `pg_restore --list` / manifest). Новый полный backup только сразу перед разрешённым deploy после всех gates.
-- Активные темы сохранены. Draft PR — без merge; TEST deploy не готов, пока CI/typecheck/parity/config gate не зелёные.
+- Конфликты: union fork-local + upstream (ProjectEnvironments / EffectiveRules / ActiveSiblingRuns / droid + wakeup/delta fields / codearts / RuntimeProfile); locale JSON key-wise; ru∪fr.
+- Locale: EN/ja/ko/zh-Hans = значения `v0.6.1` для общих ключей + fork-only ключи `origin/main`. FR — `v0.6.1` плюс реальные FR для fork-only. RU — действующие переводы сохранены, новые ключи на русском; plural `_few/_many` и placeholders сверены с EN. Штатный `locales/parity.test.ts` и `locales/placeholders.test.ts` — обязательные гейты.
+- Pre-update dump на TEST-хосте сохранён, но не verified. `.env` на TEST есть (`/home/frost/multica/.env`); прежний backup helper не монтировал `/home/frost/multica:/repo`. Для шага 8 helper `docker:27-cli` обязан bind'ить read-only `/home/frost/multica:/repo` вместе с `/home/frost/backups:/backups` и `/var/run/docker.sock`, затем снова прогнать `docker compose ... config` непосредственно перед backup. Источник конфигурации не подменять. Новый verified backup и TEST deploy — только после merge уполномоченным человеком и повторных gates.
+- Активные темы сохранены. Draft PR — без merge.
 
 ### 2026-08-29: v0.4.32 → v0.4.36 (FRO-268)
 

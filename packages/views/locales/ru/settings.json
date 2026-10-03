@@ -244,7 +244,7 @@
     "disconnect_confirm_description": "Multica перестанет получать вебхуки для этой установки. Существующие зеркала и связи PR сохраняются; переподключитесь в любой момент, чтобы возобновить обновления.",
     "disconnect_confirm_title": "Отключить GitHub App",
     "disconnecting": "Отключение…",
-    "feature_auto_link_description": "Сопоставлять заголовки, описания и названия веток PR с идентификаторами задач и создавать связь автоматически.",
+    "feature_auto_link_description": "Связывает PR с задачей, чей идентификатор, например {{example}}, есть в заголовке или имени ветки либо следует за «Closes» в описании.",
     "feature_auto_link_label": "Автосвязывание задач и PR",
     "feature_co_author_description_prefix": "Добавлять",
     "feature_co_author_description_suffix": "в коммиты, созданные агентами.",

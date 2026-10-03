@@ -44,7 +44,7 @@
   },
   "empty": {
     "title": "まだエージェントがいません",
-    "description": "チームメイトと同じように、エージェントを作成してタスクを割り当てましょう。ローカルエージェントは自分のマシンで、クラウドエージェントは Multica のランタイムで実行されます。"
+    "description": "エージェントを作成してタスクを割り当てましょう。"
   },
   "no_matches": {
     "title": "一致する結果なし",
@@ -77,7 +77,7 @@
     "fallback_runtime_cloud": "クラウド",
     "fallback_runtime_local": "ローカル",
     "actions_aria": "行の操作",
-    "task_count_other": "{{count}} 件の作業"
+    "task_count_other": "{{count}} 件の実行"
   },
   "activity_tooltip": {
     "created_today": "今日作成",
@@ -88,7 +88,7 @@
     "failed_suffix": " · {{count}} 回失敗（{{percent}}%）"
   },
   "row_actions": {
-    "cancel_all_tasks": "すべての作業をキャンセル",
+    "cancel_all_tasks": "すべての実行をキャンセル",
     "duplicate": "複製",
     "restore": "復元",
     "archive": "アーカイブ",
@@ -102,20 +102,20 @@
     "archive_failed_toast": "エージェントをアーカイブできませんでした",
     "agent_restored_toast": "エージェントを復元しました",
     "restore_failed_toast": "エージェントを復元できませんでした",
-    "no_tasks_to_cancel_toast": "キャンセルできるアクティブな作業がありません",
-    "cancelled_tasks_toast_other": "作業 {{count}} 件をキャンセルしました",
-    "cancel_failed_toast": "作業をキャンセルできませんでした",
-    "cancel_dialog_title": "\"{{name}}\" のすべての作業をキャンセルしますか？",
-    "cancel_dialog_no_tasks": "キャンセルできるアクティブな作業がありません。",
+    "no_tasks_to_cancel_toast": "キャンセルできるアクティブな実行がありません",
+    "cancelled_tasks_toast_other": "実行 {{count}} 件をキャンセルしました",
+    "cancel_failed_toast": "実行をキャンセルできませんでした",
+    "cancel_dialog_title": "\"{{name}}\" のすべての実行をキャンセルしますか？",
+    "cancel_dialog_no_tasks": "キャンセルできるアクティブな実行がありません。",
     "cancel_dialog_running_other": "実行中 {{count}} 件",
     "cancel_dialog_queued_other": "待機中 {{count}} 件",
-    "cancel_dialog_impact_other": "{{summary}} の作業がキャンセルされます。",
-    "cancel_dialog_running_note": " 実行中の作業が完全に停止するまで最大5秒かかる場合があります。",
-    "cancel_dialog_irreversible": " キャンセルした作業は再開できません。",
+    "cancel_dialog_impact_other": "{{summary}} の実行がキャンセルされます。",
+    "cancel_dialog_running_note": " 進行中の実行が完全に停止するまで最大5秒かかる場合があります。",
+    "cancel_dialog_irreversible": " キャンセルした実行は再開できません。",
     "cancel_dialog_keep": "そのままにする",
-    "cancel_dialog_confirm": "すべての作業をキャンセル",
+    "cancel_dialog_confirm": "すべての実行をキャンセル",
     "archive_dialog_title": "\"{{name}}\" をアーカイブしますか？",
-    "archive_dialog_description": "このエージェントは割り当てやメンションができなくなり、アクティブな作業はすべてキャンセルされます。履歴はすべて保持され、後で復元できます。",
+    "archive_dialog_description": "このエージェントは割り当てやメンションができなくなり、アクティブな実行はすべてキャンセルされます。履歴はすべて保持され、後で復元できます。",
     "archive_dialog_cancel": "キャンセル",
     "archive_dialog_confirm": "アーカイブ"
   },
@@ -191,16 +191,16 @@
   "overview": {
     "agent_context": "エージェント",
     "access": "アクセス",
-    "attention_title": "対応が必要な task",
-    "attention_queued_other": "ランタイムが利用できないため、{{count}}件の task が待機中です。"
+    "attention_title": "対応が必要な実行",
+    "attention_queued_other": "ランタイムが利用できないため、{{count}}件の実行が待機中です。"
   },
   "skill_attach": {
     "trigger_aria": "ワークスペースのスキルを追加",
     "trigger_label": "追加"
   },
   "pickers": {
-    "concurrency_tooltip": "同時実行数 · 最大 {{value}} 件の同時作業",
-    "concurrency_range": "最大同時作業数（{{min}}–{{max}}）",
+    "concurrency_tooltip": "同時実行数 · 最大 {{value}} 件",
+    "concurrency_range": "最大同時実行数（{{min}}–{{max}}）",
     "runtime_none": "ランタイムなし",
     "runtime_tooltip": "ランタイム · {{name}} · {{status}}",
     "runtime_tooltip_none": "ランタイム · 未選択",
@@ -256,7 +256,7 @@
     "page_navigation_aria": "エージェントページ",
     "section_navigation_aria": "エージェントセクション",
     "activity": "アクティビティ",
-    "tasks": "作業",
+    "tasks": "実行",
     "instructions": "指示",
     "skills": "スキル",
     "environment": "環境",
@@ -337,7 +337,7 @@
   },
   "conversation_starters": {
     "label": "会話の開始例",
-    "hint": "このエージェントで新しいチャットを開いたときに表示される例（最大3件）。選ぶと送信せずに入力欄へ入ります。",
+    "hint": "最大3件。選択すると入力欄に入り、送信はされません。",
     "add": "候補を追加",
     "item_label": "候補 {{number}} のラベル",
     "prompt_label": "候補 {{number}} のプロンプト",
@@ -355,7 +355,7 @@
       "unsaved_changes": "保存していない変更"
     },
     "instructions": {
-      "intro": "すべての作業で使用する System Prompt を設定します。Markdown に対応しています。",
+      "intro": "すべての実行で使用する System Prompt を設定します。Markdown に対応しています。",
       "system_prompt_label": "System Prompt",
       "placeholder": "このエージェントの役割、専門分野、作業スタイルを定義してください。\n\n# 例\nあなたは React と TypeScript を専門とするフロントエンドエンジニアです。\n\n## 作業スタイル\n- 小さく焦点を絞った PR を作成する — 論理的な変更ごとに1コミット\n- 継承よりコンポジションを優先する\n- 新しいコンポーネントには必ずユニットテストを追加する\n\n## 制約\n- 明示的な承認なしに shared/ の型を変更しない\n- features/ の既存のコンポーネントパターンに従う",
       "system_layer_label": "Multica が管理",
@@ -394,7 +394,7 @@
       "reveal_action": "表示して編集",
       "revealing": "表示中...",
       "reveal_failed_toast": "環境変数の値を読み込めませんでした",
-      "empty_editable": "設定された環境変数はありません。起動時にエージェントへ注入する変数を追加してください。"
+      "empty_editable": "環境変数は設定されていません。"
     },
     "custom_args": {
       "intro": "エージェントの起動時に渡す CLI 引数を追加します。",
@@ -465,13 +465,13 @@
       "dialog_edit_title_named": "{{name}} の設定を編集",
       "dialog_replace_title": "{{name}} の設定を置き換え",
       "dialog_replace_description": "機密情報を保護するため、保存済みの内容は再表示されません。新しい設定をすべて入力してください。既存のエージェントへの割り当ては変わりません。",
-      "dialog_name_label": "名前",
+      "dialog_name_label": "Server 名",
       "dialog_name_hint": "Runtime でこの Server を識別する名前です。英数字、ハイフン、アンダースコアを使用できます。",
       "dialog_name_required": "Server 名を入力してください。",
       "dialog_name_invalid": "英数字、ハイフン、アンダースコアのみ使用できます。",
       "dialog_name_duplicate": "同名の Server がすでに存在します。",
       "dialog_editor_label": "設定方法",
-      "dialog_form_tab": "フォーム",
+      "dialog_form_tab": "ビジュアル",
       "dialog_json_tab": "JSON",
       "dialog_type_label": "接続方式",
       "dialog_type_stdio": "STDIO",
@@ -480,7 +480,7 @@
       "dialog_type_http_hint": "リモート HTTP サービスに接続",
       "dialog_command_label": "起動コマンド",
       "dialog_command_required": "Server を起動するコマンドを入力してください。",
-      "dialog_args_label": "引数",
+      "dialog_args_label": "起動引数",
       "dialog_args_hint": "この順序で起動コマンドに渡されます。",
       "dialog_add_arg": "引数を追加",
       "dialog_remove_arg": "引数を削除",
@@ -498,13 +498,13 @@
       "dialog_add_header": "ヘッダーを追加",
       "dialog_remove_header": "ヘッダーを削除",
       "dialog_native_json_hint": "過去の Provider ネイティブ形式です。形式を変更せず JSON で編集できます。",
-      "dialog_json_label": "単一 Server 設定",
+      "dialog_json_label": "設定 JSON",
       "dialog_json_aria": "MCP Server JSON 設定",
       "dialog_json_object": "Server 設定は JSON オブジェクトである必要があります。",
       "dialog_json_target": "Server 設定には command または url が必要です。",
       "dialog_cancel": "キャンセル",
-      "dialog_add_action": "Server を追加",
-      "dialog_update_action": "変更を保存",
+      "dialog_add_action": "追加",
+      "dialog_update_action": "保存",
       "dialog_replace_action": "設定を置き換え",
       "delete_dialog_title": "MCP Server を削除しますか？",
       "delete_dialog_description": "{{name}} はこのエージェントで利用できなくなります。Runtime Server には影響しません。",
@@ -537,7 +537,7 @@
       "mode_label": "ルーティングモード",
       "mode_local": "Local",
       "mode_gateway": "Gateway",
-      "mode_local_hint": "デフォルト。daemon は `openclaw agent --local …` を起動し、エージェントループがこのホストで実行されます。",
+      "mode_local_hint": "このコンピュータで実行します。",
       "mode_gateway_hint": "daemon は OpenClaw Gateway にダイヤルします。エンドポイントフィールドを空欄のままにすると daemon ホストの `~/.openclaw/openclaw.json` から継承します。",
       "gateway_legend": "Gateway エンドポイント",
       "host_label": "Host",
@@ -555,7 +555,7 @@
     },
     "skills": {
       "assigned_title": "エージェントに割り当て済み",
-      "assigned_hint": "ワークスペースのスキルはエージェントと一緒に移動します。削除せず一時的に無効化できます。",
+      "assigned_hint": "オフにすると割り当てを残したまま使用を停止できます。",
       "runtime_title": "ランタイムから継承",
       "runtime_hint": "{{runtime}} から自動検出され、このエージェントがそこで実行されるときに利用できます。",
       "workspace_badge": "ワークスペース",
@@ -616,9 +616,9 @@
       "section_last_30d": "過去30日",
       "section_recent": "最近の作業",
       "subtitle_no_active": "アクティブな作業なし",
-      "subtitle_active_other": "アクティブな作業 {{count}} 件",
+      "subtitle_active_other": "アクティブな実行 {{count}} 件",
       "subtitle_performance": "パフォーマンス",
-      "subtitle_no_recent": "まだ完了した作業はありません",
+      "subtitle_no_recent": "まだ完了した実行はありません",
       "subtitle_recent_progress": "{{total}} 回の実行中 {{shown}} 回",
       "subtitle_recent_latest": "最新 {{count}} 回の実行",
       "empty_now": "このエージェントは現在何も実行していません。",
@@ -627,7 +627,7 @@
       "show_more": "もっと見る →",
       "runs_other": "回実行",
       "success_pct": "成功率 {{percent}}%",
-      "success_label": "成功",
+      "success_label": "成功率",
       "success_hint": "完了した実行数を、完了と失敗の実行数の合計で割った割合です。キャンセルした実行は含みません。",
       "success_unavailable": "この期間に完了または失敗した実行がないため、成功率を計算できません。",
       "cancelled_count": "{{count}} 件キャンセル",
@@ -648,10 +648,10 @@
       "open_issue_aria": "タスクを開く",
       "open_issue_tooltip": "タスクを開く",
       "transcript_tooltip": "トランスクリプトを表示",
-      "cancel_task_aria": "作業をキャンセル",
-      "cancel_task_tooltip": "作業をキャンセル",
+      "cancel_task_aria": "実行をキャンセル",
+      "cancel_task_tooltip": "実行をキャンセル",
       "cancelling_tooltip": "キャンセル中...",
-      "cancel_failed_toast": "作業をキャンセルできませんでした",
+      "cancel_failed_toast": "実行をキャンセルできませんでした",
       "started_prefix": "{{when}} に開始",
       "dispatched_prefix": "{{when}} にディスパッチ",
       "queued_prefix": "{{when}} に待機開始"
@@ -716,7 +716,7 @@
   },
   "live_peek": {
     "current_issue_label": "現在の作業",
-    "no_current_issue": "作業なし",
+    "no_current_issue": "タスクなし",
     "last_activity_label": "最終アクセス",
     "no_recent_activity": "最近のアクティビティなし",
     "failed_indicator": "失敗"
@@ -816,7 +816,7 @@
       "runtime_offline": "デーモンがオフライン",
       "runtime_reconnect_timeout": "デーモンが時間内に再接続しませんでした",
       "runtime_recovery": "デーモンが再起動しました",
-      "timeout": "作業がタイムアウトしました",
+      "timeout": "実行がタイムアウトしました",
       "iteration_limit": "反復回数の上限に達しました",
       "agent_blocked": "人による入力を待機中",
       "api_invalid_request": "モデル API に拒否されました",
@@ -824,7 +824,7 @@
       "runtime_cli_timeout": "ローカルランタイム CLI がタイムアウトしました",
       "environment_prepare_failed": "実行環境を準備できませんでした",
       "runtime_access_denied": "このエージェントはプライベートランタイムで実行できないため、返信できませんでした。ランタイムを公開にするか、所有者が利用できるランタイムへエージェントを再設定/コピーしてください。",
-      "invalid_task_identity": "作業のエージェント情報が一致しません",
+      "invalid_task_identity": "実行のエージェント情報が一致しません",
       "agent_error_provider_auth_or_access": "プロバイダーの認証に失敗しました",
       "agent_error_provider_quota_limit": "プロバイダーのクォータを使い切りました",
       "agent_error_provider_capacity_or_rate_limit": "プロバイダーによるレート制限",
@@ -894,7 +894,7 @@
     "modes": {
       "blank": {
         "title": "空白から始める",
-        "description": "すべての項目を自分で設定します。エージェントの動作が明確に決まっている場合に最適です。"
+        "description": "名前、指示、ランタイムを自分で設定します。"
       },
       "template": {
         "title": "テンプレートを使用",
@@ -902,14 +902,14 @@
       },
       "ai": {
         "title": "AI で作成",
-        "description": "期待する成果を説明すると、Agent Builder が重要な質問を行い、下書きをリアルタイムで作成します。"
+        "description": "対話で編集可能な設定の下書きを作成します。"
       }
     },
     "sections": {
       "identity": "基本情報",
       "behavior": "動作と機能",
       "execution": "実行設定",
-      "execution_hint": "エージェントを実行する場所を選び、必要に応じてランタイムの既定モデル・思考レベル・速度を変更します。",
+      "execution_hint": "未指定の項目はランタイムの既定値を使います。",
       "access": "アクセス",
       "access_hint": "このエージェントを実行できるユーザーを設定します。後から変更できます。",
       "behavior_hint": "動作方法を定義し、利用できるワークスペースのスキルを追加します。",
@@ -934,7 +934,7 @@
     },
     "builder": {
       "setup_title": "Agent Builder のランタイムを選択",
-      "setup_description": "選択したオンラインのランタイムが設定会話を実行し、新しいエージェントの既定ランタイムになります。",
+      "setup_description": "このランタイムは作成時の対話と、新しいエージェントの既定値に使われます。",
       "start": "会話を開始",
       "connect_runtime": "ランタイムを接続",
       "start_failed": "Agent Builder を開始できませんでした。",
@@ -947,7 +947,7 @@
       "runtime_online": "ランタイムはオンライン",
       "runtime_offline": "ランタイムはオフライン",
       "empty_title": "このエージェントに何をさせますか？",
-      "empty_description": "役割、ワークフロー、出力、制約を説明してください。右側に最初の下書きが表示されます。",
+      "empty_description": "このエージェントに任せたいことを説明してください。",
       "prompt_review": "フロントエンドの Pull Request をレビュー",
       "prompt_research": "競合を調査して結果を要約",
       "prompt_assistant": "チームのプロジェクト計画と文章作成を支援",
@@ -957,7 +957,7 @@
       "chat_hint": "会話で要件を整理し、隣の設定を調整します。"
     },
     "live_draft": "エージェント設定",
-    "live_draft_hint": "会話内容がここに反映され、各項目を直接調整できます。",
+    "live_draft_hint": "下書きは直接編集できます。",
     "duplicate_env_notice": "指示、スキル、コマンド引数がコピーされます。環境変数、MCP サーバー、マシンローカルのランタイム設定はコピーされません。",
     "duplicate_runtime_reset_notice": "元のランタイムが利用できないため、このコピーは別のランタイムで実行されます。モデル・思考レベル・速度は選択したランタイムでのみ有効なため、クリアされました。",
     "create_and_open": "作成して開く",

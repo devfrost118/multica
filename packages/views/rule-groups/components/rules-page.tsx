@@ -607,7 +607,7 @@ function GroupDetail({
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <span className="truncate text-body font-medium">{rule.name}</span>
                       {rule.file_name && (
-                        <code className="inline-block max-w-full truncate rounded bg-muted px-1.5 py-0.5 text-micro text-muted-foreground">
+                        <code className="inline-block max-w-full truncate rounded-sm bg-muted px-1.5 py-0.5 text-micro text-muted-foreground">
                           {rule.file_name}
                         </code>
                       )}

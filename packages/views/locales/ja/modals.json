@@ -29,7 +29,7 @@
     "toast_failed": "フィードバックを送信できませんでした",
     "send": "フィードバックを送信",
     "sending": "送信中…",
-    "github_hint_prefix": "より迅速な対応とオープンな議論をご希望ですか？こちらへ ",
+    "github_hint_prefix": "こちらでもフィードバックを送れます：",
     "github_hint_link": "GitHub"
   },
   "issue_picker": {
@@ -81,7 +81,7 @@
     "leader_placeholder": "リーダーエージェントを選択",
     "members_label": "追加メンバー",
     "members_optional": "（任意）",
-    "members_hint": "リーダーがサブタスクを委任できるメンバーです。後から追加できます。",
+    "members_hint": "リーダーはこれらのメンバーにサブタスクを委任できます。",
     "members_placeholder": "エージェントまたはワークスペースメンバーを追加",
     "members_selected_count_other": "{{count}} 件選択中",
     "members_more_count": "+{{count}}",
@@ -105,7 +105,7 @@
     "icon_tooltip": "アイコンを選択",
     "title_placeholder": "プロジェクトのタイトル",
     "description_placeholder": "説明を追加...",
-    "description_hint": "このプロジェクトのすべての作業で、コンテキストとしてエージェントに共有されます。",
+    "description_hint": "このプロジェクトのすべての実行で、コンテキストとしてエージェントに共有されます。",
     "lead": "リード",
     "no_lead": "リードなし",
     "set_start_date": "開始日を設定...",

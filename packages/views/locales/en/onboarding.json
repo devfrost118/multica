@@ -59,7 +59,7 @@
   },
   "source_backfill": {
     "eyebrow": "Quick question",
-    "lede": "One quick question — it helps us understand who finds Multica useful. Answer once and you're back to your work.",
+    "lede": "Help us understand how you found Multica.",
     "submit": "Submit",
     "save_failed_toast": "Failed to save",
     "hint_ready": "Looks good. Hit Submit when you're ready."
@@ -117,7 +117,7 @@
     "other_aria": "Describe something else"
   },
   "step_question": {
-    "hint_pick": "Pick one to continue — or skip if you'd rather not say.",
+    "hint_pick": "You can skip this.",
     "hint_continue": "Looks good. Hit Continue when you're ready."
   },
   "cli_install": {
@@ -131,7 +131,7 @@
   },
   "cloud_waitlist": {
     "intro_main": "Cloud runtimes aren't live yet. Leave your email and we'll reach out when they are.",
-    "intro_warning": "Heads-up: agents can't execute tasks without a runtime — if you hit Skip now, nothing will run until you come back and install one.",
+    "intro_warning": "Heads-up: agents can't start runs without a runtime — if you hit Skip now, nothing will run until you come back and install one.",
     "email_label": "Email",
     "email_placeholder": "you@work.com",
     "reason_label": "Why cloud?",
@@ -218,7 +218,7 @@
     "empty_lede_prefix": "An agent runtime is an AI coding tool we connect to — like ",
     "empty_lede_suffix": ". Install one and refresh, or pick a path below.",
     "empty_skip_title": "Skip for now",
-    "empty_skip_subtitle": "Enter your workspace now. Your agent can't run tasks until an agent runtime is connected on this computer — but you can still browse, plan, and invite teammates.",
+    "empty_skip_subtitle": "Agents can't run until a runtime is connected.",
     "empty_skip_action": "Skip",
     "empty_waitlist_title": "Use a cloud computer",
     "empty_waitlist_subtitle": "We'll run a computer for you in the cloud. Not live yet.",
@@ -236,10 +236,10 @@
   "step_platform": {
     "eyebrow": "Connect a computer",
     "headline": "Connect a computer to run your agent.",
-    "lede": "Mika, your workspace's Chief of Staff, runs on a real computer that you connect to Multica. Pick how you want to connect one.",
-    "hint_default": "Pick a way to connect — or skip and connect a computer later.",
+    "lede": "Connect a computer so Mika can start working.",
+    "hint_default": "You can connect later.",
     "download_title": "Use this computer",
-    "download_subtitle": "Install our desktop app to connect this computer. Opens in a new tab — pick your platform there.",
+    "download_subtitle": "Install Desktop to connect this computer.",
     "download_button": "Download",
     "cli_title": "Connect from the terminal",
     "cli_subtitle": "Connect a server, remote dev box, or any headless computer. Terminal required.",

@@ -89,7 +89,7 @@
     },
     "load_failed": {
       "title": "Billing is temporarily unavailable",
-      "description": "We couldn't read a trustworthy subscription snapshot. Your plan has not been changed."
+      "description": "Couldn't load subscription details. Try again."
     },
     "actions": {
       "retry": "Retry",
@@ -125,12 +125,12 @@
     },
     "past_due": {
       "title": "Payment needs attention",
-      "description": "Open the Billing Portal to update your payment method. The plan badge above shows the access currently available.",
+      "description": "Update your payment method in billing management.",
       "grace_description": "Update your payment method by {{date}} to keep Pro access."
     },
     "subscription_notice": {
       "canceling_title": "Cancellation is scheduled",
-      "canceling_description": "This subscription is scheduled to cancel on {{date}}. The plan badge above shows the access currently enforced.",
+      "canceling_description": "Your subscription will cancel on {{date}}.",
       "canceling_description_without_date": "This subscription is scheduled to cancel at the end of its current period.",
       "incomplete_title": "Subscription setup is incomplete",
       "incomplete_description": "Open billing management to finish or review the payment setup.",
@@ -170,7 +170,7 @@
     },
     "management": {
       "title": "Subscription management",
-      "description": "Stripe securely manages payment methods, invoices, and cancellation.",
+      "description": "Payment methods, invoices, and cancellation.",
       "portal": "Stripe Billing Portal",
       "portal_unavailable": "No Stripe Billing Portal is available for this workspace.",
       "portal_description": "Open Stripe to manage this workspace's subscription."
@@ -201,9 +201,9 @@
       "pending_invitations": "Pending invitations",
       "pending_invitations_description": "Live invitations reserve purchased seats until accepted or expired.",
       "available": "Available seats",
-      "available_description": "Purchased seats not used by members or reserved for invitations.",
+      "available_description": "Purchased seats minus members and reserved invitations.",
       "pending": "Scheduled seat quantity",
-      "pending_description": "A lower quantity that cloud billing reports for the next period.",
+      "pending_description": "Takes effect next billing period.",
       "seat_count_one": "{{count}} seat",
       "seat_count_other": "{{count}} seats",
       "pending_with_date_one": "{{count}} seat from {{date}}",

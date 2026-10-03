@@ -1441,7 +1441,7 @@
   },
   "deliverables": {
     "section_title": "Livrables",
-    "view_all_one": "Voir le livrable",
+    "view_all_one": "Voir le {{count}} livrable",
     "view_all_other": "Voir les {{count}} livrables",
     "name_with_version": "{{name}}, version {{version}}",
     "version_short": "v{{version}}",

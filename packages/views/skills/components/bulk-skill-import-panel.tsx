@@ -504,7 +504,7 @@ function Summary({ results }: { results: BulkResult[] }) {
         {results.map((r) => (
           <div
             key={r.key}
-            className="flex items-center gap-2 rounded px-2 py-1.5 text-caption"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-caption"
           >
             {r.status === "success" && (
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />

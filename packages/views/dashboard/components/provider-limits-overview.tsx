@@ -386,11 +386,11 @@ function ThresholdSettings({
       <span className="flex items-center gap-1 font-medium"><SlidersHorizontal className="size-3" />{t(($) => $.provider_limits.thresholds.title)}</span>
       <label className="flex items-center gap-1 text-muted-foreground">
         {t(($) => $.provider_limits.thresholds.warning)}
-        <input aria-label={t(($) => $.provider_limits.thresholds.warning)} className="w-12 rounded border bg-background px-1 py-0.5 text-foreground" type="number" min="0" max="40" value={warningThreshold} onChange={(event) => onWarningChange(Number(event.target.value))} />%
+        <input aria-label={t(($) => $.provider_limits.thresholds.warning)} className="w-12 rounded-md border bg-background px-1 py-0.5 text-foreground" type="number" min="0" max="40" value={warningThreshold} onChange={(event) => onWarningChange(Number(event.target.value))} />%
       </label>
       <label className="flex items-center gap-1 text-muted-foreground">
         {t(($) => $.provider_limits.thresholds.critical)}
-        <input aria-label={t(($) => $.provider_limits.thresholds.critical)} className="w-12 rounded border bg-background px-1 py-0.5 text-foreground" type="number" min="0" max="20" value={criticalThreshold} onChange={(event) => onCriticalChange(Number(event.target.value))} />%
+        <input aria-label={t(($) => $.provider_limits.thresholds.critical)} className="w-12 rounded-md border bg-background px-1 py-0.5 text-foreground" type="number" min="0" max="20" value={criticalThreshold} onChange={(event) => onCriticalChange(Number(event.target.value))} />%
       </label>
     </div>
   );
@@ -483,14 +483,14 @@ function BucketRow({
   const used = remaining === null ? null : 100 - remaining;
   const severity = remaining === null ? "unknown" : remaining <= criticalThreshold ? "critical" : remaining <= warningThreshold ? "warning" : "normal";
   return (
-    <div className="rounded bg-muted/40 p-2">
+    <div className="rounded-md bg-muted/40 p-2">
       <div className="flex items-center justify-between gap-2 text-caption">
         <span className="truncate font-medium">{bucket.label}</span>
         <span className={severity === "critical" ? "text-destructive" : "text-muted-foreground"}>
           {used === null ? t(($) => $.provider_limits.unknown) : t(($) => $.provider_limits.used, { value: Math.round(used) })}
         </span>
       </div>
-      {used !== null && <div className="mt-1 h-1.5 overflow-hidden rounded bg-background"><div className={severity === "critical" ? "h-full bg-destructive" : "h-full bg-primary"} style={{ width: `${used}%` }} /></div>}
+      {used !== null && <div className="mt-1 h-1.5 overflow-hidden rounded-sm bg-background"><div className={severity === "critical" ? "h-full bg-destructive" : "h-full bg-primary"} style={{ width: `${used}%` }} /></div>}
       {bucket.resets_at && <p className="mt-1 text-caption text-muted-foreground">{t(($) => $.provider_limits.resets_at, { value: new Date(bucket.resets_at).toLocaleString() })}</p>}
       {bucket.note && <p className="mt-1 text-caption text-muted-foreground">{titleCase(bucket.note)}</p>}
     </div>
