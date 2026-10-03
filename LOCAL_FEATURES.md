@@ -43,6 +43,13 @@
 
 ## Журнал синков
 
+### 2026-10-03: v0.4.36 → v0.6.1 (FRO-329)
+
+- Upstream tag `v0.6.1` (`2ea01ae4ef55de4310b99af192d2dbd367832883`) merged into fork via `sync/upstream-v0.6.1`.
+- Конфликты: union fork-local + upstream (ProjectEnvironments / EffectiveRules / ActiveSiblingRuns / droid + wakeup/delta fields / codearts / RuntimeProfile); locale JSON key-wise; ru∪fr.
+- Locale parity: missing EN keys appended; extras pruned; ja/ko/zh-Hans без мёртвых `_one`. Новые RU/FR строки для отсутствовавших ключей временно скопированы из EN.
+- Активные темы сохранены. `go build ./...` OK. Draft PR — без merge; TEST deploy ждёт merge в `main`.
+
 ### 2026-08-29: v0.4.32 → v0.4.36 (FRO-268)
 
 - Upstream tag `v0.4.36` (`c1a61e1e8`) merged into fork via `sync/upstream-v0.4.36`.
