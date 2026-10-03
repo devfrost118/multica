@@ -1,64 +1,66 @@
 {
+  "nav": {
+    "inbox": "收件箱",
+    "chat": "聊天",
+    "my_issues": "我的任务",
+    "issues": "任务",
+    "projects": "项目",
+    "autopilots": "自动化",
+    "agents": "智能体",
+    "squads": "小队",
+    "usage": "统计",
+    "runtimes": "运行时",
+    "skills": "Skills",
+    "rules": "规则",
+    "settings": "设置"
+  },
+  "tab": {
+    "issue": "任务",
+    "project": "项目",
+    "autopilot": "自动化",
+    "agent": "智能体",
+    "member": "成员",
+    "squad": "小队",
+    "skill": "Skill",
+    "machine": "机器",
+    "runtime": "运行时",
+    "attachment": "附件",
+    "create_agent": "创建智能体",
+    "unknown": "未知页面"
+  },
   "help": {
+    "trigger": "帮助",
+    "download_desktop": "桌面端",
+    "docs": "文档",
     "changelog": "更新日志",
     "discord": "Discord",
-    "docs": "文档",
-    "download_desktop": "桌面端",
     "feedback": "反馈",
-    "server_version": "服务器版本 {{version}}",
-    "trigger": "帮助"
+    "server_version": "服务器版本 {{version}}"
   },
-  "nav": {
-    "agents": "智能体",
-    "autopilots": "自动化",
-    "chat": "聊天",
-    "inbox": "收件箱",
-    "issues": "任务",
-    "my_issues": "我的任务",
-    "projects": "项目",
-    "rules": "规则",
-    "runtimes": "运行时",
-    "settings": "设置",
-    "skills": "Skills",
-    "squads": "小队",
-    "usage": "统计"
+  "workspace_loader": {
+    "loading_workspace": "正在加载工作区...",
+    "loading_named_prefix": "正在加载"
   },
   "sidebar": {
-    "configure_group": "配置",
+    "unpin_tooltip": "取消固定",
+    "workspaces_label": "工作区",
     "create_workspace": "创建工作区",
-    "discord_card": {
-      "dismiss": "关闭",
-      "title": "加入 Discord"
-    },
-    "invitation_decline": "拒绝",
-    "invitation_join": "加入",
+    "pending_invitations_label": "待处理的邀请",
     "invitation_workspace_fallback": "工作区",
+    "invitation_join": "加入",
+    "invitation_decline": "拒绝",
     "log_out": "退出登录",
     "new_issue": "新建任务",
     "new_issue_shortcut": "C",
-    "pending_invitations_label": "待处理的邀请",
     "pinned_label": "固定",
-    "unpin_tooltip": "取消固定",
+    "work_group": "Work",
+    "ai_team_group": "AI Team",
+    "show_more_pins": "Show {{count}} more…",
+    "show_fewer_pins": "Show fewer",
     "unread_overflow": "99+",
-    "workspace_group": "工作区",
-    "workspaces_label": "工作区"
-  },
-  "tab": {
-    "agent": "智能体",
-    "attachment": "附件",
-    "autopilot": "自动化",
-    "create_agent": "创建智能体",
-    "issue": "任务",
-    "machine": "机器",
-    "member": "成员",
-    "project": "项目",
-    "runtime": "运行时",
-    "skill": "Skill",
-    "squad": "小队",
-    "unknown": "未知页面"
-  },
-  "workspace_loader": {
-    "loading_named_prefix": "正在加载",
-    "loading_workspace": "正在加载工作区..."
+    "discord_card": {
+      "title": "加入 Discord",
+      "dismiss": "关闭"
+    }
   }
 }

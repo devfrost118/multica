@@ -5,9 +5,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@multica/ui/components/ui/sonner";
 import { cn } from "@multica/ui/lib/utils";
 import { WebProviders } from "@/components/web-providers";
-import type { SupportedLocale } from "@multica/core/i18n";
 import { RESOURCES } from "@multica/views/locales";
 import { getRequestLocale } from "@/lib/request-locale";
+import { HTML_LANG } from "@/lib/html-lang";
 import { SITE_TITLE, TITLE_TEMPLATE } from "@/platform/document-title";
 import {
   resolveBrowserApiBaseUrl,
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     template: TITLE_TEMPLATE,
   },
   description:
-    "Open-source platform that turns coding agents into real teammates. Assign tasks, track progress, compound skills.",
+    "Source-available platform that turns coding agents into real teammates. Assign tasks, track progress, compound skills.",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     shortcut: ["/favicon.svg"],
@@ -129,6 +129,7 @@ const HTML_LANG: Record<SupportedLocale, string> = {
   ko: "ko-KR",
   ja: "ja-JP",
   ru: "ru-RU",
+  fr: "fr-FR",
 };
 
 export default async function RootLayout({

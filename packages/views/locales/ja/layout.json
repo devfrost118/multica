@@ -1,64 +1,66 @@
 {
+  "nav": {
+    "inbox": "インボックス",
+    "chat": "チャット",
+    "my_issues": "マイタスク",
+    "issues": "タスク",
+    "projects": "プロジェクト",
+    "autopilots": "オートパイロット",
+    "agents": "エージェント",
+    "squads": "スクワッド",
+    "usage": "分析",
+    "runtimes": "ランタイム",
+    "skills": "スキル",
+    "rules": "ルール",
+    "settings": "設定"
+  },
+  "tab": {
+    "issue": "タスク",
+    "project": "プロジェクト",
+    "autopilot": "オートパイロット",
+    "agent": "エージェント",
+    "member": "メンバー",
+    "squad": "スクワッド",
+    "skill": "スキル",
+    "machine": "マシン",
+    "runtime": "ランタイム",
+    "attachment": "添付ファイル",
+    "create_agent": "エージェントを作成",
+    "unknown": "不明なページ"
+  },
   "help": {
+    "trigger": "ヘルプ",
+    "download_desktop": "デスクトップ版",
+    "docs": "ドキュメント",
     "changelog": "変更ログ",
     "discord": "Discord",
-    "docs": "ドキュメント",
-    "download_desktop": "デスクトップ版",
     "feedback": "フィードバック",
-    "server_version": "サーバーバージョン {{version}}",
-    "trigger": "ヘルプ"
+    "server_version": "サーバーバージョン {{version}}"
   },
-  "nav": {
-    "agents": "エージェント",
-    "autopilots": "オートパイロット",
-    "chat": "チャット",
-    "inbox": "インボックス",
-    "issues": "タスク",
-    "my_issues": "マイタスク",
-    "projects": "プロジェクト",
-    "rules": "ルール",
-    "runtimes": "ランタイム",
-    "settings": "設定",
-    "skills": "スキル",
-    "squads": "スクワッド",
-    "usage": "分析"
+  "workspace_loader": {
+    "loading_workspace": "ワークスペースを読み込み中…",
+    "loading_named_prefix": "読み込み中"
   },
   "sidebar": {
-    "configure_group": "設定",
+    "unpin_tooltip": "ピン留めを解除",
+    "workspaces_label": "ワークスペース",
     "create_workspace": "ワークスペースを作成",
-    "discord_card": {
-      "dismiss": "閉じる",
-      "title": "Discord に参加"
-    },
-    "invitation_decline": "辞退",
-    "invitation_join": "参加",
+    "pending_invitations_label": "保留中の招待",
     "invitation_workspace_fallback": "ワークスペース",
+    "invitation_join": "参加",
+    "invitation_decline": "辞退",
     "log_out": "ログアウト",
     "new_issue": "新規タスク",
     "new_issue_shortcut": "C",
-    "pending_invitations_label": "保留中の招待",
     "pinned_label": "ピン留め済み",
-    "unpin_tooltip": "ピン留めを解除",
+    "work_group": "Work",
+    "ai_team_group": "AI Team",
+    "show_more_pins": "Show {{count}} more…",
+    "show_fewer_pins": "Show fewer",
     "unread_overflow": "99+",
-    "workspace_group": "ワークスペース",
-    "workspaces_label": "ワークスペース"
-  },
-  "tab": {
-    "agent": "エージェント",
-    "attachment": "添付ファイル",
-    "autopilot": "オートパイロット",
-    "create_agent": "エージェントを作成",
-    "issue": "タスク",
-    "machine": "マシン",
-    "member": "メンバー",
-    "project": "プロジェクト",
-    "runtime": "ランタイム",
-    "skill": "スキル",
-    "squad": "スクワッド",
-    "unknown": "不明なページ"
-  },
-  "workspace_loader": {
-    "loading_named_prefix": "読み込み中",
-    "loading_workspace": "ワークスペースを読み込み中…"
+    "discord_card": {
+      "title": "Discord に参加",
+      "dismiss": "閉じる"
+    }
   }
 }

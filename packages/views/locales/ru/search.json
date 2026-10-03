@@ -1,35 +1,35 @@
 {
+  "title": "Поиск",
+  "description": "Поиск по страницам, задачам, проектам и участникам",
+  "placeholder": "Введите команду или запрос...",
+  "groups": {
+    "pages": "Страницы",
+    "commands": "Команды",
+    "members": "Участники",
+    "projects": "Проекты",
+    "issues": "Задачи",
+    "cancelled": "Отменено",
+    "recent": "Недавние"
+  },
   "commands": {
-    "copy_identifier": "Копировать идентификатор ({{identifier}})",
-    "copy_issue_link": "Копировать ссылку на задачу",
     "current_theme_aria": "Текущая тема",
-    "fold_all_comments": "Свернуть все комментарии",
     "new_issue": "Создать задачу",
     "new_project": "Создать проект",
-    "switch_to_dark": "Тёмная тема",
-    "switch_to_light": "Светлая тема",
+    "copy_issue_link": "Копировать ссылку на задачу",
+    "copy_identifier": "Копировать идентификатор ({{identifier}})",
+    "fold_all_comments": "Свернуть все комментарии",
     "unfold_all_comments": "Развернуть все комментарии",
+    "switch_to_light": "Светлая тема",
+    "switch_to_dark": "Тёмная тема",
     "use_system_theme": "Системная тема"
   },
-  "description": "Поиск по страницам, задачам, проектам и участникам",
+  "toast": {
+    "link_copied": "Ссылка скопирована",
+    "copied_identifier": "Скопировано {{identifier}}"
+  },
   "empty": {
     "no_results": "Ничего не найдено.",
     "type_to_search": "Введите запрос для поиска задач и проектов"
-  },
-  "groups": {
-    "cancelled": "Отменено",
-    "commands": "Команды",
-    "issues": "Задачи",
-    "members": "Участники",
-    "pages": "Страницы",
-    "projects": "Проекты",
-    "recent": "Недавние"
-  },
-  "placeholder": "Введите команду или запрос...",
-  "title": "Поиск",
-  "toast": {
-    "copied_identifier": "Скопировано {{identifier}}",
-    "link_copied": "Ссылка скопирована"
   },
   "trigger": {
     "label": "Поиск..."

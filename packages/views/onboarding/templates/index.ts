@@ -19,9 +19,10 @@ const CONTENT_LANG_BY_LOCALE: Record<SupportedLocale, ContentLang> = {
   "zh-Hans": "zh",
   ko: "ko",
   ja: "ja",
-  // No Russian variant of the onboarding template content yet — fall back to
-  // English prose while the rest of the UI renders in Russian.
+  // No Russian/French variant of the onboarding template content yet — fall
+  // back to English prose while the rest of the UI renders in that locale.
   ru: "en",
+  fr: "en",
 };
 
 /**

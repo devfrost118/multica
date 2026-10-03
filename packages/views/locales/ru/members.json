@@ -1,21 +1,23 @@
 {
+  "role": {
+    "owner": "Владелец",
+    "admin": "Администратор",
+    "member": "Участник"
+  },
   "card": {
+    "unavailable": "Участник недоступен",
     "agents_section": "Агенты ({{count}})",
     "detail_link": "Подробнее →",
-    "more_agents_one": "и ещё {{count}} агент",
+    "more_agents_few": "and {{count}} other agents",
+    "more_agents_many": "and {{count}} other agents",
     "more_agents_other": "и ещё {{count}} агента",
-    "unavailable": "Участник недоступен"
+    "more_agents_one": "и ещё {{count}} агент"
   },
   "detail": {
-    "breadcrumb_fallback": "Участник",
+    "workspace_fallback": "Рабочая область",
     "members_breadcrumb": "Участники",
-    "not_found_description": "Возможно, этот участник покинул рабочую область.",
+    "breadcrumb_fallback": "Участник",
     "not_found_title": "Участник не найден",
-    "workspace_fallback": "Рабочая область"
-  },
-  "role": {
-    "admin": "Администратор",
-    "member": "Участник",
-    "owner": "Владелец"
+    "not_found_description": "Возможно, этот участник покинул рабочую область."
   }
 }

@@ -1,35 +1,35 @@
 {
+  "title": "検索",
+  "description": "ページ、タスク、プロジェクト、メンバーを検索します",
+  "placeholder": "コマンドを入力するか検索...",
+  "groups": {
+    "pages": "ページ",
+    "commands": "コマンド",
+    "members": "メンバー",
+    "projects": "プロジェクト",
+    "issues": "タスク",
+    "cancelled": "キャンセル済み",
+    "recent": "最近の項目"
+  },
   "commands": {
-    "copy_identifier": "識別子をコピー ({{identifier}})",
-    "copy_issue_link": "タスクのリンクをコピー",
     "current_theme_aria": "現在のテーマ",
-    "fold_all_comments": "すべてのコメントを折りたたむ",
     "new_issue": "新規タスク",
     "new_project": "新規プロジェクト",
-    "switch_to_dark": "ダークテーマに切り替え",
-    "switch_to_light": "ライトテーマに切り替え",
+    "copy_issue_link": "タスクのリンクをコピー",
+    "copy_identifier": "識別子をコピー ({{identifier}})",
+    "fold_all_comments": "すべてのコメントを折りたたむ",
     "unfold_all_comments": "すべてのコメントを展開",
+    "switch_to_light": "ライトテーマに切り替え",
+    "switch_to_dark": "ダークテーマに切り替え",
     "use_system_theme": "システムテーマを使用"
   },
-  "description": "ページ、タスク、プロジェクト、メンバーを検索します",
+  "toast": {
+    "link_copied": "リンクをコピーしました",
+    "copied_identifier": "{{identifier}}をコピーしました"
+  },
   "empty": {
     "no_results": "結果が見つかりませんでした。",
     "type_to_search": "タスクやプロジェクトを検索するには入力してください"
-  },
-  "groups": {
-    "cancelled": "キャンセル済み",
-    "commands": "コマンド",
-    "issues": "タスク",
-    "members": "メンバー",
-    "pages": "ページ",
-    "projects": "プロジェクト",
-    "recent": "最近の項目"
-  },
-  "placeholder": "コマンドを入力するか検索...",
-  "title": "検索",
-  "toast": {
-    "copied_identifier": "{{identifier}}をコピーしました",
-    "link_copied": "リンクをコピーしました"
   },
   "trigger": {
     "label": "検索..."

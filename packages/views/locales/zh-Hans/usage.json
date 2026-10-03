@@ -1,201 +1,204 @@
 {
-  "daily": {
-    "metric_cost": "费用",
-    "metric_label": "指标",
-    "metric_tasks": "task 数",
-    "metric_time": "运行时长",
-    "metric_tokens": "Token",
-    "no_data": "所选时间范围内暂无消耗。",
-    "title_cost": "每日费用",
-    "title_errors": "每日错误",
-    "title_tasks": "每日 task 数",
-    "title_time": "每日运行时长",
-    "title_tokens": "每日 Token"
-  },
-  "dim": {
-    "daily": "按天",
-    "label": "维度",
-    "weekly": "按周"
-  },
-  "duration": {
-    "less_than_minute": "<1分钟"
-  },
-  "empty": {
-    "body": "当智能体在这里开始执行 task 后，它们的 token 消耗和运行时长将出现在此处。",
-    "title": "暂无消耗数据"
-  },
-  "errors": {
-    "by_agent": "问题最多的智能体",
-    "class": {
-      "agent": "智能体",
-      "auth": "认证",
-      "other": "其他",
-      "provider": "模型服务",
-      "rate_limit": "限流",
-      "runtime": "运行时",
-      "timeout": "超时"
-    },
-    "codes_label": "错误码",
-    "header_agent": "智能体",
-    "header_failed": "失败数",
-    "header_rate": "失败率",
-    "header_runs": "运行数",
-    "hide_reasons": "收起错误码",
-    "kpi_agents_hint": "最多 {{name}} · {{count}} 次",
-    "kpi_agents_label": "受影响智能体 · {{days}}天",
-    "kpi_failed_hint": "共 {{total}} 次运行",
-    "kpi_failed_label": "失败 task · {{days}}天",
-    "kpi_rate_label": "失败率 · {{days}}天",
-    "low_sample": "所选时间范围内运行不足 {{count}} 次，失败率参考价值有限。",
-    "mix_label": "失败构成",
-    "mix_title": "失败构成 · {{failed}}",
-    "no_data": "所选时间范围内没有失败的运行。",
-    "other_agents": "其他智能体",
-    "show_all": "展开全部 {{count}} 个",
-    "show_less": "只看前 {{count}} 个",
-    "show_reasons": "展开错误码",
-    "sort_failed": "失败数",
-    "sort_label": "错误榜排序依据",
-    "sort_rate": "失败率",
-    "summary": "{{total}} 次运行中有 {{failed}} 次失败 · {{rate}}",
-    "title": "错误",
-    "tooltip_rate": "错误率"
+  "title": "统计",
+  "tab_usage": "用量",
+  "header": {
+    "timezone_and_updated": "{{tz}} · 更新于 {{time}}",
+    "refresh": "刷新"
   },
   "filter": {
+    "project_label": "项目",
     "all_projects": "全部项目",
-    "period_label": "时间范围",
-    "project_label": "项目"
-  },
-  "header": {
-    "refresh": "刷新",
-    "timezone_and_updated": "{{tz}} · 更新于 {{time}}"
+    "period_label": "时间范围"
   },
   "kpi": {
     "cost_label": "费用 · {{days}}天",
-    "run_time_hint": "共 {{tasks}} 个 task",
-    "run_time_label": "运行时长 · {{days}}天",
-    "tasks_hint": "失败 {{failed}} 个",
-    "tasks_label": "task 数 · {{days}}天",
+    "tokens_label": "Token · {{days}}天",
     "tokens_hint": "输入 {{input}} · 输出 {{output}}",
-    "tokens_label": "Token · {{days}}天"
+    "run_time_label": "运行时长 · {{days}}天",
+    "run_time_hint": "共 {{tasks}} 个 task",
+    "tasks_label": "task 数 · {{days}}天",
+    "tasks_hint": "失败 {{failed}} 个"
+  },
+  "dim": {
+    "label": "维度",
+    "daily": "按天",
+    "weekly": "按周"
+  },
+  "daily": {
+    "title_cost": "每日费用",
+    "title_tokens": "每日 Token",
+    "title_time": "每日运行时长",
+    "title_tasks": "每日 task 数",
+    "title_errors": "每日错误",
+    "metric_cost": "费用",
+    "metric_tokens": "Token",
+    "metric_time": "运行时长",
+    "metric_tasks": "task 数",
+    "no_data": "所选时间范围内暂无消耗。",
+    "metric_label": "指标"
+  },
+  "weekly": {
+    "title_cost": "每周费用",
+    "title_tokens": "每周 Token",
+    "title_time": "每周运行时长",
+    "title_tasks": "每周 task 数",
+    "title_errors": "每周错误",
+    "partial_label": "{{range}}（未满 · 已过 {{covered}} / 7 天）"
+  },
+  "errors": {
+    "kpi_failed_label": "失败 task · {{days}}天",
+    "kpi_failed_hint": "共 {{total}} 次运行",
+    "kpi_rate_label": "失败率 · {{days}}天",
+    "kpi_agents_label": "受影响智能体 · {{days}}天",
+    "kpi_agents_hint": "最多 {{name}} · {{count}} 次",
+    "tooltip_rate": "错误率",
+    "class": {
+      "auth": "认证",
+      "rate_limit": "限流",
+      "timeout": "超时",
+      "provider": "模型服务",
+      "runtime": "运行时",
+      "agent": "智能体",
+      "other": "其他"
+    },
+    "title": "错误",
+    "summary": "{{total}} 次运行中有 {{failed}} 次失败 · {{rate}}",
+    "mix_title": "失败构成 · {{failed}}",
+    "mix_label": "失败构成",
+    "codes_label": "错误码",
+    "by_agent": "问题最多的智能体",
+    "sort_label": "错误榜排序依据",
+    "sort_failed": "失败数",
+    "sort_rate": "失败率",
+    "header_agent": "智能体",
+    "header_failed": "失败数",
+    "header_runs": "运行数",
+    "header_rate": "失败率",
+    "other_agents": "其他智能体",
+    "low_sample": "所选时间范围内运行不足 {{count}} 次，失败率参考价值有限。",
+    "no_data": "所选时间范围内没有失败的运行。",
+    "show_reasons": "展开错误码",
+    "hide_reasons": "收起错误码",
+    "show_all": "展开全部 {{count}} 个",
+    "show_less": "只看前 {{count}} 个"
   },
   "leaderboard": {
+    "title": "排行榜",
     "caption": "{{count}} 个智能体",
     "caption_with_deleted": "{{count}} 个智能体 · {{deleted}} 个已删除",
+    "sort_label": "智能体排序依据",
     "deleted_agents": "已删除的智能体",
-    "header_agent": "智能体",
-    "header_cost": "费用",
-    "header_tasks": "task 数",
-    "header_time": "运行时长",
-    "header_tokens": "Token",
-    "no_data": "所选时间范围内暂无智能体活动。",
     "other_agents": "其他智能体",
+    "header_agent": "智能体",
+    "header_tokens": "Token",
+    "header_cost": "费用",
+    "header_time": "运行时长",
+    "header_tasks": "task 数",
+    "usage_unreported_other": "{{count}} runs did not report usage",
+    "usage_unreported_pending_other": "{{count}} runs did not report usage · totals are still being processed",
+    "usage_totals_pending": "Usage totals are still being processed",
     "show_all": "展开全部",
     "show_less": "只看前 {{count}} 个",
-    "sort_label": "智能体排序依据",
-    "title": "排行榜"
+    "no_data": "所选时间范围内暂无智能体活动。"
+  },
+  "empty": {
+    "title": "暂无消耗数据",
+    "body": "当智能体在这里开始执行 task 后，它们的 token 消耗和运行时长将出现在此处。"
   },
   "provider_limits": {
-    "attempt_source": "尝试来源：{{value}}",
+    "title": "提供商限额",
+    "subtitle": "已连接提供商上报的订阅配额窗口。",
+    "view_label": "提供商限额视图",
     "by_accounts": "按账号",
     "by_daemon": "按守护进程",
-    "checked_at": "检查时间 {{value}}",
-    "credentials": {
-      "account_label": "Factory 账户标签",
-      "account_label_placeholder": "账户标签（可选）",
-      "action_failed": "操作失败。请检查权限后重试。",
-      "awaiting_account": "等待账户",
-      "awaiting_account_help": "正在等待守护进程识别此卡片对应的 Factory 账户。下次探测后刷新——现在再创建凭据可能产生重复。",
-      "connect": "连接",
-      "connected": "已连接",
-      "fingerprint": "指纹：{{value}}",
-      "not_connected": "未连接",
-      "remove": "删除",
-      "replace": "替换",
-      "replacement_token": "替换令牌",
-      "title": "Factory 凭据",
-      "token": "Factory API 令牌",
-      "validation": "验证：{{value}}"
-    },
-    "data_unavailable_checked": "数据不可用 · 检查于 {{value}}",
-    "detail": {
-      "estimated": "预估",
-      "no_history": "该配额 bucket 暂无历史记录。",
-      "pace_title": "消耗速度与预计可用时长",
-      "pace_value": "约消耗 {{value}}",
-      "runway_exhausted": "已达到或超过限额",
-      "runway_value": "按此速度约可用 {{value}}",
-      "trigger": "详情",
-      "unavailable": {
-        "insufficient_points": "可比较的 snapshot 数量还不够。",
-        "not_decreasing": "剩余量并未下降，因此无法计算消耗趋势。",
-        "stale_data": "最新 snapshot 已过期，刷新后才能获得可信的预测。",
-        "zero_elapsed_time": "snapshot 之间的时间间隔太短，无法估算消耗速度。"
-      }
-    },
+    "loading": "正在加载提供商限额…",
+    "refresh": "刷新",
+    "refreshing": "正在刷新用量数据…",
     "empty": "尚未上报提供商限额。",
     "error": "无法加载提供商限额。",
-    "freshness": "新鲜度 {{value}}",
-    "freshness_hint": {
-      "aging": "1-3 天前更新。",
-      "expired": "超过 3 天未更新，或无法采集用量数据。",
-      "fresh": "在新鲜度有效期内更新。",
-      "recent": "24 小时内更新。"
-    },
-    "freshness_level": {
-      "aging": "较旧",
-      "expired": "过期",
-      "fresh": "最新",
-      "recent": "略旧"
-    },
-    "last_attempt_status": "最近尝试状态：{{value}}",
-    "last_attempted_probe": "最近尝试检查：{{value}}",
-    "last_good": "上次正常：{{value}}",
-    "last_successful_collection": "最近成功采集：{{value}}",
-    "loading": "正在加载提供商限额…",
+    "unknown": "未知",
     "no_buckets": "没有可用的配额 bucket。",
+    "used": "已用 {{value}}%",
+    "freshness": "新鲜度 {{value}}",
+    "resets_at": "重置时间 {{value}}",
+    "checked_at": "检查时间 {{value}}",
+    "last_good": "上次正常：{{value}}",
     "reason": "原因：{{value}}",
+    "updated": "更新于 {{value}}",
+    "data_unavailable_checked": "数据不可用 · 检查于 {{value}}",
+    "last_successful_collection": "最近成功采集：{{value}}",
+    "last_attempted_probe": "最近尝试检查：{{value}}",
+    "attempt_source": "尝试来源：{{value}}",
+    "last_attempt_status": "最近尝试状态：{{value}}",
     "reasons": {
       "auth_expired": "身份验证已过期。请重新登录 Codex。",
       "authentication_required": "请登录 Codex 以采集用量数据。",
-      "credential_invalid": "已保存的令牌被拒绝。打开“详情”并替换该令牌。",
-      "credential_missing": "尚未连接令牌。打开“详情”并添加令牌即可采集用量数据。",
-      "onboarding_required": "请在提供商 CLI 中完成设置，以采集用量数据。",
-      "rate_limited": "提供商暂时限制了检查频率。",
       "reauth_required": "本地会话已过期。请通过提供商 CLI 重新登录。",
+      "onboarding_required": "请在提供商 CLI 中完成设置，以采集用量数据。",
+      "usage_unavailable": "无法采集用量数据，请重试。",
+      "rate_limited": "提供商暂时限制了检查频率。",
       "unsupported_platform": "当前操作系统不支持采集用量数据。",
-      "usage_unavailable": "无法采集用量数据，请重试。"
+      "credential_missing": "尚未连接令牌。打开“详情”并添加令牌即可采集用量数据。",
+      "credential_invalid": "已保存的令牌被拒绝。打开“详情”并替换该令牌。"
     },
-    "refresh": "刷新",
-    "refreshing": "正在刷新用量数据…",
-    "resets_at": "重置时间 {{value}}",
-    "status": {
-      "error": "错误",
-      "ok": "正常",
-      "partial": "部分",
-      "stale": "已过期",
-      "unavailable": "不可用"
-    },
-    "subtitle": "已连接提供商上报的订阅配额窗口。",
     "thresholds": {
-      "critical": "严重",
       "title": "提醒",
-      "warning": "警告"
+      "warning": "警告",
+      "critical": "严重"
     },
-    "title": "提供商限额",
-    "unknown": "未知",
-    "updated": "更新于 {{value}}",
-    "used": "已用 {{value}}%",
-    "view_label": "提供商限额视图"
+    "status": {
+      "ok": "正常",
+      "stale": "已过期",
+      "partial": "部分",
+      "unavailable": "不可用",
+      "error": "错误"
+    },
+    "freshness_level": {
+      "fresh": "最新",
+      "recent": "略旧",
+      "aging": "较旧",
+      "expired": "过期"
+    },
+    "freshness_hint": {
+      "fresh": "在新鲜度有效期内更新。",
+      "recent": "24 小时内更新。",
+      "aging": "1-3 天前更新。",
+      "expired": "超过 3 天未更新，或无法采集用量数据。"
+    },
+    "detail": {
+      "trigger": "详情",
+      "no_history": "该配额 bucket 暂无历史记录。",
+      "pace_title": "消耗速度与预计可用时长",
+      "estimated": "预估",
+      "pace_value": "约消耗 {{value}}",
+      "runway_value": "按此速度约可用 {{value}}",
+      "runway_exhausted": "已达到或超过限额",
+      "unavailable": {
+        "insufficient_points": "可比较的 snapshot 数量还不够。",
+        "stale_data": "最新 snapshot 已过期，刷新后才能获得可信的预测。",
+        "not_decreasing": "剩余量并未下降，因此无法计算消耗趋势。",
+        "zero_elapsed_time": "snapshot 之间的时间间隔太短，无法估算消耗速度。"
+      }
+    },
+    "credentials": {
+      "title": "Factory 凭据",
+      "connected": "已连接",
+      "not_connected": "未连接",
+      "fingerprint": "指纹：{{value}}",
+      "validation": "验证：{{value}}",
+      "account_label": "Factory 账户标签",
+      "account_label_placeholder": "账户标签（可选）",
+      "token": "Factory API 令牌",
+      "replacement_token": "替换令牌",
+      "connect": "连接",
+      "replace": "替换",
+      "remove": "删除",
+      "awaiting_account": "等待账户",
+      "awaiting_account_help": "正在等待守护进程识别此卡片对应的 Factory 账户。下次探测后刷新——现在再创建凭据可能产生重复。",
+      "action_failed": "操作失败。请检查权限后重试。"
+    }
   },
-  "tab_usage": "用量",
-  "title": "统计",
-  "weekly": {
-    "partial_label": "{{range}}（未满 · 已过 {{covered}} / 7 天）",
-    "title_cost": "每周费用",
-    "title_errors": "每周错误",
-    "title_tasks": "每周 task 数",
-    "title_time": "每周运行时长",
-    "title_tokens": "每周 Token"
+  "duration": {
+    "less_than_minute": "<1分钟"
   }
 }

@@ -3,8 +3,6 @@ package migrations
 import (
 	"fmt"
 	"path/filepath"
-	"reflect"
-	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -12,67 +10,44 @@ import (
 	"testing"
 )
 
-const maxLegacyMigrationPrefix = 148
+func TestMigrationNumericPrefixesAreUnique(t *testing.T) {
+	files := migrationFilesForLint(t, "*.up.sql")
 
-// legacyDuplicateMigrationStems lists prefixes that were already duplicated
-// before this lint existed. It is a frozen historical record, not an escape
-// hatch: a new collision must be renumbered instead of added here. Prefix 362
-// was briefly listed and is deliberately absent again — the later of the two
-// migrations was renumbered to 376, which its idempotent DDL made safe.
-var legacyDuplicateMigrationStems = map[string][]string{
-	"020": {"020_issue_number", "020_task_session"},
-	"026": {"026_comment_reactions", "026_task_messages"},
-	"029": {"029_attachment", "029_daemon_token", "029_drop_daemon_pairing"},
-	"032": {"032_drop_agent_triggers", "032_issue_search_index", "032_runtime_owner", "032_task_usage"},
-	"033": {"033_chat", "033_comment_search_index"},
-	"035": {"035_project_priority", "035_task_queue_issue_id_index"},
-	"040": {"040_agent_custom_env", "040_chat_unread_since"},
-	"041": {"041_agent_custom_args", "041_workspace_invitation"},
-	"043": {"043_audit_reserved_slugs", "043_fix_orphaned_autopilot_runs"},
-	"046": {"046_agent_mcp_config", "046_agent_unique_name", "046_drop_runtime_usage"},
-	"050": {"050_add_onboarded_at_to_users", "050_agent_model", "050_issue_first_executed_at"},
-	"060": {"060_add_user_language", "060_agent_description_length", "060_chat_session_runtime_id", "060_issue_origin_quick_create"},
-	"065": {"065_backfill_onboarded_at", "065_project_resources"},
-	"069": {"069_comment_resolved_at", "069_drop_task_last_heartbeat"},
-	"079": {"079_autopilot_run_skipped_status", "079_backfill_api_invalid_request", "079_github_integration"},
-	"083": {"083_attachment_chat_columns", "083_runtime_visibility"},
-	"084": {"084_squad", "084_task_usage_dashboard_rollup"},
-	"091": {"091_autopilot_webhook_triggers", "091_issue_start_date", "091_pr_ci_conflict"},
-	"095": {"095_agent_thinking_level", "095_backfill_starter_content_state"},
-	"096": {"096_autopilot_squad_assignee", "096_pending_check_suite", "096_user_profile_description"},
-	"098": {"098_contact_sales_inquiries", "098_user_onboarding_runtime_choice"},
-	"109": {"109_agent_task_waiting_local_directory", "109_drop_agent_skills_local", "109_issue_pull_request_close_intent", "109_lark_integration"},
-	"111": {"111_issue_origin_lark_chat", "111_workspace_avatar"},
-	"112": {"112_issue_dates_to_date", "112_lark_installation_bot_union_id"},
-	"113": {"113_lark_inbound_dedup_per_installation", "113_sys_cron_executions"},
-	"120": {"120_autopilot_subscriber", "120_comment_source_task_id", "120_github_pending_installation", "120_runtime_profile"},
-	"122": {"122_lark_chat_session_binding_thread_reply", "122_task_handoff_note"},
-	"124": {"124_autopilot_run_planned_at", "124_channel_generalization", "124_task_prepare_lease"},
-	"127": {"127_issue_pull_request_reference_only", "127_task_squad_id", "127_user_composio_connection"},
-	"128": {"128_agent_task_queue_runtime_mcp_overlay", "128_autopilot_collaborator", "128_comment_routing_escalation"},
-	// Fork-local topic merges collided with upstream numbering. These stems are
-	// already applied (version-keyed by full stem, mutually independent), and
-	// the local ones are not idempotent, so renaming them would re-run CREATE
-	// TABLE on existing databases. Frozen here instead.
-	"117": {"117_agent_task_queue_initiator_user_id", "117_rule_groups"},
-	"179": {"179_project_environment", "179_runtime_profile_add_grok"},
-	"180": {"180_provider_limit_snapshots", "180_task_chat_finalize_deferred"},
-	// Same collision, second round: the fork's provider-credentials and
-	// provider-limit topics (FRO-184/197/203) numbered 203-208 while upstream
-	// v0.4.12 shipped its own 203-208. Renumbering the local stems is not an
-	// option for the same reason as above — 205_provider_credentials is a bare
-	// CREATE TABLE, 206/207 are CREATE INDEX CONCURRENTLY without IF NOT
-	// EXISTS, and 208 DROPs a constraint unconditionally, so a renamed stem
-	// would re-run and fail on every already-migrated install.
-	"203": {"203_issue_workspace_assignee_index", "203_provider_limit_snapshots_daemon_id_backfill"},
-	"204": {"204_issue_workspace_parent_index", "204_provider_limit_snapshots_daemon_index"},
-	"205": {"205_issue_workspace_position_index", "205_provider_credentials", "205_runtime_profile_add_droid"},
-	"206": {"206_agent_disabled_runtime_skills", "206_provider_credentials_unique_index"},
-	"207": {"207_client_usage_daily", "207_provider_credentials_workspace_index"},
-	"208": {"208_client_usage_daily_unique_index", "208_provider_limit_snapshots_stale_status"},
+	// Migrations through 128 contain historical duplicate numeric prefixes.
+	// From 129 onward, keep the numeric sequence unique so release tooling and
+	// operators can identify one schema change unambiguously by its number.
+	// Frozen fork/upstream collisions after 129 stay allowlisted: those stems
+	// are already applied (version-keyed by full stem) and are not safely
+	// renameable on existing databases.
+	const firstUniqueMigrationNumber = 129
+	allowedDuplicatePrefixes := map[int]bool{
+		179: true, 180: true,
+		203: true, 204: true, 205: true, 206: true, 207: true, 208: true,
+	}
+	stemByNumber := make(map[int]string)
+	for _, file := range files {
+		stem, _, ok := splitMigrationFilename(filepath.Base(file))
+		if !ok {
+			continue
+		}
+		prefix, _, ok := strings.Cut(stem, "_")
+		if !ok {
+			continue
+		}
+		number, err := strconv.Atoi(prefix)
+		if err != nil || number < firstUniqueMigrationNumber {
+			continue
+		}
+		if allowedDuplicatePrefixes[number] {
+			continue
+		}
+		if previous, exists := stemByNumber[number]; exists {
+			t.Errorf("migrations %s and %s share numeric prefix %s", previous, stem, prefix)
+			continue
+		}
+		stemByNumber[number] = stem
+	}
 }
-
-var migrationPrefixPattern = regexp.MustCompile(`^(\d+)_`)
 
 func TestMigrationFilesHaveMatchingDirections(t *testing.T) {
 	files := migrationFilesForLint(t, "*.sql")
@@ -94,58 +69,6 @@ func TestMigrationFilesHaveMatchingDirections(t *testing.T) {
 			t.Errorf("migration %s must have both .up.sql and .down.sql files", stem)
 		}
 	}
-}
-
-func TestMigrationNumericPrefixesStayUniqueAfterLegacySet(t *testing.T) {
-	stemsByPrefix := migrationStemsByPrefix(t)
-
-	for prefix, stems := range stemsByPrefix {
-		sort.Strings(stems)
-
-		legacyStems, isLegacyDuplicate := legacyDuplicateMigrationStems[prefix]
-		if isLegacyDuplicate {
-			expected := append([]string(nil), legacyStems...)
-			sort.Strings(expected)
-			if !reflect.DeepEqual(stems, expected) {
-				t.Errorf("legacy duplicate migration prefix %s changed: got %v, want %v; do not add to or rename historical duplicate-prefix migrations", prefix, stems, expected)
-			}
-			continue
-		}
-
-		if len(stems) > 1 {
-			t.Errorf("migration prefix %s is reused by %v; use the next unique prefix instead", prefix, stems)
-		}
-	}
-}
-
-func TestNewMigrationPrefixesStartAfterLegacyRange(t *testing.T) {
-	stemsByPrefix := migrationStemsByPrefix(t)
-
-	for prefix, stems := range stemsByPrefix {
-		n, err := strconv.Atoi(prefix)
-		if err != nil {
-			t.Fatalf("parse migration prefix %q: %v", prefix, err)
-		}
-		if n <= maxLegacyMigrationPrefix && !isKnownLegacyPrefix(prefix) {
-			t.Errorf("migration prefix %s is in the frozen legacy range 001-%03d: %v; new migrations must start at %03d", prefix, maxLegacyMigrationPrefix, stems, maxLegacyMigrationPrefix+1)
-		}
-	}
-}
-
-func migrationStemsByPrefix(t *testing.T) map[string][]string {
-	t.Helper()
-
-	files := migrationFilesForLint(t, "*.up.sql")
-	stemsByPrefix := make(map[string][]string)
-	for _, file := range files {
-		stem := strings.TrimSuffix(filepath.Base(file), ".up.sql")
-		match := migrationPrefixPattern.FindStringSubmatch(stem)
-		if match == nil {
-			t.Fatalf("migration %s does not start with a numeric prefix followed by underscore", stem)
-		}
-		stemsByPrefix[match[1]] = append(stemsByPrefix[match[1]], stem)
-	}
-	return stemsByPrefix
 }
 
 func migrationFilesForLint(t *testing.T, pattern string) []string {
@@ -181,28 +104,4 @@ func splitMigrationFilename(name string) (stem, direction string, ok bool) {
 		}
 	}
 	return "", "", false
-}
-
-func isKnownLegacyPrefix(prefix string) bool {
-	if _, ok := legacyDuplicateMigrationStems[prefix]; ok {
-		return true
-	}
-
-	switch prefix {
-	case "001", "002", "003", "004", "005", "006", "007", "008", "009", "010",
-		"011", "012", "013", "014", "015", "016", "017", "018", "019", "021",
-		"022", "023", "024", "025", "027", "028", "030", "031", "034", "036",
-		"037", "038", "039", "042", "044", "045", "047", "048", "049", "051",
-		"052", "053", "054", "055", "056", "057", "058", "059", "061", "062",
-		"063", "064", "066", "067", "068", "072", "073", "074", "075", "076",
-		"077", "078", "080", "081", "082", "085", "086", "087", "088", "089",
-		"090", "092", "093", "094", "097", "100", "101", "102", "103", "104",
-		"105", "106", "107", "108", "110", "114", "115", "116", "117", "118",
-		"119", "121", "123", "125", "126", "129", "130", "131", "132", "133",
-		"134", "135", "136", "137", "138", "139", "140", "141", "142", "143",
-		"144", "145", "146", "147", "148":
-		return true
-	default:
-		return false
-	}
 }

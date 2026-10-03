@@ -1,99 +1,144 @@
 {
-  "add_member_dialog": {
-    "cancel": "キャンセル",
-    "description": "ワークスペースのメンバーまたはエージェントをこのスクワッドに追加します。",
-    "label_member": "メンバー",
-    "label_optional": "（任意）",
-    "label_role": "役割",
-    "placeholder_role_inline": "役割を追加…",
-    "title": "メンバーを追加"
-  },
-  "archive_dialog": {
-    "archiving": "アーカイブ中…",
-    "cancel": "キャンセル",
-    "confirm": "アーカイブ",
-    "description": "\"{{name}}\" がアーカイブされます。現在このスクワッドに割り当てられているタスクはリーダーに引き継がれます。この操作は取り消せません。ルーティングを元に戻すには、新しいスクワッドを作成してください。",
-    "success": "スカッドをアーカイブしました",
-    "title": "このスクワッドをアーカイブしますか？"
-  },
-  "description_dialog": {
-    "cancel": "キャンセル",
-    "placeholder_empty": "説明を追加",
-    "title": "説明を編集"
-  },
-  "discard_changes_dialog": {
-    "description": "このタブに保存していない変更があります。タブを切り替えると変更は破棄されます。",
-    "discard_button": "破棄",
-    "keep_editing": "編集を続ける",
-    "title": "保存していない変更を破棄しますか？"
+  "page": {
+    "title": "スクワッド",
+    "new_button": "新規スクワッド",
+    "empty_no_squads": "スクワッドはまだありません。作成して始めましょう。",
+    "empty_no_match": "フィルターに一致するスクワッドはありません。",
+    "table": {
+      "name": "スカッド",
+      "leader": "リーダー",
+      "members": "メンバー",
+      "creator": "作成者",
+      "created": "作成日時"
+    },
+    "no_matches": "該当するスカッドはありません",
+    "row_menu": "スカッドの操作",
+    "archive_action": "アーカイブ"
   },
   "inspector": {
-    "archive_button": "アーカイブ",
-    "details_section": "詳細"
+    "details_section": "詳細",
+    "archive_button": "アーカイブ"
   },
-  "instructions_tab": {
-    "description": "スクワッドの指示は、リーダーエージェントがこのスクワッドに割り当てられたタスクに取り組むたびに、そのプロンプトに挿入されます。スクワッド全体の方針、進め方の取り決め、リーダーがすべての作業で従うべきコンテキストを伝えるために使用します。",
-    "save_button": "保存",
-    "unsaved_changes": "保存していない変更"
+  "member_type": {
+    "agent": "エージェント",
+    "member": "メンバー"
+  },
+  "archive_dialog": {
+    "title": "このスクワッドをアーカイブしますか？",
+    "description": "\"{{name}}\" がアーカイブされます。現在このスクワッドに割り当てられているタスクはリーダーに引き継がれます。この操作は取り消せません。ルーティングを元に戻すには、新しいスクワッドを作成してください。",
+    "cancel": "キャンセル",
+    "confirm": "アーカイブ",
+    "archiving": "アーカイブ中…",
+    "success": "スカッドをアーカイブしました"
+  },
+  "name_editor": {
+    "title": "Rename squad",
+    "placeholder": "Squad name",
+    "required": "Name is required",
+    "cancel": "キャンセル",
+    "save": "Save",
+    "saved": "Saved",
+    "save_failed": "Failed to save"
+  },
+  "add_member_dialog": {
+    "title": "メンバーを追加",
+    "description": "ワークスペースのメンバーまたはエージェントをこのスクワッドに追加します。",
+    "label_member": "メンバー",
+    "label_role": "役割",
+    "label_optional": "（任意）",
+    "cancel": "キャンセル",
+    "select_target": "Select a member or agent",
+    "search_placeholder": "Search members or agents...",
+    "members_section": "Members",
+    "agents_section": "Agents",
+    "role_placeholder": "e.g. Reviewer, Frontend Lead",
+    "add": "Add"
+  },
+  "role_editor": {
+    "empty": "役割を追加…",
+    "placeholder": "役割（例：レビュアー）"
+  },
+  "description_dialog": {
+    "title": "説明を編集",
+    "placeholder_empty": "説明を追加",
+    "cancel": "キャンセル",
+    "responsibility_placeholder": "What is this squad responsible for?",
+    "save": "Save"
+  },
+  "discard_changes_dialog": {
+    "title": "保存していない変更を破棄しますか？",
+    "description": "このタブに保存していない変更があります。タブを切り替えると変更は破棄されます。",
+    "keep_editing": "編集を続ける",
+    "discard_button": "破棄"
   },
   "members_tab": {
-    "active_issue_more": "他 {{count}}件",
+    "section_title": "メンバー",
+    "section_count_other": "このスクワッドのメンバー {{count}}名",
     "add_member_button": "メンバーを追加",
     "create_agent_button": "エージェントを作成",
-    "issue_status_blocked": "ブロック中",
-    "last_active_label": "最終アクティブ {{time}}",
     "leader_chip": "リーダー",
+    "view_agent_tooltip": "エージェントの詳細を開く",
     "make_leader_tooltip": "スクワッドリーダーに指定",
     "remove_member_tooltip": "スクワッドから削除",
-    "section_count_other": "このスクワッドのメンバー {{count}}名",
-    "section_title": "メンバー",
-    "status_archived": "アーカイブ済み",
+    "status_working": "作業中",
     "status_idle": "アイドル",
     "status_offline": "オフライン",
     "status_unstable": "不安定",
-    "status_working": "作業中",
-    "view_agent_tooltip": "エージェントの詳細を開く"
+    "status_archived": "アーカイブ済み",
+    "issue_status_blocked": "ブロック中",
+    "active_issue_more": "他 {{count}}件",
+    "last_active_label": "最終アクティブ {{time}}"
   },
-  "name_editor": {
-    "cancel": "キャンセル"
+  "detail_tabs": {
+    "members": "メンバー",
+    "instructions": "指示"
   },
-  "page": {
-    "archive_action": "アーカイブ",
-    "empty_no_match": "フィルターに一致するスクワッドはありません。",
-    "empty_no_squads": "スクワッドはまだありません。作成して始めましょう。",
-    "new_button": "新規スクワッド",
-    "no_matches": "該当するスカッドはありません",
-    "row_menu": "スカッドの操作",
-    "table": {
-      "created": "作成日時",
-      "creator": "作成者",
-      "leader": "リーダー",
-      "members": "メンバー",
-      "name": "スカッド"
-    },
-    "title": "スクワッド"
+  "details": {
+    "leader": "リーダー",
+    "members": "メンバー",
+    "created_by": "作成者",
+    "created": "作成日時",
+    "updated": "更新日時"
+  },
+  "toasts": {
+    "member_added": "メンバーを追加しました",
+    "member_add_failed": "メンバーを追加できませんでした",
+    "member_removed": "メンバーを削除しました",
+    "member_remove_failed": "メンバーを削除できませんでした",
+    "role_updated": "役割を更新しました",
+    "role_update_failed": "役割を更新できませんでした",
+    "leader_updated": "リーダーを更新しました",
+    "leader_update_failed": "リーダーを更新できませんでした",
+    "archive_failed": "スクワッドをアーカイブできませんでした",
+    "instructions_saved": "指示を保存しました"
   },
   "profile_card": {
-    "archived": "アーカイブ済み",
+    "unavailable": "スクワッドを利用できません",
     "detail_link": "詳細 →",
+    "archived": "アーカイブ済み",
     "member_count_other": "メンバー {{count}}名",
     "members_section": "メンバー",
-    "more_members_other": "他 {{count}}名",
-    "unavailable": "スクワッドを利用できません"
+    "more_members_other": "他 {{count}}名"
+  },
+  "instructions_tab": {
+    "description": "スクワッドの指示は、リーダーエージェントがこのスクワッドに割り当てられたタスクに取り組むたびに、そのプロンプトに挿入されます。スクワッド全体の方針、進め方の取り決め、リーダーがすべての作業で従うべきコンテキストを伝えるために使用します。",
+    "unsaved_changes": "保存していない変更",
+    "save_button": "保存",
+    "placeholder": "e.g. Always start by writing a failing test. Prefer small, atomic commits."
   },
   "scope": {
-    "all": "すべて",
-    "mine": "自分"
+    "mine": "自分",
+    "all": "すべて"
   },
   "toolbar": {
-    "clear_filters": "フィルターをクリア",
+    "display": "表示",
+    "sort_by": "並び替え",
     "direction_asc": "昇順",
     "direction_desc": "降順",
-    "display": "表示",
-    "filter_active_count_other": "{{count}} 件のフィルター",
-    "filter_label": "フィルター",
-    "result_count_title": "該当スカッド / すべてのスカッド",
     "section_columns": "列",
-    "sort_by": "並び替え"
+    "result_count_title": "該当スカッド / すべてのスカッド",
+    "filter_label": "フィルター",
+    "filter_active_count_other": "{{count}} 件のフィルター",
+    "clear_filters": "フィルターをクリア"
   }
 }

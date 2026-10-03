@@ -1,0 +1,422 @@
+{
+  "create": {
+    "manual": {
+      "toast_created": "Skill créé",
+      "description_placeholder": "Une phrase sur le moment où assigner ce skill à un agent.",
+      "submitting": "Création…",
+      "submit": "Créer le skill",
+      "name_conflict_hint": " Essayez un autre nom et renvoyez le formulaire.",
+      "name_hint": "Doit être unique dans l'espace de travail.",
+      "cancel": "Annuler",
+      "name_label": "Nom",
+      "fallback_error": "Échec de la création du skill",
+      "name_placeholder": "ex. review-helper",
+      "description_label": "Description"
+    },
+    "close_aria": "Fermer",
+    "local": {
+      "choose_folder": "Choisir un dossier",
+      "choose_archive": "Choisir un fichier .skill / .zip",
+      "folder_label": "Dossier",
+      "archive_label": "Archiver",
+      "files_other": "{{count}} fichiers",
+      "files_one": "{{count}} fichier",
+      "missing_skill_md": "Ce dossier n'est pas un skill : il ne contient pas de fichier SKILL.md.",
+      "too_large": "Ce skill est trop volumineux pour être importé.",
+      "empty": "Le dossier est vide.",
+      "too_many_files": "Ce skill contient trop de fichiers pour être importé.",
+      "name_conflict_hint": " Le nom du skill importé existe déjà — supprimez l'existant avant de réessayer.",
+      "fallback_error": "Échec de l'importation",
+      "cancel": "Annuler",
+      "import": "Importer",
+      "importing": "Importation…",
+      "toast_imported": "Skill importé"
+    },
+    "back_aria": "Retour au choix de la méthode",
+    "method_card": {
+      "manual_title": "Create manually",
+      "manual_desc": "Start from a blank SKILL.md and write your own instructions.",
+      "url_title": "Import from URL",
+      "url_desc": "Pull a published skill from ClawHub or Skills.sh.",
+      "runtime_title": "Copy from runtime",
+      "runtime_desc": "Promote a skill already installed on your local runtime.",
+      "bulk_title": "Import a set",
+      "bulk_desc": "Many skills at once — a GitHub repo or a local folder."
+    },
+    "close": "Fermer",
+    "back": "Retour",
+    "url": {
+      "importing_skills_sh": "Importation depuis Skills.sh…",
+      "importing_clawhub": "Importation depuis ClawHub…",
+      "url_label": "URL du skill",
+      "importing": "Importation…",
+      "supported_sources": "Sources prises en charge",
+      "toast_imported": "Skill importé",
+      "name_conflict_hint": " Le nom du skill importé existe déjà — supprimez l'existant avant de réessayer.",
+      "importing_github": "Importation depuis GitHub…",
+      "cancel": "Annuler",
+      "fallback_error": "Échec de l'importation",
+      "import": "Importer"
+    },
+    "method": {
+      "chooser": {
+        "title": "Nouveau skill",
+        "desc": "Choisissez comment ajouter un skill à cet espace de travail."
+      },
+      "manual": {
+        "title": "Créer manuellement",
+        "desc": "Commencez avec un fichier SKILL.md vide."
+      },
+      "local": {
+        "title": "Importer depuis cet appareil",
+        "desc": "Choisissez un dossier contenant SKILL.md ou une archive .skill / .zip."
+      },
+      "bulk": {
+        "title": "Import a set",
+        "desc": "Import many skills at once from a GitHub repo or a local folder."
+      },
+      "url": {
+        "title": "Importer depuis une URL",
+        "desc": "Récupérez un skill publié depuis son URL."
+      },
+      "runtime": {
+        "title": "Copier depuis un runtime",
+        "desc": "Partagez un skill installé sur votre runtime local."
+      }
+    }
+  },
+  "toolbar": {
+    "clear_filters": "Effacer les filtres",
+    "section_usage": "Utilisation",
+    "direction_desc": "Décroissant",
+    "filter_label": "Filtrer",
+    "sort_by": "Trier par",
+    "display": "Affichage",
+    "direction_asc": "Croissant",
+    "section_columns": "Colonnes",
+    "filter_active_count_other": "{{count}} filtres",
+    "filter_active_count_one": "{{count}} filtre",
+    "result_count_title": "Skills correspondants / tous les skills"
+  },
+  "file_tree": {
+    "no_files": "Aucun fichier",
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "rename": "Renommer",
+      "label": "Actions pour {{path}}"
+    }
+  },
+  "runtime_import": {
+    "bulk_progress": "Importation {{completed}} / {{total}}…",
+    "bulk_done_button": "Terminé",
+    "conflict_overwrite_all": "Tout écraser",
+    "bulk_ready": "{{count}} skills sélectionnés",
+    "conflict_bulk_title": "{{count}} skills demandent une décision",
+    "bulk_import_button": "Importer {{count}} skills",
+    "ignored_files_hint": "Les liens symboliques, les fichiers illisibles, les fichiers trop volumineux et les ensembles très gros sont ignorés à l'importation.",
+    "bulk_cancelled_hint": "Importation annulée.",
+    "ready": "Prêt à importer",
+    "skill_name_label": "Nom du skill dans l'espace de travail",
+    "bulk_summary_created": "Créés",
+    "no_local_runtimes_hint": "Connectez un runtime local pour parcourir et importer ses skills locaux.",
+    "search_placeholder": "Rechercher des skills locaux",
+    "bulk_summary_updated": "Mis à jour",
+    "bulk_summary_failed": "En échec",
+    "bulk_summary_skipped": "Ignorés",
+    "bulk_summary_conflicts": "Conflits",
+    "conflict_name_still_exists": "Ce nom existe déjà. Choisissez-en un autre ou ignorez.",
+    "toast_import_failed": "Échec de l'importation du skill",
+    "conflict_locked": "Seul le créateur peut écraser ce skill depuis une importation locale ; modifiez-le depuis la page de détail du skill si vous devez le changer.",
+    "conflict_overwrite": "Écraser",
+    "conflict_cancel": "Annuler",
+    "no_search_results_hint": "Aucun skill local ne correspond à « {{query}} ».",
+    "import_button": "Importer dans l'espace de travail",
+    "conflict_skip_all": "Tout ignorer",
+    "select_all": "Tout sélectionner ({{count}})",
+    "conflict_skip": "Ignorer",
+    "no_search_results_title": "No matching local skills",
+    "conflict_footer": "{{count}} décisions de conflit en attente.",
+    "choose_runtime": "Choisissez un runtime pour continuer",
+    "no_local_runtimes_title": "Aucun runtime local disponible",
+    "importing": "Importation…",
+    "bulk_cancel_button": "Annuler",
+    "no_skills_hint": "This runtime does not have any discoverable local skills yet.",
+    "conflict_locked_creator": "Ce skill a été créé par {{creator}}. Seul le créateur peut l'écraser depuis une importation locale ; modifiez-le depuis la page de détail du skill si vous devez le changer.",
+    "conflict_missing_resolution": "Choisissez comment résoudre ce conflit.",
+    "bulk_summary_imported": "Imported",
+    "skill_files_other": "{{count}} fichiers",
+    "skill_files_one": "{{count}} fichier",
+    "select_skill": "Sélectionnez un skill pour continuer.",
+    "conflict_single_title": "Un skill portant ce nom existe déjà",
+    "must_be_online": "Le runtime doit être en ligne pour parcourir les skills locaux.",
+    "conflict_rename_label": "Nouveau nom du skill",
+    "skill_description_placeholder": "Facultatif — décrivez quand un agent doit utiliser ce skill.",
+    "into_workspace": "dans cet espace de travail.",
+    "no_skills_title": "Aucun skill local trouvé",
+    "bulk_complete_hint": "Importation terminée.",
+    "conflict_apply_button": "Appliquer les décisions",
+    "load_failed": "Échec du chargement des skills locaux du runtime",
+    "conflict_rename": "Renommer",
+    "not_supported": "Ce fournisseur de runtime n'expose pas encore d'inventaire de skills locaux.",
+    "toast_imported": "Skill importé",
+    "runtime_label": "Runtime",
+    "skill_description_label": "Description",
+    "runtime_placeholder": "Sélectionnez un runtime local",
+    "conflict_hint": "Choisissez d'écraser le skill existant de l'espace de travail, de l'importer sous un nouveau nom, ou de l'ignorer."
+  },
+  "page": {
+    "tagline": "Des instructions que n'importe quel agent de cet espace de travail peut utiliser.",
+    "new_skill": "Nouveau skill",
+    "supporting_data_warning": "Certaines données de l'espace de travail n'ont pas pu être chargées. L'attribution des créateurs, les noms de runtimes ou les droits de modification peuvent apparaître incomplets.",
+    "list_error": {
+      "title": "Impossible de charger les skills",
+      "retry": "Réessayer",
+      "fallback": "Une erreur est survenue lors de la récupération de la liste des skills."
+    },
+    "scopes": {
+      "used": {
+        "description": "Skills assignés à au moins un agent",
+        "label": "Utilisés"
+      },
+      "unused": {
+        "description": "Skills assignés à aucun agent",
+        "label": "Inutilisés"
+      },
+      "all": {
+        "description": "Tous les skills de cet espace de travail",
+        "label": "Tous"
+      },
+      "mine": {
+        "description": "Les skills que vous avez créés",
+        "label": "Créés par moi"
+      }
+    },
+    "title": "Skills",
+    "intro_banner": {
+      "title": "Partagés avec votre espace de travail.",
+      "highlight": "Les skills d'un runtime local restent privés tant que vous n'en copiez pas un ici.",
+      "body": "Chacun peut créer un skill, en importer un depuis une URL ou un dossier local, ou en copier un depuis son runtime local : tous les agents pourront l'utiliser."
+    },
+    "empty": {
+      "description": "Créez ou importez un skill.",
+      "title": "Aucun skill pour l'instant"
+    },
+    "no_matches": {
+      "title": "Aucune correspondance",
+      "try_different": " Essayez une autre recherche.",
+      "with_query": "Aucun skill ne correspond à « {{query}} »{{filterSuffix}}.",
+      "with_query_filter_suffix": " dans ce filtre",
+      "filter_only": "Aucun skill ne correspond à ce filtre."
+    },
+    "learn_more": "En savoir plus →",
+    "search_placeholder": "Rechercher des skills…"
+  },
+  "bulk_import": {
+    "source_label": "Source",
+    "source_github": "GitHub repo",
+    "source_folder": "Local folder",
+    "github_url_label": "Repository or folder URL",
+    "github_url_placeholder": "github.com/owner/repo or .../tree/main/skills",
+    "discover": "Discover",
+    "discovering": "Discovering…",
+    "folder_pick": "Choose a folder",
+    "folder_drop_hint": "or drop a folder here",
+    "folder_reading": "Reading folder…",
+    "candidates_title": "Found skills",
+    "already_exists": "already exists",
+    "empty_no_skills": "No SKILL.md found here.",
+    "empty_hint": "Each skill is a folder containing a SKILL.md.",
+    "capped_notice": "Showing the first {{count}} skills; more were found.",
+    "folder_too_large": "Folder is too large to read in the browser.",
+    "discover_failed": "Could not read that source.",
+    "import_selected": "Import {{count}} selected"
+  },
+  "actions": {
+    "no_agents_match": "Aucun agent ne correspond à votre recherche.",
+    "delete": "Supprimer",
+    "add_dialog_description": "Select the agents that should get the selected skills.",
+    "added_toast": "Ajouté à {{name}}",
+    "updated_toast_other": "{{count}} skills mis à jour depuis leur source",
+    "updated_toast_one": "{{count}} skill mis à jour depuis sa source",
+    "my_agents": "Mes agents",
+    "delete_dialog_desc_other": "Les {{count}} skills sélectionnés seront définitivement supprimés et retirés de tous les agents.",
+    "delete_dialog_desc_one": "Le skill sélectionné sera définitivement supprimé et retiré de tous les agents.",
+    "deleted_toast_other": "{{count}} skills supprimés",
+    "deleted_toast_one": "{{count}} skill supprimé",
+    "update_summary_skipped_other": "{{count}} ne peuvent pas être mis à jour depuis une source — ignorés",
+    "update_summary_skipped_one": "{{count}} ne peut pas être mis à jour depuis une source — ignoré",
+    "added_multi_toast_other": "Ajouté à {{count}} agents",
+    "added_multi_toast_one": "Ajouté à {{count}} agent",
+    "refresh": "Mettre à jour depuis la source",
+    "search_placeholder": "Rechercher des agents…",
+    "row_menu": "Actions",
+    "update_none": "La sélection ne contient aucun skill importé que vous puissiez mettre à jour",
+    "update_partial_toast": "{{count}} mis à jour, {{failed}} en échec",
+    "selected": "{{count}} sélectionnés",
+    "no_agents": "Aucun agent disponible",
+    "clear_selection": "Effacer la sélection",
+    "update_summary_selected_other": "{{count}} skills seront mis à jour depuis leur source",
+    "update_summary_selected_one": "{{count}} skill sera mis à jour depuis sa source",
+    "update_updating": "Mise à jour {{done}}/{{total}}…",
+    "delete_failed_toast": "Échec de la suppression des skills",
+    "add_failed_toast": "Échec de l'ajout du skill",
+    "adding": "Ajout...",
+    "add_to_agent": "Ajouter à un agent",
+    "update": "Mettre à jour",
+    "cancel": "Annuler",
+    "has_partial": "{{owned}}/{{total}} ajoutés",
+    "update_dialog_title": "Mettre à jour les skills depuis leur source ?",
+    "delete_dialog_title_other": "Supprimer {{count}} skills ?",
+    "delete_dialog_title_one": "Supprimer {{count}} skill ?",
+    "add_confirm": "Ajouter ({{num}})",
+    "delete_no_permission": "La sélection contient des skills que seuls leur créateur ou un administrateur peuvent supprimer",
+    "other_agents": "Autres agents",
+    "update_confirm": "Mettre à jour {{count}}"
+  },
+  "file_viewer": {
+    "raw_placeholder": "Contenu du fichier...",
+    "raw_aria": "Contenu en texte brut de {{path}}",
+    "markdown_placeholder": "Rédigez du contenu Markdown...",
+    "no_content": "*Aucun contenu pour l'instant*"
+  },
+  "table": {
+    "source_skills_sh": "Depuis Skills.sh",
+    "source_manual": "Créé manuellement",
+    "source_runtime_named": "Depuis {{name}}",
+    "created": "Création",
+    "source_runtime_unknown": "Depuis un runtime",
+    "lock_tooltip": "Lecture seule — seuls le créateur ou un administrateur peuvent modifier",
+    "unused": "— inutilisé",
+    "source_runtime_provider": "Depuis le runtime {{provider}}",
+    "used_by": "Utilisé par",
+    "updated": "Mise à jour",
+    "name": "Nom",
+    "source": "Source",
+    "source_github": "Depuis GitHub",
+    "source_clawhub": "Depuis ClawHub",
+    "created_by": "Ajouté par",
+    "by_creator": "par {{name}}"
+  },
+  "detail": {
+    "tabs": {
+      "aria": "Sections du skill",
+      "files_other": "Fichiers {{count}}",
+      "files_one": "Fichiers {{count}}",
+      "overview": "Vue d'ensemble"
+    },
+    "toast_delete_failed": "Échec de la suppression du skill",
+    "not_found": {
+      "back": "Retour aux skills",
+      "title": "Skill introuvable",
+      "fallback": "Ce skill a peut-être été supprimé, ou vous avez perdu l'accès."
+    },
+    "delete_dialog": {
+      "warning": "Cette action est irréversible.",
+      "title": "Supprimer le skill ?",
+      "description_no_agents": "« {{name}} » sera définitivement supprimé et retiré de tous les agents.",
+      "cancel": "Annuler",
+      "description_with_agents_other": "« {{name}} » sera définitivement supprimé et retiré de {{count}} agents qui l'utilisent actuellement.",
+      "description_with_agents_one": "« {{name}} » sera définitivement supprimé et retiré de {{count}} agent qui l'utilise actuellement.",
+      "confirm": "Supprimer définitivement",
+      "deleting": "Suppression…"
+    },
+    "toast_saved": "Skill enregistré",
+    "delete_tooltip": "Supprimer le skill",
+    "read_only": "Lecture seule",
+    "overview": {
+      "properties": "Propriétés",
+      "description_hint": "Les agents s’en servent pour décider quand charger le skill.",
+      "used_by_other": "Utilisé par {{count}} agents",
+      "used_by_one": "Utilisé par {{count}} agent",
+      "labels": "Étiquettes",
+      "permissions_locked_creator": "Seuls le créateur ({{name}}) ou un administrateur de l'espace de travail peuvent modifier ce skill.",
+      "properties_hint": "Ces champs restent synchronisés avec le frontmatter du SKILL.md.",
+      "permissions_locked": "Seuls le créateur ou un administrateur de l'espace de travail peuvent modifier ce skill.",
+      "description": "Description",
+      "used_by_empty": "Assigné à aucun agent pour l'instant. Ouvrez l'onglet Skills d'un agent pour l'assigner.",
+      "name": "Nom",
+      "permissions_owner": "Vous pouvez modifier et supprimer ce skill. Les changements prennent effet à la prochaine exécution d'agent."
+    },
+    "all_skills": "Tous les skills",
+    "refresh": {
+      "button": "Mettre à jour",
+      "source_skills_sh": "Skills.sh",
+      "toast_success": "Skill mis à jour depuis {{source}}",
+      "dialog": {
+        "warning": "Les modifications locales de ce skill seront écrasées. Les assignations d'agents, les étiquettes et le créateur sont conservés.",
+        "title": "Mettre à jour depuis la source ?",
+        "description": "« {{name}} » sera retéléchargé depuis {{source}} : son nom, sa description, son SKILL.md et ses fichiers seront remplacés par la dernière version.",
+        "refreshing": "Mise à jour…",
+        "cancel": "Annuler",
+        "confirm": "Mettre à jour"
+      },
+      "tooltip": "Retélécharger ce skill depuis sa source",
+      "source_github": "GitHub",
+      "source_clawhub": "ClawHub",
+      "toast_failed": "Échec de la mise à jour du skill"
+    },
+    "toast_save_failed": "Échec de l'enregistrement du skill",
+    "add_file": {
+      "placeholder": "templates/review.md",
+      "add": "Ajouter",
+      "cancel": "Annuler",
+      "errors": {
+        "double_dot": "Les chemins ne peuvent pas contenir « .. ».",
+        "empty": "Le chemin ne peut pas être vide.",
+        "is_directory": "Un dossier portant ce nom existe déjà",
+        "reserved": "SKILL.md est réservé au fichier principal.",
+        "exists": "Un fichier existe déjà à ce chemin.",
+        "under_file": "Un fichier existe déjà à cet emplacement",
+        "absolute": "Les chemins absolus ne sont pas autorisés."
+      }
+    },
+    "toast_deleted": "Skill supprimé",
+    "name_placeholder": "nom-du-skill",
+    "supporting_data_warning": "Certaines données de l'espace de travail n'ont pas pu être chargées. L'attribution des créateurs, les noms de runtimes ou les droits de modification peuvent apparaître incomplets jusqu'à la prochaine actualisation.",
+    "description_placeholder": "Une phrase décrivant quand un agent doit utiliser ce skill…",
+    "delete_file": "Supprimer le fichier",
+    "header": {
+      "used_by_other": "{{count}} agents",
+      "used_by_one": "{{count}} agent",
+      "files_other": "{{count}} fichiers",
+      "files_one": "{{count}} fichier",
+      "updated": "Mis à jour {{when}}",
+      "updated_by": "Mis à jour {{when}} par {{name}}"
+    },
+    "subline": {
+      "origin_runtime_named": "Runtime local · {{name}}",
+      "origin_runtime_provider": "Runtime local · {{provider}}",
+      "origin_clawhub": "Importé · ClawHub",
+      "origin_github": "Importé · GitHub",
+      "origin_skills_sh": "Importé · Skills.sh",
+      "origin_workspace": "Créé manuellement",
+      "origin_runtime_unknown": "Runtime local"
+    },
+    "save_bar": {
+      "changed_files_other": "{{count}} fichiers",
+      "changed_files_one": "{{count}} fichier",
+      "saving": "Enregistrement…",
+      "discard": "Abandonner",
+      "changed_summary": "Modifié : {{parts}}",
+      "save": "Enregistrer les modifications"
+    },
+    "delete_aria": "Supprimer le skill",
+    "files": {
+      "mode_preview": "Aperçu",
+      "supporting_other": "Annexes {{count}}",
+      "supporting_one": "Annexes {{count}}",
+      "main": "Fichier principal",
+      "mode_aria": "Vue du fichier",
+      "supporting_empty": "Aucun fichier annexe.",
+      "mode_raw": "Texte brut",
+      "list_aria": "Fichiers du skill",
+      "add_file": "Nouveau fichier",
+      "mode_edit": "Modifier"
+    },
+    "conflict_banner": {
+      "body": "Vos modifications sont conservées. Abandonnez pour récupérer les siennes, ou enregistrez pour les écraser.",
+      "title": "Quelqu'un d'autre a mis à jour ce skill"
+    }
+  }
+}
