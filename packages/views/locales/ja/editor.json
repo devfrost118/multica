@@ -40,11 +40,14 @@
     "delete": "削除",
     "link_copied": "リンクをコピーしました",
     "copy_link_failed": "リンクをコピーできませんでした",
-    "copy_image": "Copy image",
-    "image_copied": "Image copied",
-    "copy_image_failed": "Couldn't copy image",
+    "copy_image": "画像をコピー",
+    "image_copied": "画像をコピーしました",
+    "copy_image_failed": "画像をコピーできませんでした",
     "canvas_label": "画像キャンバス。ドラッグで移動、スクロールで拡大縮小、ダブルクリックで実際のサイズに切り替えできます。",
-    "unavailable": "この画像は表示できないためスキップしました。"
+    "unavailable": "この画像は表示できないためスキップしました。",
+    "next": "次の画像",
+    "previous": "前の画像",
+    "sequence_position": "{{index}} / {{total}}"
   },
   "canvas": {
     "zoom_in": "拡大",
@@ -62,32 +65,32 @@
     "close": "閉じる",
     "open_in_new_tab": "新しいタブで開く",
     "remove": "添付ファイルを削除",
-    "previous": "Previous",
-    "next": "Next",
+    "previous": "前へ",
+    "next": "次へ",
     "sequence_position": "{{index}} / {{total}}",
-    "overview": "All deliverables",
-    "info": "Info",
-    "wrap_lines": "Wrap lines",
-    "viewport": "Viewport width",
-    "viewport_fill": "Fit",
-    "viewport_desktop": "Desktop",
-    "viewport_tablet": "Tablet",
-    "viewport_phone": "Phone",
-    "viewport_scale": "Scaled to {{percent}}%",
-    "view_source": "View source",
-    "view_mode": "View",
-    "view_tree": "Tree",
-    "view_raw": "Raw",
-    "structured_parse_failed": "Couldn't parse this file, so it's shown as text.",
-    "tree_show_more": "Show more ({{count}} left)",
-    "tree_items_other": "{{count}} items",
-    "tree_keys_other": "{{count}} keys",
-    "table_empty": "No rows",
-    "table_rows_other": "{{count}} rows",
-    "table_columns_other": "{{count}} columns",
-    "address": "Address",
-    "address_hint": "?query",
-    "reload": "Reload"
+    "overview": "すべての成果物",
+    "info": "情報",
+    "wrap_lines": "折り返し",
+    "viewport": "ビューポート幅",
+    "viewport_fill": "フィット",
+    "viewport_desktop": "デスクトップ",
+    "viewport_tablet": "タブレット",
+    "viewport_phone": "スマートフォン",
+    "viewport_scale": "{{percent}}% に縮小",
+    "view_source": "ソースを表示",
+    "view_mode": "表示",
+    "view_tree": "ツリー",
+    "view_raw": "原文",
+    "structured_parse_failed": "このファイルを解析できなかったため、テキストとして表示しています。",
+    "tree_show_more": "さらに表示（残り {{count}} 件）",
+    "tree_items_other": "{{count}} 件",
+    "tree_keys_other": "{{count}} 個のキー",
+    "table_empty": "行がありません",
+    "table_rows_other": "{{count}} 行",
+    "table_columns_other": "{{count}} 列",
+    "address": "アドレス",
+    "address_hint": "?パラメータ",
+    "reload": "再読み込み"
   },
   "link_hover": {
     "copy_link": "リンクをコピー",
@@ -99,8 +102,8 @@
     "group_users": "ユーザー",
     "group_issues": "タスク",
     "all_members": "すべてのメンバー",
-    "agent_badge": "Agent",
-    "squad_badge": "Squad",
+    "agent_badge": "エージェント",
+    "squad_badge": "スクワッド",
     "searching": "検索中...",
     "no_results": "結果なし",
     "group_current": "現在のページ",
@@ -108,15 +111,8 @@
     "group_search": "検索結果",
     "group_cancelled": "キャンセル済み"
   },
-  "slash_command": {
-    "no_skills_configured": "設定済みスキルなし",
-    "no_results": "一致するスキルなし",
-    "commands": {
-      "note": "メモを追加 — エージェントをトリガーしません"
-    }
-  },
   "code_block": {
-    "html_preview": "HTML preview",
+    "html_preview": "HTML プレビュー",
     "copy_code": "コードをコピー",
     "show_preview": "プレビューを表示",
     "show_source": "ソースを表示",
@@ -150,7 +146,7 @@
     "title_aria_label": "タイトル"
   },
   "mermaid": {
-    "diagram_label": "Mermaid diagram",
+    "diagram_label": "Mermaid 図",
     "render_error": "Mermaid ダイアグラムを描画できません。",
     "rendering": "ダイアグラムを描画中…",
     "viewer_title": "ダイアグラム",
@@ -164,5 +160,12 @@
     "export_png": "PNG をダウンロード",
     "export_svg": "SVG をダウンロード",
     "export_source": ".mmd をダウンロード"
+  },
+  "slash_command": {
+    "no_skills_configured": "設定済みスキルなし",
+    "no_results": "一致するスキルなし",
+    "commands": {
+      "note": "メモを追加 — エージェントをトリガーしません"
+    }
   }
 }

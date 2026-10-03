@@ -1,66 +1,68 @@
 {
-  "nav": {
-    "inbox": "Входящие",
-    "chat": "Чат",
-    "my_issues": "Мои задачи",
-    "issues": "Задачи",
-    "projects": "Проекты",
-    "autopilots": "Автопилот",
-    "agents": "Агенты",
-    "squads": "Отряды",
-    "usage": "Использование",
-    "runtimes": "Среды выполнения",
-    "skills": "Навыки",
-    "rules": "Правила",
-    "settings": "Настройки"
-  },
-  "tab": {
-    "issue": "Задача",
-    "project": "Проект",
-    "autopilot": "Автопилот",
-    "agent": "Агент",
-    "member": "Участник",
-    "squad": "Отряд",
-    "skill": "Навык",
-    "machine": "Машина",
-    "runtime": "Среда выполнения",
-    "attachment": "Вложение",
-    "create_agent": "Создать агента",
-    "unknown": "Неизвестная страница"
-  },
   "help": {
-    "trigger": "Помощь",
-    "download_desktop": "Настольное приложение",
-    "docs": "Документация",
     "changelog": "История изменений",
     "discord": "Раздор",
+    "docs": "Документация",
+    "download_desktop": "Настольное приложение",
     "feedback": "Обратная связь",
-    "server_version": "Версия сервера {{version}}"
+    "server_version": "Версия сервера {{version}}",
+    "trigger": "Помощь"
   },
-  "workspace_loader": {
-    "loading_workspace": "Загрузка рабочей области…",
-    "loading_named_prefix": "Загрузка"
+  "nav": {
+    "agents": "Агенты",
+    "autopilots": "Автопилот",
+    "chat": "Чат",
+    "inbox": "Входящие",
+    "issues": "Задачи",
+    "my_issues": "Мои задачи",
+    "projects": "Проекты",
+    "rules": "Правила",
+    "runtimes": "Среды выполнения",
+    "settings": "Настройки",
+    "skills": "Навыки",
+    "squads": "Отряды",
+    "usage": "Использование"
   },
   "sidebar": {
-    "unpin_tooltip": "Открепить",
-    "workspaces_label": "Рабочие области",
+    "configure_group": "Настройка",
     "create_workspace": "Создать рабочую область",
-    "pending_invitations_label": "Ожидающие приглашения",
-    "invitation_workspace_fallback": "Рабочая область",
-    "invitation_join": "Присоединиться",
+    "discord_card": {
+      "dismiss": "Скрыть",
+      "title": "Присоединяйтесь к нашему Discord"
+    },
     "invitation_decline": "Отклонить",
+    "invitation_join": "Присоединиться",
+    "invitation_workspace_fallback": "Рабочая область",
     "log_out": "Выйти",
     "new_issue": "Создать задачу",
     "new_issue_shortcut": "C",
+    "pending_invitations_label": "Ожидающие приглашения",
     "pinned_label": "Закреплено",
-    "work_group": "Work",
-    "ai_team_group": "AI Team",
-    "show_more_pins": "Show {{count}} more…",
-    "show_fewer_pins": "Show fewer",
+    "unpin_tooltip": "Открепить",
     "unread_overflow": "99+",
-    "discord_card": {
-      "title": "Присоединяйтесь к нашему Discord",
-      "dismiss": "Скрыть"
-    }
+    "workspace_group": "Рабочая область",
+    "workspaces_label": "Рабочие области",
+    "ai_team_group": "Команда ИИ",
+    "show_fewer_pins": "Показать меньше",
+    "show_more_pins": "Показать ещё {{count}}…",
+    "work_group": "Работа"
+  },
+  "tab": {
+    "agent": "Агент",
+    "attachment": "Вложение",
+    "autopilot": "Автопилот",
+    "create_agent": "Создать агента",
+    "issue": "Задача",
+    "machine": "Машина",
+    "member": "Участник",
+    "project": "Проект",
+    "runtime": "Среда выполнения",
+    "skill": "Навык",
+    "squad": "Отряд",
+    "unknown": "Неизвестная страница"
+  },
+  "workspace_loader": {
+    "loading_named_prefix": "Загрузка",
+    "loading_workspace": "Загрузка рабочей области…"
   }
 }

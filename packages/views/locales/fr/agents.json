@@ -36,8 +36,8 @@
   },
   "presence_status_aria": "Statut : {{status}}",
   "avatar_stack": {
-    "overflow_aria_other": "{{count}} agents supplémentaires",
-    "overflow_aria_one": "{{count}} agent supplémentaire"
+    "overflow_aria_one": "{{count}} agent supplémentaire",
+    "overflow_aria_other": "{{count}} agents supplémentaires"
   },
   "archived": {
     "active_link": "Agents actifs",
@@ -62,8 +62,8 @@
     "section_local": "Local",
     "section_remote": "Distant",
     "section_cloud": "Cloud",
-    "agent_count_other": "{{count}} agents",
     "agent_count_one": "{{count}} agent",
+    "agent_count_other": "{{count}} agents",
     "empty": "Aucune machine pour l'instant"
   },
   "columns": {
@@ -87,17 +87,17 @@
     "fallback_runtime_cloud": "Cloud",
     "fallback_runtime_local": "Local",
     "actions_aria": "Actions de la ligne",
-    "task_count_other": "{{count}} exécutions",
-    "task_count_one": "{{count}} exécution"
+    "task_count_one": "{{count}} exécution",
+    "task_count_other": "{{count}} exécutions"
   },
   "activity_tooltip": {
     "created_today": "Créé aujourd'hui",
-    "created_days_ago_other": "Créé il y a {{count}} jours",
     "created_days_ago_one": "Créé il y a {{count}} jour",
+    "created_days_ago_other": "Créé il y a {{count}} jours",
     "last_7_days": "7 derniers jours",
     "no_activity": "Aucune activité",
-    "runs_other": "{{count}} exécutions",
     "runs_one": "{{count}} exécution",
+    "runs_other": "{{count}} exécutions",
     "failed_suffix": " · {{count}} en échec ({{percent}} %)"
   },
   "row_actions": {
@@ -116,17 +116,17 @@
     "agent_restored_toast": "Agent restauré",
     "restore_failed_toast": "Échec de la restauration de l'agent",
     "no_tasks_to_cancel_toast": "Aucune exécution active à annuler",
-    "cancelled_tasks_toast_other": "{{count}} exécutions annulées",
     "cancelled_tasks_toast_one": "{{count}} exécution annulée",
+    "cancelled_tasks_toast_other": "{{count}} exécutions annulées",
     "cancel_failed_toast": "Échec de l'annulation des exécutions",
     "cancel_dialog_title": "Annuler toutes les exécutions de « {{name}} » ?",
     "cancel_dialog_no_tasks": "Aucune exécution active à annuler.",
-    "cancel_dialog_running_other": "{{count}} en cours",
     "cancel_dialog_running_one": "{{count}} en cours",
-    "cancel_dialog_queued_other": "{{count}} en attente",
+    "cancel_dialog_running_other": "{{count}} en cours",
     "cancel_dialog_queued_one": "{{count}} en attente",
-    "cancel_dialog_impact_other": "Cela annulera {{summary}} exécutions.",
+    "cancel_dialog_queued_other": "{{count}} en attente",
     "cancel_dialog_impact_one": "Cela annulera {{summary}} exécution.",
+    "cancel_dialog_impact_other": "Cela annulera {{summary}} exécutions.",
     "cancel_dialog_running_note": " Les exécutions en cours peuvent mettre jusqu'à 5 secondes à s'arrêter complètement.",
     "cancel_dialog_irreversible": " Les exécutions annulées ne peuvent pas être reprises.",
     "cancel_dialog_keep": "Les conserver",
@@ -199,14 +199,18 @@
     "edit_description_title": "Modifier la description",
     "description_placeholder": "Que fait cet agent ?",
     "save": "Enregistrer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "avatar_hint": "Affiché dans les assignations, l'activité et la discussion.",
+    "section_access_hint": "Contrôlez qui peut exécuter cet agent et utiliser ses capacités connectées.",
+    "section_execution_hint": "Choisissez le runtime, le modèle, le niveau de raisonnement, la vitesse et la limite d'exécutions parallèles.",
+    "section_profile_hint": "Gérez l'apparence de cet agent dans l'espace de travail."
   },
   "overview": {
     "agent_context": "Agent",
     "access": "Accès",
     "attention_title": "Des exécutions demandent votre attention",
-    "attention_queued_other": "{{count}} exécutions sont en attente car le runtime est indisponible.",
-    "attention_queued_one": "{{count}} exécution est en attente car le runtime est indisponible."
+    "attention_queued_one": "{{count}} exécution est en attente car le runtime est indisponible.",
+    "attention_queued_other": "{{count}} exécutions sont en attente car le runtime est indisponible."
   },
   "skill_attach": {
     "trigger_aria": "Rattacher un skill de l'espace de travail",
@@ -315,7 +319,10 @@
       "behavior": "Comportement et capacités",
       "execution": "Exécution",
       "execution_hint": "Les options non spécifiées utilisent les valeurs par défaut du runtime.",
-      "access": "Accès"
+      "access": "Accès",
+      "access_hint": "Contrôlez qui peut lancer des exécutions avec cet agent. Vous pourrez le modifier plus tard.",
+      "behavior_hint": "Définissez son fonctionnement et rattachez les skills de l'espace de travail sur lesquels il peut s'appuyer.",
+      "identity_hint": "Donnez à l'agent un nom reconnaissable et un objectif concis."
     },
     "thinking_label": "Réflexion",
     "speed_label": "Vitesse",
@@ -355,7 +362,8 @@
       "prompt_assistant": "Aider notre équipe à planifier et rédiger des projets",
       "thinking": "Mise à jour du brouillon…",
       "placeholder": "Décrivez l'agent dont vous avez besoin…",
-      "send": "Envoyer le message"
+      "send": "Envoyer le message",
+      "chat_hint": "Précisez les besoins par la conversation et affinez la configuration à côté."
     },
     "live_draft": "Configuration de l'agent",
     "live_draft_hint": "Vous pouvez modifier le brouillon directement.",
@@ -376,7 +384,8 @@
       "discard_cancel": "Continuer à modifier",
       "banner": "Vous avez {{count}} brouillon(s) inachevé(s)",
       "pick_hint": "Choisissez-en un pour continuer."
-    }
+    },
+    "choose_description": "Commencez avec un contrôle total, ou décrivez ce dont vous avez besoin et construisez-le par la conversation."
   },
   "create_dialog": {
     "title_create": "Créer un agent",
@@ -426,8 +435,8 @@
     "skills_section": {
       "label": "Skills",
       "placeholder": "Ajouter des skills de l'espace de travail",
-      "selected_other": "{{count}} sélectionnés — cliquez pour modifier",
       "selected_one": "{{count}} sélectionné — cliquez pour modifier",
+      "selected_other": "{{count}} sélectionnés — cliquez pour modifier",
       "collapse": "Replier",
       "list_empty_multi": "Aucun skill dans cet espace de travail. Créez-en un ou importez-en un d'abord.",
       "list_loading": "Chargement…",
@@ -441,7 +450,8 @@
       "remove_aria": "Supprimer l'avatar",
       "select_image_toast": "Veuillez sélectionner un fichier image.",
       "upload_failed_toast": "Échec de l'envoi de l'avatar"
-    }
+    },
+    "description_create": "Créez un nouvel agent IA pour votre espace de travail."
   },
   "conversation_starters": {
     "label": "Amorces de conversation",
@@ -496,8 +506,8 @@
       "duplicate_keys_toast": "Clés de variables d'environnement en double",
       "saved_toast": "Variables d'environnement enregistrées",
       "save_failed_toast": "Échec de l'enregistrement des variables d'environnement",
-      "not_revealed_title_other": "{{count}} variables configurées",
       "not_revealed_title_one": "{{count}} variable configurée",
+      "not_revealed_title_other": "{{count}} variables configurées",
       "not_revealed_empty": "Aucune variable d'environnement configurée.",
       "not_revealed_hint": "Les valeurs restent masquées jusqu'à ce que vous les affichiez. Chaque affichage et chaque modification sont consignés dans le journal d'audit de l'espace de travail.",
       "reveal_action": "Afficher et modifier",
@@ -521,7 +531,8 @@
       "edit_aria": "Modifier l'argument {{index}}",
       "remove_aria": "Supprimer l'argument {{index}}",
       "saved_toast": "Arguments personnalisés enregistrés",
-      "save_failed_toast": "Échec de l'enregistrement des arguments personnalisés"
+      "save_failed_toast": "Échec de l'enregistrement des arguments personnalisés",
+      "empty_hint": "Ajoutez le premier jeton pour construire la commande de lancement."
     },
     "mcp_config": {
       "managed_title": "Géré par Multica",
@@ -621,7 +632,9 @@
       "save_failed_toast": "Échec de l'enregistrement de la configuration MCP",
       "redacted_title": "Configuré — masqué pour vous",
       "redacted_hint": "Seul le propriétaire de l'agent ou un administrateur de l'espace de travail peut lire cette configuration.",
-      "dialog_json_help": "Modifiez la configuration complète du serveur en JSON."
+      "dialog_json_help": "Modifiez la configuration complète du serveur en JSON.",
+      "dialog_description": "Utilisez le formulaire guidé ou modifiez la configuration de ce serveur unique en JSON.",
+      "dialog_name_placeholder": "ex. context7"
     },
     "composio_mcp": {
       "subtitle": "Cochez une boîte à outils pour permettre à cet agent de la monter comme serveur MCP — mais uniquement lorsque c'est vous (son créateur) qui avez déclenché l'exécution, directement ou via une chaîne de sous-agents.",
@@ -636,7 +649,8 @@
       "redacted_title": "Configuré — masqué pour vous",
       "redacted_hint": "Seul le créateur de l'agent peut voir ou modifier les applications qu'il peut utiliser.",
       "shared_warning": "Cet agent est partagé. Les personnes qui peuvent l'exécuter pourront utiliser les applications Composio que vous activez ici. Passez en Privé ou restreignez la liste d'accès si ces applications exposent des données sensibles.",
-      "workspace_warning": "Public pour l'espace de travail : tout membre de l'espace de travail peut utiliser ces applications Composio via cet agent."
+      "workspace_warning": "Public pour l'espace de travail : tout membre de l'espace de travail peut utiliser ces applications Composio via cet agent.",
+      "empty_hint": "Vous n'avez connecté aucun service tiers. Autorisez-en un d'abord, puis revenez ici pour l'activer."
     },
     "runtime_config": {
       "mode_label": "Mode de routage",
@@ -655,7 +669,8 @@
       "tls_label": "Utiliser TLS",
       "tls_hint": "Composer en https:// plutôt qu'en http://",
       "saved_toast": "Configuration de routage enregistrée",
-      "save_failed_toast": "Échec de l'enregistrement de la configuration de routage"
+      "save_failed_toast": "Échec de l'enregistrement de la configuration de routage",
+      "intro": "Choisissez comment le runtime OpenClaw exécute les tours de cet agent. Le mode local exécute l'agent dans le processus du daemon. Le mode passerelle transmet chaque tour à une passerelle OpenClaw — utile lorsque l'hôte du daemon est un coordinateur léger et que l'agent doit s'exécuter sur une machine plus puissante."
     },
     "skills": {
       "assigned_title": "Assignés à l'agent",
@@ -695,13 +710,17 @@
       "add_dialog_empty_partial": "Plus aucun skill à ajouter — cet agent les a tous.",
       "add_dialog_saving": "Ajout…",
       "add_dialog_confirm_default": "Ajouter",
-      "add_dialog_confirm_other": "Ajouter {{count}} skills",
       "add_dialog_confirm_one": "Ajouter {{count}} skill",
+      "add_dialog_confirm_other": "Ajouter {{count}} skills",
       "add_dialog_cancel": "Annuler",
-      "add_failed_toast": "Échec de l'ajout du skill"
+      "add_failed_toast": "Échec de l'ajout du skill",
+      "add_dialog_description": "Sélectionnez un skill de l'espace de travail à assigner à cet agent.",
+      "empty_hint": "Ajoutez des skills de l'espace de travail pour partager les connaissances de l'équipe avec cet agent.",
+      "intro": "Voici l'ensemble de skills effectif de l'agent. Les skills de l'espace de travail se gèrent ici ; les skills hérités de Codex et Claude Code peuvent aussi être désactivés par agent."
     },
     "integrations": {
-      "members_note": "Seuls les propriétaires et administrateurs de l'espace de travail peuvent gérer cette connexion. Vous pouvez voir les bots connectés dans Paramètres → Intégrations."
+      "members_note": "Seuls les propriétaires et administrateurs de l'espace de travail peuvent gérer cette connexion. Vous pouvez voir les bots connectés dans Paramètres → Intégrations.",
+      "intro": "Connectez cet agent à des plateformes de discussion externes pour que chacun puisse travailler avec lui là où il se trouve déjà."
     },
     "activity": {
       "status": {
@@ -717,8 +736,8 @@
       "section_last_30d": "30 derniers jours",
       "section_recent": "Travaux récents",
       "subtitle_no_active": "Aucun travail en cours",
-      "subtitle_active_other": "{{count}} exécutions actives",
       "subtitle_active_one": "{{count}} exécution active",
+      "subtitle_active_other": "{{count}} exécutions actives",
       "subtitle_performance": "Performance",
       "subtitle_no_recent": "Rien de terminé pour l'instant",
       "subtitle_recent_progress": "{{shown}} exécutions sur {{total}}",
@@ -727,8 +746,8 @@
       "empty_30d": "Aucune tâche terminée ces 30 derniers jours.",
       "empty_recent": "Cet agent n'a encore rien terminé.",
       "show_more": "Afficher plus →",
-      "runs_other": "exécutions",
       "runs_one": "exécution",
+      "runs_other": "exécutions",
       "success_pct": "{{percent}} % de réussite",
       "success_label": "taux de réussite",
       "success_hint": "Exécutions terminées divisées par la somme des exécutions terminées et en échec. Les exécutions annulées sont exclues.",
@@ -884,18 +903,18 @@
     "lane_model": "Modèle",
     "lane_tool": "Outils",
     "outcome_label": "Produit",
-    "outcome_files_other": "{{count}} fichiers",
     "outcome_files_one": "{{count}} fichier",
-    "outcome_commands_other": "{{count}} commandes",
+    "outcome_files_other": "{{count}} fichiers",
     "outcome_commands_one": "{{count}} commande",
+    "outcome_commands_other": "{{count}} commandes",
     "search_placeholder": "Rechercher dans cette exécution…",
     "no_matches": "Aucune étape ne correspond à cette recherche.",
     "more_actions": "Plus",
     "kind_tool": "Outil",
     "kind_thinking": "Réflexion",
     "kind_error": "Erreur",
-    "group_calls_other": "{{count}} appels",
     "group_calls_one": "{{count}} appel",
+    "group_calls_other": "{{count}} appels",
     "step_running": "Toujours en cours",
     "step_duration_unknown": "La durée exacte est indisponible.",
     "step_input": "Entrée",
@@ -903,8 +922,8 @@
     "copy_step": "Copier cette étape",
     "close_step": "Fermer les détails",
     "image_result": "Image",
-    "steps_count_other": "{{count}} étapes",
     "steps_count_one": "{{count}} étape",
+    "steps_count_other": "{{count}} étapes",
     "steps_filtered": "{{shown}} étapes sur {{total}}",
     "timeline_zoom_in": "Zoom avant",
     "timeline_zoom_out": "Zoom arrière",
@@ -912,7 +931,8 @@
     "tool_kind_write": "Modifications",
     "tool_kind_read": "Lectures",
     "tool_kind_misc": "Autres",
-    "trigger_wakeup": "Réveil"
+    "trigger_wakeup": "Réveil",
+    "antigravity_live_unavailable": "Antigravity ne fournit pas encore d'événements d'exécution en direct. La transcription sera disponible une fois la tâche terminée."
   },
   "task_failure": {
     "cancelled_by_system": "Annulée par le système",
@@ -958,15 +978,15 @@
   },
   "last_active": {
     "today": "Aujourd'hui",
-    "days_ago_other": "il y a {{count}} jours",
     "days_ago_one": "il y a {{count}} jour",
+    "days_ago_other": "il y a {{count}} jours",
     "none": "Aucune activité (30 j)"
   },
   "toolbar": {
     "result_count_title": "Agents correspondants / agents dans la portée",
     "filter_label": "Filtrer",
-    "filter_active_count_other": "{{count}} filtres",
     "filter_active_count_one": "{{count}} filtre",
+    "filter_active_count_other": "{{count}} filtres",
     "clear_filters": "Effacer les filtres",
     "section_availability": "Disponibilité",
     "section_access": "Accès",
@@ -980,8 +1000,8 @@
     "section_model": "Modèle"
   },
   "actions": {
-    "selected_other": "{{count}} sélectionnés",
     "selected_one": "{{count}} sélectionné",
+    "selected_other": "{{count}} sélectionnés",
     "clear_selection": "Effacer la sélection"
   }
 }

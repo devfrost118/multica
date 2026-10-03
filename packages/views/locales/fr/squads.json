@@ -52,7 +52,8 @@
     "members_section": "Membres",
     "agents_section": "Agents",
     "role_placeholder": "Par exemple : Relecteur, Responsable frontend",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "placeholder_role_inline": "Ajouter un rôle…"
   },
   "role_editor": {
     "empty": "Ajouter un rôle…",
@@ -73,8 +74,8 @@
   },
   "members_tab": {
     "section_title": "Membres",
-    "section_count_other": "{{count}} membres dans ce squad",
     "section_count_one": "{{count}} membre dans ce squad",
+    "section_count_other": "{{count}} membres dans ce squad",
     "add_member_button": "Ajouter un membre",
     "create_agent_button": "Créer un agent",
     "leader_chip": "Chef",
@@ -117,11 +118,11 @@
     "unavailable": "Squad indisponible",
     "detail_link": "Détail →",
     "archived": "Archivé",
-    "member_count_other": "{{count}} membres",
     "member_count_one": "{{count}} membre",
+    "member_count_other": "{{count}} membres",
     "members_section": "Membres",
-    "more_members_other": "+{{count}} de plus",
-    "more_members_one": "+{{count}} de plus"
+    "more_members_one": "+{{count}} de plus",
+    "more_members_other": "+{{count}} de plus"
   },
   "instructions_tab": {
     "description": "Le chef lit ces instructions chaque fois qu’il travaille sur une tâche assignée à ce squad.",
@@ -141,8 +142,8 @@
     "section_columns": "Colonnes",
     "result_count_title": "Squads correspondants / tous les squads",
     "filter_label": "Filtrer",
-    "filter_active_count_other": "{{count}} filtres",
     "filter_active_count_one": "{{count}} filtre",
+    "filter_active_count_other": "{{count}} filtres",
     "clear_filters": "Effacer les filtres"
   }
 }

@@ -6,8 +6,8 @@
   },
   "fab": {
     "running": "Multica travaille...",
-    "unread_other": "{{count}} discussions non lues",
     "unread_one": "{{count}} discussion non lue",
+    "unread_other": "{{count}} discussions non lues",
     "default": "Demander à Multica"
   },
   "input": {
@@ -35,8 +35,8 @@
     "project_context_unsupported": "La description du projet ne s'appliquera pas — le daemon de cet agent doit être mis à jour"
   },
   "queue": {
-    "title_other": "{{count}} messages en file d'attente",
     "title_one": "{{count}} message en file d'attente",
+    "title_other": "{{count}} messages en file d'attente",
     "clear": "Tout effacer",
     "steer": "Réorienter",
     "steer_unavailable": "La réorientation est possible une fois la réponse en cours démarrée",
@@ -74,12 +74,12 @@
       "runtime_version_unsupported": "Le CLI de l'agent est trop ancien pour ce runtime. Mettez-le à jour, puis réessayez.",
       "fallback": "Une erreur est survenue et l'agent n'a pas pu terminer sa réponse. Veuillez réessayer."
     },
-    "tools_other": "{{count}} outils",
     "tools_one": "{{count}} outil",
+    "tools_other": "{{count}} outils",
     "tool_result_named": "Résultat de {{tool}} : ",
     "tool_result_unnamed": "résultat : ",
-    "process_steps_other": "{{count}} étapes",
     "process_steps_one": "{{count}} étape",
+    "process_steps_other": "{{count}} étapes",
     "copy_action": "Copier",
     "copied_toast": "Copié",
     "copy_failed_toast": "Échec de la copie",

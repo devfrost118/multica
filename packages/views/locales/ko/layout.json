@@ -11,8 +11,8 @@
     "usage": "분석",
     "runtimes": "런타임",
     "skills": "스킬",
-    "rules": "규칙",
-    "settings": "설정"
+    "settings": "설정",
+    "rules": "규칙"
   },
   "tab": {
     "issue": "태스크",
@@ -53,14 +53,16 @@
     "new_issue": "새 태스크",
     "new_issue_shortcut": "C",
     "pinned_label": "고정됨",
-    "work_group": "Work",
-    "ai_team_group": "AI Team",
-    "show_more_pins": "Show {{count}} more…",
-    "show_fewer_pins": "Show fewer",
+    "work_group": "업무",
+    "ai_team_group": "AI 팀",
+    "show_more_pins": "{{count}}개 더 보기…",
+    "show_fewer_pins": "접기",
     "unread_overflow": "99+",
     "discord_card": {
       "title": "Discord 참여하기",
       "dismiss": "닫기"
-    }
+    },
+    "configure_group": "설정",
+    "workspace_group": "워크스페이스"
   }
 }

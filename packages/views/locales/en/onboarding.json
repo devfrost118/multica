@@ -3,13 +3,16 @@
     "wordmark": "Multica",
     "label": "Onboarding steps",
     "about_you": {
-      "label": "About you"
+      "label": "About you",
+      "description": "Your role, and what you want done."
     },
     "workspace": {
-      "label": "Workspace"
+      "label": "Workspace",
+      "description": "Name it and pick its URL."
     },
     "runtime": {
-      "label": "Meet Mika"
+      "label": "Meet Mika",
+      "description": "Your first agent teammate, and where it runs."
     }
   },
   "welcome": {
@@ -42,7 +45,9 @@
       "card5_body_suffix": " flagged. Preview link in the PR.",
       "card5_mention_you": "@you",
       "card5_timestamp": "just now"
-    }
+    },
+    "lede_desktop": "By the end, a real agent will be replying to your first issue.",
+    "illustration_caption": "Every issue, every thread, every decision — shared by your team and agents."
   },
   "common": {
     "back": "Back",
@@ -54,9 +59,10 @@
   },
   "source_backfill": {
     "eyebrow": "Quick question",
-    "lede": "Help us understand how you found Multica.",
+    "lede": "One quick question — it helps us understand who finds Multica useful. Answer once and you're back to your work.",
     "submit": "Submit",
-    "save_failed_toast": "Failed to save"
+    "save_failed_toast": "Failed to save",
+    "hint_ready": "Looks good. Hit Submit when you're ready."
   },
   "questions": {
     "about_you": {
@@ -111,7 +117,8 @@
     "other_aria": "Describe something else"
   },
   "step_question": {
-    "hint_pick": "You can skip this."
+    "hint_pick": "Pick one to continue — or skip if you'd rather not say.",
+    "hint_continue": "Looks good. Hit Continue when you're ready."
   },
   "cli_install": {
     "copy_aria": "Copy",
@@ -124,7 +131,7 @@
   },
   "cloud_waitlist": {
     "intro_main": "Cloud runtimes aren't live yet. Leave your email and we'll reach out when they are.",
-    "intro_warning": "Heads-up: agents can't start runs without a runtime — if you hit Skip now, nothing will run until you come back and install one.",
+    "intro_warning": "Heads-up: agents can't execute tasks without a runtime — if you hit Skip now, nothing will run until you come back and install one.",
     "email_label": "Email",
     "email_placeholder": "you@work.com",
     "reason_label": "Why cloud?",
@@ -192,7 +199,8 @@
     "creation_disabled_logout": "Log out",
     "creation_disabled_eyebrow_resume": "Your workspace",
     "creation_disabled_headline_resume": "Continue with {{name}}.",
-    "creation_disabled_lede_resume": "Workspace creation is disabled on this instance, so you'll continue into your existing workspace."
+    "creation_disabled_lede_resume": "Workspace creation is disabled on this instance, so you'll continue into your existing workspace.",
+    "create_new_subtitle": "Start fresh — a separate space for a different side of your work."
   },
   "step_runtime": {
     "scanning_headline": "Connecting this computer…",
@@ -210,7 +218,7 @@
     "empty_lede_prefix": "An agent runtime is an AI coding tool we connect to — like ",
     "empty_lede_suffix": ". Install one and refresh, or pick a path below.",
     "empty_skip_title": "Skip for now",
-    "empty_skip_subtitle": "Agents can't run until a runtime is connected.",
+    "empty_skip_subtitle": "Enter your workspace now. Your agent can't run tasks until an agent runtime is connected on this computer — but you can still browse, plan, and invite teammates.",
     "empty_skip_action": "Skip",
     "empty_waitlist_title": "Use a cloud computer",
     "empty_waitlist_subtitle": "We'll run a computer for you in the cloud. Not live yet.",
@@ -221,15 +229,17 @@
     "hint_selected": "Selected: {{name}}",
     "hint_pick": "Pick an agent runtime above to start with Mika.",
     "hint_waiting": "Waiting for the first result…",
-    "continue": "Start with Mika"
+    "continue": "Start with Mika",
+    "found_lede": "These are the agent runtimes we found on this computer. You can switch it or add more later.",
+    "hint_skip_or_refresh": "Refresh after installing one, or skip to enter your workspace."
   },
   "step_platform": {
     "eyebrow": "Connect a computer",
     "headline": "Connect a computer to run your agent.",
-    "lede": "Connect a computer so Mika can start working.",
-    "hint_default": "You can connect later.",
+    "lede": "Mika, your workspace's Chief of Staff, runs on a real computer that you connect to Multica. Pick how you want to connect one.",
+    "hint_default": "Pick a way to connect — or skip and connect a computer later.",
     "download_title": "Use this computer",
-    "download_subtitle": "Install Desktop to connect this computer.",
+    "download_subtitle": "Install our desktop app to connect this computer. Opens in a new tab — pick your platform there.",
     "download_button": "Download",
     "cli_title": "Connect from the terminal",
     "cli_subtitle": "Connect a server, remote dev box, or any headless computer. Terminal required.",
@@ -251,7 +261,8 @@
     "stage_slow_suffix": " for errors.",
     "stage_stalled_prefix": "Nothing coming through yet. If you're not comfortable with the terminal, ",
     "stage_stalled_term": "Desktop",
-    "stage_stalled_suffix": " is the smoother path — one click and this computer is connected. Close this dialog and pick Desktop, or hit Skip to continue."
+    "stage_stalled_suffix": " is the smoother path — one click and this computer is connected. Close this dialog and pick Desktop, or hit Skip to continue.",
+    "cli_dialog_description": "Same connection as Desktop, set up from the terminal. Use it for servers, remote dev boxes, or any headless computer."
   },
   "errors": {
     "skip_failed": "Failed to finish onboarding",

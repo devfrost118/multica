@@ -32,13 +32,13 @@
     "success": "스쿼드를 보관했습니다"
   },
   "name_editor": {
-    "title": "Rename squad",
-    "placeholder": "Squad name",
-    "required": "Name is required",
+    "title": "스쿼드 이름 변경",
+    "placeholder": "스쿼드 이름",
+    "required": "이름을 입력하세요",
     "cancel": "취소",
-    "save": "Save",
-    "saved": "Saved",
-    "save_failed": "Failed to save"
+    "save": "저장",
+    "saved": "저장했습니다",
+    "save_failed": "저장하지 못했습니다"
   },
   "add_member_dialog": {
     "title": "멤버 추가",
@@ -47,12 +47,13 @@
     "label_role": "역할",
     "label_optional": "(선택 사항)",
     "cancel": "취소",
-    "select_target": "Select a member or agent",
-    "search_placeholder": "Search members or agents...",
-    "members_section": "Members",
-    "agents_section": "Agents",
-    "role_placeholder": "e.g. Reviewer, Frontend Lead",
-    "add": "Add"
+    "select_target": "멤버 또는 에이전트 선택",
+    "search_placeholder": "멤버 또는 에이전트 검색...",
+    "members_section": "멤버",
+    "agents_section": "에이전트",
+    "role_placeholder": "예: 리뷰어, 프런트엔드 리드",
+    "add": "추가",
+    "placeholder_role_inline": "역할 추가..."
   },
   "role_editor": {
     "empty": "역할 추가...",
@@ -62,8 +63,8 @@
     "title": "설명 수정",
     "placeholder_empty": "설명 추가",
     "cancel": "취소",
-    "responsibility_placeholder": "What is this squad responsible for?",
-    "save": "Save"
+    "responsibility_placeholder": "이 스쿼드는 무엇을 담당하나요?",
+    "save": "저장"
   },
   "discard_changes_dialog": {
     "title": "저장하지 않은 변경사항을 버릴까요?",
@@ -124,7 +125,7 @@
     "description": "스쿼드에 할당된 태스크를 리더 에이전트가 처리할 때마다 스쿼드 지침이 리더 프롬프트에 포함됩니다. 스쿼드 전체의 방향, 협업 규칙, 매 작업마다 따라야 할 맥락을 리더에게 전달할 때 사용하세요.",
     "unsaved_changes": "저장하지 않은 변경사항",
     "save_button": "저장",
-    "placeholder": "e.g. Always start by writing a failing test. Prefer small, atomic commits."
+    "placeholder": "예: 항상 실패하는 테스트부터 작성합니다. 커밋은 작고 독립적으로 유지합니다."
   },
   "scope": {
     "mine": "내 스쿼드",

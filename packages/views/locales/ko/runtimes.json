@@ -33,7 +33,8 @@
     "action": "Mika와 시작",
     "failed": "Mika를 시작하지 못했습니다",
     "dialog_title": "Mika를 어디에서 실행할까요?",
-    "cancel": "취소"
+    "cancel": "취소",
+    "dialog_description": "Mika가 사용할 런타임을 선택하세요. 나중에 설정에서 변경할 수 있습니다."
   },
   "machine": {
     "search_placeholder": "기기 검색...",
@@ -190,7 +191,7 @@
     "title": "컴퓨터 추가",
     "description": "추가하려는 컴퓨터에서 아래 두 명령을 실행하세요. 데몬이 온라인이 되는 순간 감지합니다.",
     "step1_label": "Multica CLI 설치",
-    "platform_group": "Choose your platform",
+    "platform_group": "플랫폼 선택",
     "platform_macos_linux": "macOS / Linux",
     "platform_windows": "Windows",
     "step2_label": "데몬 시작",
@@ -208,7 +209,8 @@
     "success_title": "컴퓨터 연결됨",
     "success_description": "컴퓨터가 온라인이며 준비되었습니다. 에이전트를 만들면 여기서 작업을 맡을 수 있습니다.",
     "view_runtime": "런타임 보기",
-    "create_agent": "에이전트 만들기"
+    "create_agent": "에이전트 만들기",
+    "live_listening_hint": "데몬이 시작되면 바로 감지합니다. 보통 1분 이내입니다."
   },
   "cloud_runtime": {
     "action": "클라우드 런타임",
@@ -247,7 +249,8 @@
     "validation": {
       "instance_type_required": "인스턴스 유형은 필수입니다",
       "disk_size_invalid": "디스크 크기는 양의 정수여야 합니다"
-    }
+    },
+    "create_hint": "이름, 인스턴스 유형, 디스크 크기를 선택하세요. 나머지는 Fleet이 적용합니다."
   },
   "update": {
     "cli_version_label": "CLI 버전:",

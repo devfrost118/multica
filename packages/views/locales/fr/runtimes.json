@@ -33,7 +33,8 @@
     "action": "Commencer avec Mika",
     "failed": "Impossible de démarrer Mika",
     "dialog_title": "Où Mika doit-il s'exécuter ?",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "dialog_description": "Choisissez le runtime que Mika utilisera. Vous pourrez le changer plus tard dans les paramètres."
   },
   "machine": {
     "search_placeholder": "Rechercher des machines…",
@@ -48,10 +49,10 @@
     "this_machine": "Cet appareil",
     "local_badge": "Local · cette machine",
     "pending_custom_runtimes": "Runtimes personnalisés en attente",
-    "runtime_count_other": "{{count}} runtimes",
     "runtime_count_one": "{{count}} runtime",
-    "busy_count_other": "{{count}} occupés",
+    "runtime_count_other": "{{count}} runtimes",
     "busy_count_one": "{{count}} occupé",
+    "busy_count_other": "{{count}} occupés",
     "no_matches_title": "Aucune machine",
     "no_matches_hint": "Aucune machine ne correspond à la recherche ou au filtre actuel.",
     "select_machine": "Sélectionnez une machine pour inspecter ses runtimes.",
@@ -62,12 +63,12 @@
     "not_found_hint": "Elle est peut-être hors ligne, supprimée, ou n'est plus accessible.",
     "metrics": {
       "runtimes": "Runtimes",
-      "runtimes_hint_other": "{{count}} en ligne",
       "runtimes_hint_one": "{{count}} en ligne",
+      "runtimes_hint_other": "{{count}} en ligne",
       "health": "Santé",
       "health_clear": "Aucune anomalie",
-      "health_issues_other": "{{count}} anomalies",
       "health_issues_one": "{{count}} anomalie",
+      "health_issues_other": "{{count}} anomalies",
       "workload": "Charge",
       "workload_value_idle": "Au repos",
       "workload_idle": "Tous au repos",
@@ -121,8 +122,8 @@
     "fact_daemon_cli": "CLI du daemon",
     "fact_daemon_id": "Identifiant du daemon",
     "serving_title": "Au service de",
-    "serving_count_other": "{{count}} agents",
     "serving_count_one": "{{count}} agent",
+    "serving_count_other": "{{count}} agents",
     "no_agents": "Aucun agent n'est encore associé à ce runtime.",
     "diagnostics_title": "Diagnostics",
     "diagnostics_cli": "CLI",
@@ -152,17 +153,17 @@
         "submitting": "Suppression..."
       },
       "cascade": {
-        "title_other": "Dissocier {{count}} agents et supprimer ce runtime ?",
         "title_one": "Dissocier {{count}} agent et supprimer ce runtime ?",
+        "title_other": "Dissocier {{count}} agents et supprimer ce runtime ?",
         "description": "Supprimer « {{name}} ». Les agents ci-dessous sont conservés : leurs instructions, discussions et historiques d'exécution restent intacts. Ils seront toutefois dissociés et ne pourront plus s'exécuter avant d'être associés à un autre runtime. Leurs exécutions en attente ou en cours seront annulées, puis le runtime sera supprimé.",
         "warning": "Les exécutions en attente et en cours seront annulées. Ces agents ne pourront recevoir aucun nouveau travail avant d'être associés à un runtime.",
         "notice_runtime_has_active_agents": "Des agents actifs ont été ajoutés depuis l'ouverture de cette boîte de dialogue. Vérifiez le nouveau plan et confirmez.",
         "notice_runtime_delete_plan_changed": "L'ensemble des agents actifs a changé pendant que cette boîte de dialogue était ouverte. Vérifiez le nouveau plan et confirmez.",
-        "checkbox_other": "Je comprends que ces {{count}} agents seront dissociés et ne pourront plus s'exécuter avant que je les associe à un runtime, et que leurs exécutions en attente ou en cours seront annulées.",
         "checkbox_one": "Je comprends que cet agent ({{count}}) sera dissocié et ne pourra plus s'exécuter avant que je l'associe à un runtime, et que ses exécutions en attente ou en cours seront annulées.",
+        "checkbox_other": "Je comprends que ces {{count}} agents seront dissociés et ne pourront plus s'exécuter avant que je les associe à un runtime, et que leurs exécutions en attente ou en cours seront annulées.",
         "cancel": "Annuler",
-        "confirm_other": "Dissocier {{count}} agents et supprimer le runtime",
         "confirm_one": "Dissocier {{count}} agent et supprimer le runtime",
+        "confirm_other": "Dissocier {{count}} agents et supprimer le runtime",
         "submitting": "Dissociation et suppression...",
         "delete_failed_toast": "Échec de la suppression du runtime",
         "table": {
@@ -185,19 +186,19 @@
     },
     "toast_deleted": "Runtime supprimé",
     "toast_delete_failed": "Échec de la suppression du runtime",
-    "running_chip_other": "· {{count}} en cours",
     "running_chip_one": "· {{count}} en cours",
-    "queued_chip_other": "· {{count}} en attente",
-    "queued_chip_one": "· {{count}} en attente"
+    "running_chip_other": "· {{count}} en cours",
+    "queued_chip_one": "· {{count}} en attente",
+    "queued_chip_other": "· {{count}} en attente"
   },
   "detail_page": {
     "not_found_title": "Runtime introuvable",
     "not_found_hint": "Il a peut-être été supprimé, ou vous n'y avez pas accès."
   },
-  "running_other": "{{count}} en cours",
   "running_one": "{{count}} en cours",
-  "queued_other": "{{count}} en attente",
+  "running_other": "{{count}} en cours",
   "queued_one": "{{count}} en attente",
+  "queued_other": "{{count}} en attente",
   "connect": {
     "title": "Ajouter un ordinateur",
     "description": "Exécutez ces deux commandes sur l'ordinateur à ajouter. Nous le détecterons dès que le daemon sera en ligne.",
@@ -220,7 +221,8 @@
     "success_title": "Ordinateur connecté",
     "success_description": "Ordinateur connecté. Vous pouvez maintenant créer un agent.",
     "view_runtime": "Voir le runtime",
-    "create_agent": "Créer un agent"
+    "create_agent": "Créer un agent",
+    "live_listening_hint": "Nous le détecterons dès que le daemon démarrera — généralement en moins d'une minute."
   },
   "cloud_runtime": {
     "action": "Cloud Runtime",
@@ -259,7 +261,8 @@
     "validation": {
       "instance_type_required": "Le type d'instance est obligatoire",
       "disk_size_invalid": "La taille du disque doit être un entier positif"
-    }
+    },
+    "create_hint": "Choisissez un nom, un type d'instance et une taille de disque. Fleet s'occupe du reste."
   },
   "update": {
     "cli_version_label": "Version du CLI :",
@@ -292,8 +295,8 @@
     "heatmap_most_active_weekday": "Jour de semaine le plus actif",
     "heatmap_quietest_weekday": "Jour de semaine le plus calme",
     "heatmap_average": "moy. {{value}}",
-    "heatmap_window_total_other": "Total sur {{count}} jours",
     "heatmap_window_total_one": "Total sur {{count}} jour",
+    "heatmap_window_total_other": "Total sur {{count}} jours",
     "tooltip_total": "Total"
   },
   "list": {
@@ -431,8 +434,8 @@
     "empty_pricing_missing": "Tokens enregistrés mais tarif manquant pour :",
     "empty_pricing_hint": "Définissez un tarif personnalisé pour les inclure dans les totaux de coût.",
     "empty_zero_cost": "Tokens enregistrés mais le calcul de coût a renvoyé 0 $.",
-    "unmapped_notice_other": "{{count}} modèles n'ont pas de tarif maintenu — leurs tokens sont exclus des totaux de coût.",
     "unmapped_notice_one": "{{count}} modèle n'a pas de tarif maintenu — ses tokens sont exclus des totaux de coût.",
+    "unmapped_notice_other": "{{count}} modèles n'ont pas de tarif maintenu — leurs tokens sont exclus des totaux de coût.",
     "custom_pricing": {
       "open_button": "Définir des tarifs personnalisés",
       "edit_button": "Modifier les tarifs personnalisés",
@@ -453,10 +456,10 @@
     "cost_by_title_model": "Coût par modèle",
     "cost_by_tab_agent": "Par agent",
     "cost_by_tab_model": "Par modèle",
-    "cost_by_caption_agent_other": "{{count}} agents sur ce runtime",
     "cost_by_caption_agent_one": "{{count}} agent sur ce runtime",
-    "cost_by_caption_model_other": "{{count}} modèles utilisés",
+    "cost_by_caption_agent_other": "{{count}} agents sur ce runtime",
     "cost_by_caption_model_one": "{{count}} modèle utilisé",
+    "cost_by_caption_model_other": "{{count}} modèles utilisés",
     "daily_breakdown_toggle": "Tableau du détail quotidien",
     "table_date": "Date",
     "table_model": "Modèle",

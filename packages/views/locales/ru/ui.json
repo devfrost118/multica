@@ -1,11 +1,11 @@
 {
   "attach_file": "Прикрепить файл",
-  "toggle_sidebar": "Боковая панель",
   "copy_code": "Копировать код",
   "plain_text": "обычный текст",
+  "toggle_sidebar": "Боковая панель",
   "error_boundary": {
-    "title": "Something went wrong displaying this section.",
-    "description": "An unexpected error occurred.",
-    "try_again": "Try again"
+    "description": "Произошла непредвиденная ошибка.",
+    "title": "Не удалось отобразить этот раздел.",
+    "try_again": "Попробовать снова"
   }
 }

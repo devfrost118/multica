@@ -120,7 +120,8 @@
       "syncing_description": "Le paiement est terminé. Nous attendons que Stripe confirme le changement de forfait.",
       "timeout_description": "Le paiement a été reçu, mais l'abonnement est encore en cours de synchronisation. Actualisez cette page dans un instant.",
       "active_title": "Pro est actif",
-      "active_description": "Cet espace de travail a désormais accès à Pro."
+      "active_description": "Cet espace de travail a désormais accès à Pro.",
+      "portal_description": "L'instantané d'abonnement le plus récent est affiché ci-dessous."
     },
     "past_due": {
       "title": "Le paiement demande votre attention",
@@ -139,17 +140,21 @@
       "paused_description": "Ouvrez la gestion de la facturation pour vérifier la pause et les options de rétablissement disponibles.",
       "unpaid_title": "L'abonnement est impayé",
       "unpaid_description": "Ouvrez la gestion de la facturation pour régler le solde impayé.",
-      "canceled_title": "L'abonnement est résilié"
+      "canceled_title": "L'abonnement est résilié",
+      "canceled_description": "Le badge de droit ci-dessus indique le forfait actuellement appliqué à cet espace de travail."
     },
     "current": {
       "title": "Forfait actuel",
       "plan": "Forfait de l'espace de travail",
       "members": "Membres humains",
       "members_description": "Les agents et les invitations en attente ne comptent pas comme des sièges.",
-      "member_count_other": "{{count}} membres",
       "member_count_one": "{{count}} membre",
+      "member_count_other": "{{count}} membres",
       "billing_interval": "Intervalle de facturation",
-      "period_end": "Fin de la période en cours"
+      "period_end": "Fin de la période en cours",
+      "billing_interval_description": "L'intervalle enregistré pour l'abonnement actif.",
+      "period_end_description": "La date indiquée par l'instantané actuel de l'abonnement.",
+      "plan_description": "Le droit actuellement appliqué à cet espace de travail."
     },
     "upgrade": {
       "title": "Passer à Pro",
@@ -157,8 +162,8 @@
       "interval_label": "Intervalle de facturation",
       "monthly": "Mensuel",
       "yearly": "Annuel",
-      "pro_for_team_other": "Pro pour {{count}} sièges humains",
       "pro_for_team_one": "Pro pour {{count}} siège humain",
+      "pro_for_team_other": "Pro pour {{count}} sièges humains",
       "price_loading": "Chargement des tarifs d'abonnement",
       "unit_price": "{{price}} par siège humain",
       "price_at_checkout": "Le serveur recompte les membres humains avant l'achat. Stripe Checkout affiche le tarif par siège et le total faisant foi avant le paiement."
@@ -167,7 +172,8 @@
       "title": "Gestion de l'abonnement",
       "description": "Moyens de paiement, factures et résiliation.",
       "portal": "Portail de facturation Stripe",
-      "portal_unavailable": "Aucun portail de facturation Stripe n'est disponible pour cet espace de travail."
+      "portal_unavailable": "Aucun portail de facturation Stripe n'est disponible pour cet espace de travail.",
+      "portal_description": "Ouvrez Stripe pour gérer l'abonnement de cet espace de travail."
     },
     "limits": {
       "title": "Consommation et limites",
@@ -182,7 +188,10 @@
       "usage_total": "{{total}} / {{limit}}",
       "usage_breakdown": "{{used}} terminées · {{reserved}} en cours",
       "resets_at": "Réinitialisation {{date}}",
-      "usage_unavailable": "La consommation est temporairement indisponible"
+      "usage_unavailable": "La consommation est temporairement indisponible",
+      "autopilots_description": "Consommation actuelle des automatisations et heure de réinitialisation indiquées par le serveur.",
+      "description": "Les limites et la consommation proviennent du droit actuel et de la comptabilisation des quotas du serveur.",
+      "issues_description": "Consommation actuelle de tâches et limite effective indiquées par le serveur."
     },
     "seats": {
       "title": "Sièges",
@@ -195,10 +204,10 @@
       "available_description": "Sièges achetés moins les membres et les invitations réservées.",
       "pending": "Nombre de sièges programmé",
       "pending_description": "Prend effet à la prochaine période de facturation.",
-      "seat_count_other": "{{count}} sièges",
       "seat_count_one": "{{count}} siège",
-      "pending_with_date_other": "{{count}} sièges à partir du {{date}}",
+      "seat_count_other": "{{count}} sièges",
       "pending_with_date_one": "{{count}} siège à partir du {{date}}",
+      "pending_with_date_other": "{{count}} sièges à partir du {{date}}",
       "none_pending": "Aucun changement programmé",
       "not_subscribed": "Aucun abonnement actif",
       "unavailable": "Indisponible",
@@ -209,7 +218,9 @@
       "members_over_capacity_description": "Cet espace de travail compte {{actual}} membres mais seulement {{purchased}} sièges achetés. Ajoutez suffisamment de sièges ou retirez des membres avant d'envoyer de nouvelles invitations.",
       "occupancy_over_capacity_description": "Cet espace de travail occupe {{occupied}} des {{purchased}} sièges achetés ({{members}} membres et {{reserved}} invitations en attente). Ajoutez des sièges, retirez un membre ou révoquez une invitation en attente avant d'inviter quelqu'un d'autre.",
       "updated": "Achat de sièges soumis",
-      "available_help": "Calcul des sièges disponibles"
+      "available_help": "Calcul des sièges disponibles",
+      "billed_description": "Le nombre de sièges actuellement achetés via Stripe.",
+      "human_members_description": "Membres humains confirmés qui consomment la capacité achetée. Actualisez après un changement d'appartenance pour rapprocher le décompte."
     },
     "seat_purchase": {
       "title": "Ajouter des sièges",
@@ -229,16 +240,16 @@
       "charge_today": "Montant estimé à payer aujourd'hui",
       "next_invoice": "Prochain renouvellement estimé",
       "tax_notice": "Stripe détermine les taxes, les crédits et les détails définitifs de la facture. Les sièges deviennent disponibles après la confirmation de la mise à jour de l'abonnement par Stripe.",
-      "confirm_other": "Ajouter {{count}} sièges",
       "confirm_one": "Ajouter {{count}} siège",
+      "confirm_other": "Ajouter {{count}} sièges",
       "pending_title": "Achat de sièges en cours de traitement",
-      "pending_description_other": "Stripe confirme la mise à jour de l'abonnement à {{count}} sièges.",
       "pending_description_one": "Stripe confirme la mise à jour de l'abonnement à {{count}} siège.",
+      "pending_description_other": "Stripe confirme la mise à jour de l'abonnement à {{count}} sièges.",
       "delayed_title": "La confirmation des sièges prend plus de temps que prévu",
       "delayed_description": "La vérification automatique s'est arrêtée. L'achat peut encore aboutir ; vérifiez plus tard ou contactez l'assistance avant de lancer un autre achat.",
       "delayed_description_with_expiry": "La vérification automatique s'est arrêtée. Si la tentative est encore en attente après {{date}}, rechargez cette page avant de demander un autre devis ; contactez l'assistance si l'attente persiste.",
-      "submitted_other": "Un achat de {{count}} sièges a été soumis. La nouvelle capacité apparaîtra après confirmation par Stripe.",
       "submitted_one": "Un achat de {{count}} siège a été soumis. La nouvelle capacité apparaîtra après confirmation par Stripe.",
+      "submitted_other": "Un achat de {{count}} sièges a été soumis. La nouvelle capacité apparaîtra après confirmation par Stripe.",
       "error_title": "Impossible de mettre à jour l'estimation"
     },
     "confirm": {

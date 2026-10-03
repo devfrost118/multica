@@ -11,8 +11,8 @@
     "usage": "统计",
     "runtimes": "运行时",
     "skills": "Skills",
-    "rules": "规则",
-    "settings": "设置"
+    "settings": "设置",
+    "rules": "规则"
   },
   "tab": {
     "issue": "任务",
@@ -53,14 +53,16 @@
     "new_issue": "新建任务",
     "new_issue_shortcut": "C",
     "pinned_label": "固定",
-    "work_group": "Work",
-    "ai_team_group": "AI Team",
-    "show_more_pins": "Show {{count}} more…",
-    "show_fewer_pins": "Show fewer",
+    "work_group": "工作",
+    "ai_team_group": "AI 团队",
+    "show_more_pins": "再显示 {{count}} 项...",
+    "show_fewer_pins": "收起",
     "unread_overflow": "99+",
     "discord_card": {
       "title": "加入 Discord",
       "dismiss": "关闭"
-    }
+    },
+    "configure_group": "配置",
+    "workspace_group": "工作区"
   }
 }

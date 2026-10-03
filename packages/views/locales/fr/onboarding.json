@@ -3,13 +3,16 @@
     "wordmark": "Multica",
     "label": "Étapes de prise en main",
     "about_you": {
-      "label": "À propos de vous"
+      "label": "À propos de vous",
+      "description": "Votre rôle, et ce que vous voulez accomplir."
     },
     "workspace": {
-      "label": "Espace de travail"
+      "label": "Espace de travail",
+      "description": "Nommez-le et choisissez son URL."
     },
     "runtime": {
-      "label": "Rencontrez Mika"
+      "label": "Rencontrez Mika",
+      "description": "Votre premier coéquipier agent, et où il s'exécute."
     }
   },
   "welcome": {
@@ -42,7 +45,9 @@
       "card5_body_suffix": " avait signalée. Lien d'aperçu dans la PR.",
       "card5_mention_you": "@vous",
       "card5_timestamp": "à l'instant"
-    }
+    },
+    "illustration_caption": "Chaque tâche, chaque fil, chaque décision — partagés par votre équipe et vos agents.",
+    "lede_desktop": "À la fin, un vrai agent répondra à votre première tâche."
   },
   "common": {
     "back": "Retour",
@@ -56,7 +61,8 @@
     "eyebrow": "Une question rapide",
     "lede": "Aidez-nous à comprendre comment vous avez découvert Multica.",
     "submit": "Envoyer",
-    "save_failed_toast": "Échec de l'enregistrement"
+    "save_failed_toast": "Échec de l'enregistrement",
+    "hint_ready": "Ça a l'air bon. Cliquez sur Envoyer quand vous serez prêt."
   },
   "questions": {
     "about_you": {
@@ -111,7 +117,8 @@
     "other_aria": "Décrire autre chose"
   },
   "step_question": {
-    "hint_pick": "Vous pouvez passer cette étape."
+    "hint_pick": "Vous pouvez passer cette étape.",
+    "hint_continue": "Ça a l'air bon. Cliquez sur Continuer quand vous serez prêt."
   },
   "cli_install": {
     "copy_aria": "Copier",
@@ -192,15 +199,16 @@
     "creation_disabled_logout": "Se déconnecter",
     "creation_disabled_eyebrow_resume": "Votre espace de travail",
     "creation_disabled_headline_resume": "Continuez avec {{name}}.",
-    "creation_disabled_lede_resume": "La création d'espaces de travail est désactivée sur cette instance : vous continuerez donc dans votre espace existant."
+    "creation_disabled_lede_resume": "La création d'espaces de travail est désactivée sur cette instance : vous continuerez donc dans votre espace existant.",
+    "create_new_subtitle": "Repartir de zéro — un espace distinct pour un autre volet de votre travail."
   },
   "step_runtime": {
     "scanning_headline": "Connexion de cet ordinateur…",
     "scanning_lede_prefix": "Votre agent passe par un outil de codage IA que vous possédez déjà — comme ",
     "scanning_lede_suffix": ", et d'autres. Nous vérifions lesquels sont installés sur cet ordinateur.",
     "found_headline": "Où Mika doit-il s'exécuter ?",
-    "runtime_count_other": "{{count}} runtimes d'agent",
     "runtime_count_one": "{{count}} runtime d'agent",
+    "runtime_count_other": "{{count}} runtimes d'agent",
     "status_all_online": "tous en ligne",
     "status_none_online": "aucun en ligne",
     "status_n_online": "{{count}} en ligne",
@@ -221,7 +229,9 @@
     "hint_selected": "Sélectionné : {{name}}",
     "hint_pick": "Choisissez un runtime d'agent ci-dessus pour commencer avec Mika.",
     "hint_waiting": "En attente du premier résultat…",
-    "continue": "Commencer avec Mika"
+    "continue": "Commencer avec Mika",
+    "found_lede": "Voici les runtimes d'agent trouvés sur cet ordinateur. Vous pourrez en changer ou en ajouter plus tard.",
+    "hint_skip_or_refresh": "Actualisez après en avoir installé un, ou ignorez cette étape pour entrer dans votre espace de travail."
   },
   "step_platform": {
     "eyebrow": "Connecter un ordinateur",
@@ -240,8 +250,8 @@
     "cli_dialog_title": "Connecter depuis le terminal",
     "cli_dialog_pick_hint": "Choisissez un ordinateur ci-dessus.",
     "cli_dialog_connect": "Connecter et continuer",
-    "runtimes_connected_other": "{{count}} ordinateurs connectés",
     "runtimes_connected_one": "{{count}} ordinateur connecté",
+    "runtimes_connected_other": "{{count}} ordinateurs connectés",
     "live_listening": "En direct · En attente de votre ordinateur",
     "stage_normal_prefix": "Exécutez la commande ci-dessus. Dès que ",
     "stage_normal_suffix": " aura terminé la connexion via le navigateur, votre ordinateur apparaîtra ici automatiquement (généralement en 10 à 30 secondes).",
@@ -251,7 +261,8 @@
     "stage_slow_suffix": " pour d'éventuelles erreurs.",
     "stage_stalled_prefix": "Rien ne remonte pour l'instant. Si le terminal ne vous met pas à l'aise, ",
     "stage_stalled_term": "l'application de bureau",
-    "stage_stalled_suffix": " est la voie la plus simple — un clic et cet ordinateur est connecté. Fermez cette fenêtre et choisissez l'application de bureau, ou cliquez sur Ignorer pour continuer."
+    "stage_stalled_suffix": " est la voie la plus simple — un clic et cet ordinateur est connecté. Fermez cette fenêtre et choisissez l'application de bureau, ou cliquez sur Ignorer pour continuer.",
+    "cli_dialog_description": "Même connexion que l'application de bureau, configurée depuis le terminal. Utilisez-la pour les serveurs, les machines de développement distantes ou tout ordinateur sans interface."
   },
   "errors": {
     "skip_failed": "Échec de la finalisation de la prise en main",

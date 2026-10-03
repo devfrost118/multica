@@ -17,7 +17,8 @@
     "confirm": "删除",
     "deleting": "删除中...",
     "toast_deleted": "已删除任务",
-    "toast_delete_failed": "删除任务失败"
+    "toast_delete_failed": "删除任务失败",
+    "hint": "工作区任何成员都可以删除任务。"
   },
   "feedback": {
     "title": "反馈",
@@ -36,8 +37,8 @@
     "searching": "搜索中...",
     "no_results": "未找到任务。",
     "prompt_to_search": "输入关键词搜索任务",
-    "suggested_similar": "Similar titles",
-    "suggested_recent": "Recently viewed"
+    "suggested_similar": "标题相似",
+    "suggested_recent": "最近查看"
   },
   "set_parent": {
     "title": "设置父任务",
@@ -63,7 +64,10 @@
     "toast_failed": "操作失败",
     "create_will_start": "创建后 {{name}} 会立即开始工作。",
     "create_will_start_squad": "创建后 {{name}} 的队长会评估并开始安排任务。",
-    "create_parked": "已指派——在 backlog 中不会开始工作。"
+    "create_parked": "已指派——在 backlog 中不会开始工作。",
+    "note_label": "交接说明（可选）",
+    "note_placeholder": "交代一句——范围、重点、或别碰什么……",
+    "note_unsupported": "对方的运行环境版本较旧，这条交接说明可能读不到。"
   },
   "create_squad": {
     "title": "创建 Squad",
@@ -138,7 +142,7 @@
     "local_pick_failed": "无法打开目录选择器。",
     "local_invalid_dir": "该目录不可用，请重新选择。",
     "local_hint": "其他机器上的 agent 看不到这个路径，会启动失败。需要协作请用仓库模式。",
-    "repos_ref_default": "Default branch"
+    "repos_ref_default": "默认分支"
   },
   "create_issue": {
     "sr_manual": "新建任务",
@@ -170,23 +174,23 @@
       "billing_action": "查看账单"
     },
     "autopilot_quota_limit": {
-      "title": "This workspace has reached its autopilot run limit",
-      "checking_description": "Checking the billing actions available for this workspace…",
-      "upgrade_description": "Upgrade to Pro to restore autopilot runs.",
-      "portal_description": "Open Billing Portal to manage this workspace's subscription and restore autopilot runs.",
-      "contact_description": "Ask a workspace owner or admin to upgrade to Pro.",
-      "billing_description": "Open Billing to see the upgrade options available for this workspace.",
-      "billing_unavailable_description": "Billing actions could not be loaded. Open Billing to try again.",
-      "billing_disabled_description": "Wait for the current allowance to reset, or contact your workspace administrator.",
-      "upgrade_action": "Upgrade to Pro",
-      "portal_action": "Open Billing Portal",
-      "billing_action": "View Billing"
+      "title": "该工作区的自动化执行次数已达到上限",
+      "checking_description": "正在查询该工作区可用的账单操作…",
+      "upgrade_description": "升级到 Pro 后可恢复自动化执行。",
+      "portal_description": "打开账单门户管理该工作区的订阅，以恢复自动化执行。",
+      "contact_description": "请联系工作区所有者或管理员升级到 Pro。",
+      "billing_description": "请前往账单设置查看该工作区可用的升级选项。",
+      "billing_unavailable_description": "暂时无法加载账单操作，请前往账单设置重试。",
+      "billing_disabled_description": "请等待当前额度重置，或联系工作区管理员。",
+      "upgrade_action": "升级到 Pro",
+      "portal_action": "打开账单门户",
+      "billing_action": "查看账单"
     },
     "toast_link_subissues_all_failed": "关联子任务失败",
     "toast_link_subissues_partial": "{{total}} 个子任务中有 {{failed}} 个关联失败",
     "toast_link_labels_failed": "关联标签失败",
     "toast_set_properties_failed": "有 {{count}} 个自定义属性设置失败",
-    "unavailable_property_removed": "An unavailable custom property was removed from the draft. Review it before submitting again.",
+    "unavailable_property_removed": "一个已不可用的自定义属性已从草稿移除，请确认后重新提交。",
     "switch_to_agent": "切换到智能体",
     "switch_to_agent_tooltip": "切换到通过智能体创建——一句话描述，让它替你建",
     "switch_to_manual": "切换到手动",

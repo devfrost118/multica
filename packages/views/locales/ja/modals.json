@@ -17,7 +17,8 @@
     "confirm": "削除",
     "deleting": "削除中...",
     "toast_deleted": "タスクを削除しました",
-    "toast_delete_failed": "タスクを削除できませんでした"
+    "toast_delete_failed": "タスクを削除できませんでした",
+    "hint": "ワークスペースのメンバーであれば誰でもタスクを削除できます。"
   },
   "feedback": {
     "title": "フィードバック",
@@ -36,8 +37,8 @@
     "searching": "検索中...",
     "no_results": "タスクが見つかりません。",
     "prompt_to_search": "タスクを検索するには入力してください",
-    "suggested_similar": "Similar titles",
-    "suggested_recent": "Recently viewed"
+    "suggested_similar": "タイトルが似ているタスク",
+    "suggested_recent": "最近表示したタスク"
   },
   "set_parent": {
     "title": "親タスクを設定",
@@ -63,7 +64,10 @@
     "toast_failed": "操作に失敗しました",
     "create_will_start": "作成後、{{name}} がすぐに作業を開始します。",
     "create_will_start_squad": "作成後、{{name}} のリーダーが内容を評価し、タスクの割り振りを開始します。",
-    "create_parked": "割り当て済み — バックログでは作業を開始しません。"
+    "create_parked": "割り当て済み — バックログでは作業を開始しません。",
+    "note_label": "引き継ぎメモ（任意）",
+    "note_placeholder": "範囲・重点・触れてほしくない点などを一言で…",
+    "note_unsupported": "相手の実行環境が古いため、この引き継ぎメモは読み取れない可能性があります。"
   },
   "create_squad": {
     "title": "スクワッドを作成",
@@ -138,7 +142,7 @@
     "local_pick_failed": "ディレクトリ選択画面を開けませんでした。",
     "local_invalid_dir": "このディレクトリは使用できません。別のものを選択してください。",
     "local_hint": "他のマシンのエージェントはこのパスを参照できず、起動に失敗します。共有作業にはリポジトリを使用してください。",
-    "repos_ref_default": "Default branch"
+    "repos_ref_default": "デフォルトブランチ"
   },
   "create_issue": {
     "sr_manual": "新規タスク",
@@ -170,23 +174,23 @@
       "billing_action": "請求設定を表示"
     },
     "autopilot_quota_limit": {
-      "title": "This workspace has reached its autopilot run limit",
-      "checking_description": "Checking the billing actions available for this workspace…",
-      "upgrade_description": "Upgrade to Pro to restore autopilot runs.",
-      "portal_description": "Open Billing Portal to manage this workspace's subscription and restore autopilot runs.",
-      "contact_description": "Ask a workspace owner or admin to upgrade to Pro.",
-      "billing_description": "Open Billing to see the upgrade options available for this workspace.",
-      "billing_unavailable_description": "Billing actions could not be loaded. Open Billing to try again.",
-      "billing_disabled_description": "Wait for the current allowance to reset, or contact your workspace administrator.",
-      "upgrade_action": "Upgrade to Pro",
-      "portal_action": "Open Billing Portal",
-      "billing_action": "View Billing"
+      "title": "このワークスペースはオートパイロット実行数の上限に達しました",
+      "checking_description": "このワークスペースで利用可能な請求操作を確認しています…",
+      "upgrade_description": "Pro にアップグレードすると、オートパイロット実行を再開できます。",
+      "portal_description": "請求ポータルを開いてワークスペースのサブスクリプションを管理し、オートパイロット実行を再開してください。",
+      "contact_description": "ワークスペースの所有者または管理者に Pro へのアップグレードを依頼してください。",
+      "billing_description": "請求設定を開いて、このワークスペースで利用可能なアップグレードオプションを確認してください。",
+      "billing_unavailable_description": "請求操作を読み込めませんでした。請求設定を開いて再試行してください。",
+      "billing_disabled_description": "現在の実行枠がリセットされるまで待つか、ワークスペースの管理者に連絡してください。",
+      "upgrade_action": "Pro にアップグレード",
+      "portal_action": "請求ポータルを開く",
+      "billing_action": "請求設定を表示"
     },
     "toast_link_subissues_all_failed": "サブタスクをリンクできませんでした",
     "toast_link_subissues_partial": "サブタスク {{total}} 件中 {{failed}} 件をリンクできませんでした",
     "toast_link_labels_failed": "ラベルを付けられませんでした",
     "toast_set_properties_failed": "{{count}} 件のカスタムプロパティを設定できませんでした",
-    "unavailable_property_removed": "An unavailable custom property was removed from the draft. Review it before submitting again.",
+    "unavailable_property_removed": "利用できなくなったカスタムプロパティを下書きから削除しました。内容を確認してから再度送信してください。",
     "switch_to_agent": "エージェントに切り替え",
     "switch_to_agent_tooltip": "エージェントで作成に切り替えます。一行で説明すれば、エージェントがタスクを作成します",
     "switch_to_manual": "手動に切り替え",

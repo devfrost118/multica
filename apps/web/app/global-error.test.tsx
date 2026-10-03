@@ -79,6 +79,7 @@ describe("resolveEmergencyLocale", () => {
 
   it.each([
     { locale: "zh-Hans", lang: "zh-CN", title: "出现了问题", reload: "重新加载" },
+    { locale: "ru", lang: "ru-RU", title: "Что-то пошло не так", reload: "Перезагрузить" },
     { locale: "fr", lang: "fr-FR", title: "Une erreur s'est produite", reload: "Recharger" },
   ])("hydrates in $locale from the cookie when the browser uses another language", async ({ locale, lang, title, reload }) => {
     document.cookie = `${LOCALE_COOKIE}=${locale};path=/`;

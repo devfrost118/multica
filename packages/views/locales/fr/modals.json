@@ -17,7 +17,8 @@
     "confirm": "Supprimer",
     "deleting": "Suppression...",
     "toast_deleted": "Tâche supprimée",
-    "toast_delete_failed": "Échec de la suppression de la tâche"
+    "toast_delete_failed": "Échec de la suppression de la tâche",
+    "hint": "Tout membre de l'espace de travail peut supprimer des tâches."
   },
   "feedback": {
     "title": "Faire un retour",
@@ -63,7 +64,10 @@
     "toast_failed": "Échec de l'action",
     "create_will_start": "{{name}} commencera à travailler juste après la création.",
     "create_will_start_squad": "Le chef de {{name}} l'examinera et commencera à répartir le travail juste après la création.",
-    "create_parked": "Assigné — ne démarrera pas tant que la tâche est dans À planifier."
+    "create_parked": "Assigné — ne démarrera pas tant que la tâche est dans À planifier.",
+    "note_label": "Note de passation (facultatif)",
+    "note_placeholder": "Indiquez ce qui compte — le périmètre, les priorités, ou ce qu'il faut éviter…",
+    "note_unsupported": "Leur runtime est trop ancien pour recevoir cette note de passation ; elle risque de ne pas être lue."
   },
   "create_squad": {
     "title": "Créer un squad",
@@ -79,8 +83,8 @@
     "members_optional": "(facultatif)",
     "members_hint": "Le chef peut déléguer des sous-tâches à ces membres.",
     "members_placeholder": "Ajouter des agents ou des membres de l'espace de travail",
-    "members_selected_count_other": "{{count}} sélectionnés",
     "members_selected_count_one": "{{count}} sélectionné",
+    "members_selected_count_other": "{{count}} sélectionnés",
     "members_more_count": "+{{count}}",
     "members_remove_aria": "Retirer {{name}}",
     "picker_search_placeholder": "Rechercher des agents et des membres...",
@@ -117,8 +121,8 @@
     "toast_created": "Projet créé",
     "toast_failed": "Échec de la création du projet",
     "repos_pill": "Dépôts",
-    "repos_pill_count_other": "{{count}} dépôts",
     "repos_pill_count_one": "{{count}} dépôt",
+    "repos_pill_count_other": "{{count}} dépôts",
     "repos_heading": "Rattacher des dépôts GitHub à ce projet",
     "repos_empty": "Aucun dépôt au niveau de l'espace de travail. Collez une URL ci-dessous pour en rattacher un ponctuellement.",
     "repos_search_placeholder": "Rechercher des dépôts...",

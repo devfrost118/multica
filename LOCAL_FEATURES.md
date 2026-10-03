@@ -46,9 +46,10 @@
 ### 2026-10-03: v0.4.36 → v0.6.1 (FRO-329)
 
 - Upstream tag `v0.6.1` (`2ea01ae4ef55de4310b99af192d2dbd367832883`) merged into fork via `sync/upstream-v0.6.1`.
-- Конфликты: union fork-local + upstream (ProjectEnvironments / EffectiveRules / ActiveSiblingRuns / droid + wakeup/delta fields / codearts / RuntimeProfile); locale JSON key-wise; ru∪fr.
-- Locale parity: missing EN keys appended; extras pruned; ja/ko/zh-Hans без мёртвых `_one`. Новые RU/FR строки для отсутствовавших ключей временно скопированы из EN.
-- Активные темы сохранены. `go build ./...` OK. Draft PR — без merge; TEST deploy ждёт merge в `main`.
+- Конфликты: union fork-local + upstream (ProjectEnvironments / EffectiveRules / ActiveSiblingRuns / droid + wakeup/delta fields / codearts / RuntimeProfile); locale JSON key-wise prefer-ours + append-theirs; ru∪fr.
+- Locale: EN/ja/ko/zh-Hans восстановлены из `origin/main` ∪ `v0.6.1` без EN-заглушек; FR — из `v0.6.1` плюс реальные FR для fork-only ключей; RU — сохранены действующие переводы `origin/main`, новые ключи переведены на русский. Штатный `locales/parity.test.ts` — обязательный гейт.
+- Pre-update dump сохранён на TEST-хосте: `/home/frost/backups/multica/pre-update/20261003T111113Z/multica.dump` (не verified: нет `.env`, путь не `/home/frost/backups/pre-update/test/<UTC>/`, нет `pg_restore --list` / manifest). Новый полный backup только сразу перед разрешённым deploy после всех gates.
+- Активные темы сохранены. Draft PR — без merge; TEST deploy не готов, пока CI/typecheck/parity/config gate не зелёные.
 
 ### 2026-08-29: v0.4.32 → v0.4.36 (FRO-268)
 

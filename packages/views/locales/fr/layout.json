@@ -11,8 +11,8 @@
     "usage": "Statistiques",
     "runtimes": "Runtimes",
     "skills": "Skills",
-    "rules": "Rules",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "rules": "Règles"
   },
   "tab": {
     "issue": "Tâche",
@@ -61,6 +61,8 @@
     "discord_card": {
       "title": "Rejoignez notre Discord",
       "dismiss": "Ignorer"
-    }
+    },
+    "configure_group": "Configurer",
+    "workspace_group": "Espace de travail"
   }
 }

@@ -17,7 +17,8 @@
     "confirm": "삭제",
     "deleting": "삭제하는 중...",
     "toast_deleted": "태스크를 삭제했습니다",
-    "toast_delete_failed": "태스크를 삭제하지 못했습니다"
+    "toast_delete_failed": "태스크를 삭제하지 못했습니다",
+    "hint": "워크스페이스 멤버라면 누구나 태스크를 삭제할 수 있습니다."
   },
   "feedback": {
     "title": "피드백",
@@ -36,8 +37,8 @@
     "searching": "검색 중...",
     "no_results": "태스크를 찾을 수 없습니다.",
     "prompt_to_search": "태스크를 검색하려면 입력하세요",
-    "suggested_similar": "Similar titles",
-    "suggested_recent": "Recently viewed"
+    "suggested_similar": "제목이 비슷한 태스크",
+    "suggested_recent": "최근 본 태스크"
   },
   "set_parent": {
     "title": "상위 태스크 설정",
@@ -63,7 +64,10 @@
     "toast_failed": "작업에 실패했습니다",
     "create_will_start": "생성 후 {{name}}이(가) 바로 작업을 시작합니다.",
     "create_will_start_squad": "생성 후 {{name}}의 리더가 내용을 평가한 뒤 작업 배분을 시작합니다.",
-    "create_parked": "할당됨 — 백로그에서는 작업을 시작하지 않습니다."
+    "create_parked": "할당됨 — 백로그에서는 작업을 시작하지 않습니다.",
+    "note_label": "인계 메모 (선택)",
+    "note_placeholder": "범위·핵심·건드리지 말 것 등을 한마디로…",
+    "note_unsupported": "상대 런타임이 오래되어 이 인계 메모를 읽지 못할 수 있습니다."
   },
   "create_squad": {
     "title": "스쿼드 만들기",
@@ -138,7 +142,7 @@
     "local_pick_failed": "디렉터리 선택 창을 열 수 없습니다.",
     "local_invalid_dir": "이 디렉터리는 사용할 수 없습니다. 다른 디렉터리를 선택하세요.",
     "local_hint": "다른 기기의 에이전트는 이 경로를 볼 수 없어 시작에 실패합니다. 공유 작업에는 저장소를 사용하세요.",
-    "repos_ref_default": "Default branch"
+    "repos_ref_default": "기본 브랜치"
   },
   "create_issue": {
     "sr_manual": "새 태스크",
@@ -170,23 +174,23 @@
       "billing_action": "결제 설정 보기"
     },
     "autopilot_quota_limit": {
-      "title": "This workspace has reached its autopilot run limit",
-      "checking_description": "Checking the billing actions available for this workspace…",
-      "upgrade_description": "Upgrade to Pro to restore autopilot runs.",
-      "portal_description": "Open Billing Portal to manage this workspace's subscription and restore autopilot runs.",
-      "contact_description": "Ask a workspace owner or admin to upgrade to Pro.",
-      "billing_description": "Open Billing to see the upgrade options available for this workspace.",
-      "billing_unavailable_description": "Billing actions could not be loaded. Open Billing to try again.",
-      "billing_disabled_description": "Wait for the current allowance to reset, or contact your workspace administrator.",
-      "upgrade_action": "Upgrade to Pro",
-      "portal_action": "Open Billing Portal",
-      "billing_action": "View Billing"
+      "title": "이 워크스페이스가 오토파일럿 실행 한도에 도달했습니다",
+      "checking_description": "이 워크스페이스에서 사용할 수 있는 결제 작업을 확인하는 중입니다…",
+      "upgrade_description": "Pro로 업그레이드하면 오토파일럿 실행을 복구할 수 있습니다.",
+      "portal_description": "결제 포털을 열어 이 워크스페이스의 구독을 관리하고 오토파일럿 실행을 복구하세요.",
+      "contact_description": "워크스페이스 소유자 또는 관리자에게 Pro 업그레이드를 요청하세요.",
+      "billing_description": "결제 설정에서 이 워크스페이스에 사용 가능한 업그레이드 옵션을 확인하세요.",
+      "billing_unavailable_description": "결제 작업을 불러오지 못했습니다. 결제 설정을 열어 다시 시도하세요.",
+      "billing_disabled_description": "현재 실행 할당량이 재설정될 때까지 기다리거나 워크스페이스 관리자에게 문의하세요.",
+      "upgrade_action": "Pro로 업그레이드",
+      "portal_action": "결제 포털 열기",
+      "billing_action": "결제 설정 보기"
     },
     "toast_link_subissues_all_failed": "하위 태스크를 연결하지 못했습니다",
     "toast_link_subissues_partial": "하위 태스크 {{total}}개 중 {{failed}}개를 연결하지 못했습니다",
     "toast_link_labels_failed": "라벨을 연결하지 못했습니다",
     "toast_set_properties_failed": "사용자 지정 속성 값 {{count}}개를 설정하지 못했습니다",
-    "unavailable_property_removed": "An unavailable custom property was removed from the draft. Review it before submitting again.",
+    "unavailable_property_removed": "더 이상 사용할 수 없는 사용자 지정 속성이 초안에서 제거되었습니다. 내용을 확인한 후 다시 제출해 주세요.",
     "switch_to_agent": "에이전트로 전환",
     "switch_to_agent_tooltip": "에이전트로 만들기로 전환합니다. 한 줄로 설명하면 에이전트가 태스크를 작성합니다.",
     "switch_to_manual": "직접 만들기로 전환",

@@ -94,10 +94,10 @@
     "header_cost": "Coût",
     "header_time": "Temps",
     "header_tasks": "Exécutions",
-    "usage_unreported_other": "{{count}} exécutions n'ont pas transmis leur consommation",
     "usage_unreported_one": "{{count}} exécution n'a pas transmis sa consommation",
-    "usage_unreported_pending_other": "{{count}} exécutions n'ont pas transmis leur consommation · les totaux sont encore en cours de traitement",
+    "usage_unreported_other": "{{count}} exécutions n'ont pas transmis leur consommation",
     "usage_unreported_pending_one": "{{count}} exécution n'a pas transmis sa consommation · les totaux sont encore en cours de traitement",
+    "usage_unreported_pending_other": "{{count}} exécutions n'ont pas transmis leur consommation · les totaux sont encore en cours de traitement",
     "usage_totals_pending": "Les totaux de consommation sont encore en cours de traitement",
     "show_all": "Tout afficher",
     "show_less": "Afficher le top {{count}}",
@@ -107,100 +107,100 @@
     "title": "Aucune consommation pour l'instant",
     "body": "Lancez des agents pour voir leur consommation de tokens et leur durée d’exécution."
   },
-  "provider_limits": {
-    "title": "Provider limits",
-    "subtitle": "Subscription quota windows reported by connected providers.",
-    "view_label": "Provider limits view",
-    "by_accounts": "By accounts",
-    "by_daemon": "By daemon",
-    "loading": "Loading provider limits…",
-    "refresh": "Refresh",
-    "refreshing": "Refreshing usage data…",
-    "empty": "No provider limits reported yet.",
-    "error": "Provider limits could not be loaded.",
-    "unknown": "Unknown",
-    "no_buckets": "No quota buckets are available.",
-    "used": "{{value}}% used",
-    "freshness": "Fresh for {{value}}",
-    "resets_at": "Resets {{value}}",
-    "checked_at": "Checked {{value}}",
-    "last_good": "Last good: {{value}}",
-    "reason": "Reason: {{value}}",
-    "updated": "Updated {{value}}",
-    "data_unavailable_checked": "Data unavailable · checked {{value}}",
-    "last_successful_collection": "Last successful collection: {{value}}",
-    "last_attempted_probe": "Last attempted probe: {{value}}",
-    "attempt_source": "Attempt source: {{value}}",
-    "last_attempt_status": "Latest attempt: {{value}}",
-    "reasons": {
-      "auth_expired": "Authentication expired. Sign in to Codex again.",
-      "authentication_required": "Sign in to Codex to collect usage data.",
-      "reauth_required": "The local session expired. Sign in with the provider's CLI again.",
-      "onboarding_required": "Finish setup in the provider's CLI to collect usage data.",
-      "usage_unavailable": "Usage data could not be collected. Try again.",
-      "rate_limited": "The provider temporarily limited usage checks.",
-      "unsupported_platform": "Usage collection is not supported on this operating system.",
-      "credential_missing": "No token is connected. Open Details and add one to collect usage data.",
-      "credential_invalid": "The saved token was rejected. Open Details and replace it."
-    },
-    "thresholds": {
-      "title": "Alerts",
-      "warning": "Warning",
-      "critical": "Critical"
-    },
-    "status": {
-      "ok": "OK",
-      "stale": "Stale",
-      "partial": "Partial",
-      "unavailable": "Unavailable",
-      "error": "Error"
-    },
-    "freshness_level": {
-      "fresh": "Fresh",
-      "recent": "Aging",
-      "aging": "Old",
-      "expired": "Outdated"
-    },
-    "freshness_hint": {
-      "fresh": "Updated within the freshness window.",
-      "recent": "Updated less than a day ago.",
-      "aging": "Updated 1-3 days ago.",
-      "expired": "Updated more than 3 days ago, or usage data could not be collected."
-    },
-    "detail": {
-      "trigger": "Details",
-      "no_history": "No history recorded yet for this bucket.",
-      "pace_title": "Pace & runway",
-      "estimated": "Estimated",
-      "pace_value": "~{{value}} consumed",
-      "runway_value": "~{{value}} left at this pace",
-      "runway_exhausted": "Already at or past the limit",
-      "unavailable": {
-        "insufficient_points": "Not enough comparable snapshots yet.",
-        "stale_data": "Latest snapshot is stale — refresh before trusting a projection.",
-        "not_decreasing": "Remaining isn't decreasing, so no depletion trend applies.",
-        "zero_elapsed_time": "Snapshots are too close together to estimate a rate."
-      }
-    },
-    "credentials": {
-      "title": "Factory credential",
-      "connected": "Connected",
-      "not_connected": "Not connected",
-      "fingerprint": "Fingerprint: {{value}}",
-      "validation": "Validation: {{value}}",
-      "account_label": "Factory account label",
-      "account_label_placeholder": "Account label (optional)",
-      "token": "Factory API token",
-      "replacement_token": "Replacement token",
-      "connect": "Connect",
-      "replace": "Replace",
-      "remove": "Remove",
-      "awaiting_account": "Awaiting account",
-      "awaiting_account_help": "Waiting for the daemon to identify which Factory account this card belongs to. Refresh after the next probe — creating another credential now would risk a duplicate.",
-      "action_failed": "Credential action failed. Check permissions and try again."
-    }
-  },
   "duration": {
     "less_than_minute": "<1 min"
+  },
+  "provider_limits": {
+    "attempt_source": "Source de la tentative : {{value}}",
+    "by_accounts": "Par comptes",
+    "by_daemon": "Par daemon",
+    "checked_at": "Vérifié {{value}}",
+    "credentials": {
+      "account_label": "Libellé du compte Factory",
+      "account_label_placeholder": "Libellé du compte (facultatif)",
+      "action_failed": "L'action sur l'identifiant a échoué. Vérifiez les permissions et réessayez.",
+      "awaiting_account": "Compte en attente",
+      "awaiting_account_help": "En attente que le daemon identifie le compte Factory auquel cette carte appartient. Actualisez après la prochaine sonde — créer un autre identifiant maintenant risquerait un doublon.",
+      "connect": "Connecter",
+      "connected": "Connecté",
+      "fingerprint": "Empreinte : {{value}}",
+      "not_connected": "Non connecté",
+      "remove": "Retirer",
+      "replace": "Remplacer",
+      "replacement_token": "Jeton de remplacement",
+      "title": "Identifiant Factory",
+      "token": "Jeton d'API Factory",
+      "validation": "Validation : {{value}}"
+    },
+    "data_unavailable_checked": "Données indisponibles · vérifié {{value}}",
+    "detail": {
+      "estimated": "Estimé",
+      "no_history": "Aucun historique enregistré pour ce compartiment.",
+      "pace_title": "Rythme et autonomie",
+      "pace_value": "~{{value}} consommés",
+      "runway_exhausted": "Déjà à la limite ou au-delà",
+      "runway_value": "~{{value}} restantes à ce rythme",
+      "trigger": "Détails",
+      "unavailable": {
+        "insufficient_points": "Pas encore assez d'instantanés comparables.",
+        "not_decreasing": "Le reste ne diminue pas : aucune tendance d'épuisement ne s'applique.",
+        "stale_data": "Le dernier instantané est périmé — actualisez avant de vous fier à une projection.",
+        "zero_elapsed_time": "Les instantanés sont trop rapprochés pour estimer un rythme."
+      }
+    },
+    "empty": "Aucune limite de fournisseur n'a encore été signalée.",
+    "error": "Impossible de charger les limites des fournisseurs.",
+    "freshness": "À jour pendant {{value}}",
+    "freshness_hint": {
+      "aging": "Mis à jour il y a 1 à 3 jours.",
+      "expired": "Mis à jour il y a plus de 3 jours, ou les données de consommation n'ont pas pu être collectées.",
+      "fresh": "Mis à jour dans la fenêtre de fraîcheur.",
+      "recent": "Mis à jour il y a moins d'un jour."
+    },
+    "freshness_level": {
+      "aging": "Ancien",
+      "expired": "Obsolète",
+      "fresh": "À jour",
+      "recent": "Vieillissant"
+    },
+    "last_attempt_status": "Dernière tentative : {{value}}",
+    "last_attempted_probe": "Dernière sonde tentée : {{value}}",
+    "last_good": "Dernier succès : {{value}}",
+    "last_successful_collection": "Dernière collecte réussie : {{value}}",
+    "loading": "Chargement des limites des fournisseurs…",
+    "no_buckets": "Aucun compartiment de quota n'est disponible.",
+    "reason": "Raison : {{value}}",
+    "reasons": {
+      "auth_expired": "Authentification expirée. Reconnectez-vous à Codex.",
+      "authentication_required": "Connectez-vous à Codex pour collecter les données de consommation.",
+      "credential_invalid": "Le jeton enregistré a été refusé. Ouvrez Détails et remplacez-le.",
+      "credential_missing": "Aucun jeton n'est connecté. Ouvrez Détails et ajoutez-en un pour collecter les données de consommation.",
+      "onboarding_required": "Terminez la configuration dans le CLI du fournisseur pour collecter les données de consommation.",
+      "rate_limited": "Le fournisseur a temporairement limité les vérifications de consommation.",
+      "reauth_required": "La session locale a expiré. Reconnectez-vous avec le CLI du fournisseur.",
+      "unsupported_platform": "La collecte de consommation n'est pas prise en charge sur ce système d'exploitation.",
+      "usage_unavailable": "Les données de consommation n'ont pas pu être collectées. Réessayez."
+    },
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation des données de consommation…",
+    "resets_at": "Réinitialisation {{value}}",
+    "status": {
+      "error": "Erreur",
+      "ok": "OK",
+      "partial": "Partiel",
+      "stale": "Périmé",
+      "unavailable": "Indisponible"
+    },
+    "subtitle": "Fenêtres de quota d'abonnement signalées par les fournisseurs connectés.",
+    "thresholds": {
+      "critical": "Critique",
+      "title": "Alertes",
+      "warning": "Avertissement"
+    },
+    "title": "Limites des fournisseurs",
+    "unknown": "Inconnu",
+    "updated": "Mis à jour {{value}}",
+    "used": "{{value}} % utilisé",
+    "view_label": "Vue des limites des fournisseurs"
   }
 }

@@ -1,19 +1,282 @@
 {
-  "create": {
-    "manual": {
-      "toast_created": "スキルを作成しました",
-      "description_placeholder": "このスキルをエージェントにいつ割り当てるべきかを 1 文で書いてください。",
-      "submitting": "作成中…",
-      "submit": "スキルを作成",
-      "name_conflict_hint": " 別の名前で再度送信してください。",
-      "name_hint": "ワークスペース内で一意である必要があります。",
-      "cancel": "キャンセル",
-      "name_label": "名前",
-      "fallback_error": "スキルを作成できませんでした",
-      "name_placeholder": "例: review-helper",
-      "description_label": "説明"
+  "page": {
+    "title": "スキル",
+    "tagline": "このワークスペースのどのエージェントでも使用できる指示です。",
+    "learn_more": "詳しく見る →",
+    "new_skill": "新規スキル",
+    "search_placeholder": "スキルを検索…",
+    "scopes": {
+      "all": {
+        "label": "すべて",
+        "description": "このワークスペースのすべてのスキル"
+      },
+      "used": {
+        "label": "使用中",
+        "description": "1 つ以上のエージェントに割り当てられたスキル"
+      },
+      "unused": {
+        "label": "未使用",
+        "description": "どのエージェントにも割り当てられていないスキル"
+      },
+      "mine": {
+        "label": "自分が作成",
+        "description": "あなたが作成したスキル"
+      }
     },
+    "empty": {
+      "title": "まだスキルがありません",
+      "description": "最初のスキルを作成するか、URL やローカルフォルダからインポートするか、接続済みのランタイムからコピーしてください。ワークスペースのすべてのエージェントが使用できます。"
+    },
+    "no_matches": {
+      "title": "一致なし",
+      "with_query": "「{{query}}」に一致するスキルがありません{{filterSuffix}}。",
+      "with_query_filter_suffix": "（このフィルター内）",
+      "filter_only": "このフィルターに一致するスキルがありません。",
+      "try_different": " 別の検索語を試してください。"
+    },
+    "intro_banner": {
+      "title": "ワークスペースと共有されます。",
+      "body": "誰でもスキルを作成したり、URL やローカルフォルダからインポートしたり、ローカルランタイムからコピーしたりでき、すべてのエージェントが使用できます。",
+      "highlight": "ローカルランタイムのスキルは、ここにコピーするまで非公開のままです。"
+    },
+    "list_error": {
+      "title": "スキルを読み込めませんでした",
+      "fallback": "スキル一覧の取得中に問題が発生しました。",
+      "retry": "再試行"
+    },
+    "supporting_data_warning": "一部のワークスペースデータを読み込めませんでした。作成者の表示、ランタイム名、編集権限が不完全に見える場合があります。"
+  },
+  "table": {
+    "name": "名前",
+    "created_by": "追加者",
+    "used_by": "使用中",
+    "source": "ソース",
+    "updated": "更新日",
+    "created": "作成日",
+    "lock_tooltip": "読み取り専用 — 作成者または管理者のみが編集できます",
+    "unused": "— 未使用",
+    "by_creator": "{{name}}",
+    "source_manual": "手動で作成",
+    "source_runtime_named": "{{name}} から",
+    "source_runtime_provider": "{{provider}} ランタイムから",
+    "source_runtime_unknown": "ランタイムから",
+    "source_clawhub": "ClawHub から",
+    "source_skills_sh": "Skills.sh から",
+    "source_github": "GitHub から"
+  },
+  "actions": {
+    "row_menu": "操作",
+    "add_to_agent": "エージェントに追加",
+    "refresh": "ソースから更新",
+    "my_agents": "自分のエージェント",
+    "other_agents": "その他のエージェント",
+    "no_agents": "利用可能なエージェントがありません",
+    "search_placeholder": "エージェントを検索…",
+    "no_agents_match": "一致するエージェントがありません。",
+    "has_partial": "{{owned}}/{{total}} 追加済み",
+    "added_toast": "{{name}} に追加しました",
+    "add_failed_toast": "スキルの追加に失敗しました",
+    "delete": "削除",
+    "selected": "{{count}} 件選択中",
+    "clear_selection": "選択を解除",
+    "delete_no_permission": "作成者または管理者のみ削除できるスキルが含まれています",
+    "delete_dialog_title_other": "{{count}} 件のスキルを削除しますか？",
+    "delete_dialog_desc_other": "選択した {{count}} 件のスキルを完全に削除し、すべてのエージェントから取り外します。",
+    "deleted_toast_other": "{{count}} 件のスキルを削除しました",
+    "delete_failed_toast": "スキルの削除に失敗しました",
+    "update": "更新",
+    "update_none": "選択内容に更新できるインポート済みスキルがありません",
+    "update_dialog_title": "ソースからスキルを更新しますか？",
+    "update_summary_selected_other": "{{count}} 件をソースから更新します",
+    "update_summary_skipped_other": "{{count}} 件はソースから更新できないためスキップします",
+    "update_confirm": "{{count}} 件を更新",
+    "update_updating": "更新中 {{done}}/{{total}}…",
+    "updated_toast_other": "ソースから {{count}} 件のスキルを更新しました",
+    "update_partial_toast": "{{count}} 件を更新、{{failed}} 件は失敗しました",
+    "cancel": "キャンセル",
+    "add_confirm": "追加（{{num}}）",
+    "adding": "追加中...",
+    "added_multi_toast_other": "{{count}} 件のエージェントに追加しました",
+    "add_dialog_description": "選択したスキルを追加するエージェントを選んでください。"
+  },
+  "toolbar": {
+    "result_count_title": "該当スキル / 全スキル",
+    "filter_label": "フィルター",
+    "filter_active_count_other": "{{count}} 件のフィルター",
+    "clear_filters": "フィルターを解除",
+    "section_usage": "使用状況",
+    "section_labels": "ラベル",
+    "filter_search_placeholder": "フィルター...",
+    "no_labels": "まだラベルがありません",
+    "no_results": "結果なし",
+    "display": "表示",
+    "sort_by": "並び替え",
+    "direction_asc": "昇順",
+    "direction_desc": "降順",
+    "section_columns": "表示する列",
+    "manage_labels": "ラベルを管理...",
+    "manage_labels_title": "スキルのラベル"
+  },
+  "detail": {
+    "all_skills": "すべてのスキル",
+    "read_only": "読み取り専用",
+    "delete_aria": "スキルを削除",
+    "delete_tooltip": "スキルを削除",
+    "supporting_data_warning": "一部のワークスペースデータを読み込めませんでした。次回の更新まで、作成者の表示、ランタイム名、編集権限が不完全に見える場合があります。",
+    "delete_file": "ファイルを削除",
+    "name_placeholder": "skill-name",
+    "description_placeholder": "エージェントがこのスキルをいつ使うべきかを 1 文で説明してください…",
+    "subline": {
+      "origin_runtime_named": "ローカルランタイム · {{name}}",
+      "origin_runtime_provider": "ローカルランタイム · {{provider}}",
+      "origin_runtime_unknown": "ローカルランタイム",
+      "origin_clawhub": "インポート済み · ClawHub",
+      "origin_skills_sh": "インポート済み · Skills.sh",
+      "origin_github": "インポート済み · GitHub",
+      "origin_workspace": "手動で作成"
+    },
+    "conflict_banner": {
+      "title": "他のユーザーがこのスキルを更新しました",
+      "body": "あなたの編集内容は保持されています。破棄すると相手の変更を取り込み、保存すると上書きします。"
+    },
+    "save_bar": {
+      "changed_summary": "変更あり:{{parts}}",
+      "changed_files_other": "ファイル{{count}}件",
+      "discard": "破棄",
+      "save": "変更を保存",
+      "saving": "保存中…"
+    },
+    "not_found": {
+      "title": "スキルが見つかりません",
+      "fallback": "このスキルは削除されたか、アクセス権を失った可能性があります。",
+      "back": "スキルに戻る"
+    },
+    "toast_saved": "スキルを保存しました",
+    "toast_save_failed": "スキルを保存できませんでした",
+    "toast_deleted": "スキルを削除しました",
+    "toast_delete_failed": "スキルを削除できませんでした",
+    "refresh": {
+      "button": "更新",
+      "tooltip": "ソースからスキルを再ダウンロードします",
+      "source_github": "GitHub",
+      "source_skills_sh": "Skills.sh",
+      "source_clawhub": "ClawHub",
+      "toast_success": "{{source}} からスキルを更新しました",
+      "toast_failed": "スキルの更新に失敗しました",
+      "dialog": {
+        "title": "ソースから更新しますか？",
+        "description": "「{{name}}」を {{source}} から再ダウンロードし、名前・説明・SKILL.md・ファイルを最新バージョンで置き換えます。",
+        "warning": "このスキルへのローカル編集は上書きされます。エージェントへの割り当て、ラベル、作成者は保持されます。",
+        "cancel": "キャンセル",
+        "confirm": "更新",
+        "refreshing": "更新中…"
+      }
+    },
+    "delete_dialog": {
+      "title": "スキルを削除しますか？",
+      "description_with_agents_other": "「{{name}}」を完全に削除し、現在使用中の {{count}} 個のエージェントから削除します。",
+      "description_no_agents": "「{{name}}」を完全に削除し、すべてのエージェントから削除します。",
+      "warning": "この操作は元に戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "完全に削除",
+      "deleting": "削除中…"
+    },
+    "add_file": {
+      "placeholder": "templates/review.md",
+      "add": "追加",
+      "cancel": "キャンセル",
+      "errors": {
+        "empty": "パスは空にできません。",
+        "absolute": "絶対パスは使用できません。",
+        "double_dot": "パスに「..」を含めることはできません。",
+        "reserved": "SKILL.md はメインファイル用に予約されています。",
+        "exists": "このパスにはすでにファイルが存在します。",
+        "is_directory": "同名のフォルダーが既に存在します",
+        "under_file": "その場所はすでにファイルが使用しています"
+      }
+    },
+    "header": {
+      "files_other": "{{count}} 個のファイル",
+      "used_by_other": "{{count}} 個のエージェントが使用中",
+      "updated": "{{when}}に更新",
+      "updated_by": "{{name}} が{{when}}に更新"
+    },
+    "tabs": {
+      "aria": "スキルのセクション",
+      "overview": "概要",
+      "files_other": "ファイル {{count}}"
+    },
+    "overview": {
+      "properties": "プロパティ",
+      "properties_hint": "これらの項目は SKILL.md のフロントマターと同期します。",
+      "name": "名前",
+      "description": "説明",
+      "description_hint": "{{count}} 文字。エージェントはこの説明を読んでスキルを読み込むか判断します。",
+      "labels": "ラベル",
+      "used_by_other": "{{count}} 個のエージェントが使用中",
+      "used_by_empty": "まだどのエージェントにも割り当てられていません。エージェントのスキルタブを開いて割り当ててください。",
+      "permissions_owner": "このスキルを編集・削除できます。変更は次回のエージェント実行から反映されます。",
+      "permissions_locked_creator": "作成者（{{name}}）またはワークスペース管理者のみがこのスキルを編集できます。",
+      "permissions_locked": "作成者またはワークスペース管理者のみがこのスキルを編集できます。",
+      "properties_help": "skill のプロパティについて",
+      "character_count": "{{count}} 文字"
+    },
+    "files": {
+      "list_aria": "スキルのファイル",
+      "main": "メインファイル",
+      "supporting_other": "補助ファイル {{count}}",
+      "supporting_empty": "補助ファイルはありません。",
+      "add_file": "新規ファイル",
+      "mode_aria": "ファイル表示",
+      "mode_preview": "プレビュー",
+      "mode_edit": "編集",
+      "mode_raw": "プレーンテキスト"
+    }
+  },
+  "create": {
+    "back": "戻る",
+    "back_aria": "方式の選択に戻る",
+    "close": "閉じる",
     "close_aria": "閉じる",
+    "method": {
+      "chooser": {
+        "title": "新規スキル",
+        "desc": "スキルを追加する方法を選択してください。"
+      },
+      "manual": {
+        "title": "手動で作成",
+        "desc": "空の SKILL.md から作成します。"
+      },
+      "local": {
+        "title": "ローカルからインポート",
+        "desc": "SKILL.md を含むフォルダ、または .skill / .zip を選択します。"
+      },
+      "url": {
+        "title": "URL からインポート",
+        "desc": "公開済みのスキルを URL で取得します。"
+      },
+      "runtime": {
+        "title": "ランタイムからコピー",
+        "desc": "ローカルランタイムにあるスキルをワークスペースに昇格します。"
+      },
+      "bulk": {
+        "desc": "GitHub リポジトリまたはローカルフォルダから複数のスキルを一括インポートします。",
+        "title": "セットをインポート"
+      }
+    },
+    "manual": {
+      "name_label": "名前",
+      "name_placeholder": "例: review-helper",
+      "name_hint": "ワークスペース内で一意である必要があります。",
+      "description_label": "説明",
+      "description_placeholder": "このスキルをエージェントにいつ割り当てるべきかを 1 文で書いてください。",
+      "name_conflict_hint": " 別の名前で再度送信してください。",
+      "fallback_error": "スキルを作成できませんでした",
+      "cancel": "キャンセル",
+      "submit": "スキルを作成",
+      "submitting": "作成中…",
+      "toast_created": "スキルを作成しました"
+    },
     "local": {
       "choose_folder": "フォルダを選択",
       "choose_archive": ".skill / .zip を選択",
@@ -31,375 +294,120 @@
       "importing": "インポート中…",
       "toast_imported": "スキルをインポートしました"
     },
-    "back_aria": "方式の選択に戻る",
-    "method_card": {
-      "manual_title": "手動で作成",
-      "manual_desc": "空の SKILL.md から始めて、独自の指示を記述します。",
-      "url_title": "URL からインポート",
-      "url_desc": "ClawHub または Skills.sh の公開スキルを取得します。",
-      "runtime_title": "ランタイムからコピー",
-      "runtime_desc": "ローカルランタイムにすでにインストールされているスキルを昇格します。",
-      "bulk_title": "セットをインポート",
-      "bulk_desc": "複数のスキルを一括で — GitHub リポジトリまたはローカルフォルダから。"
-    },
-    "close": "閉じる",
-    "back": "戻る",
     "url": {
-      "importing_skills_sh": "Skills.sh からインポート中…",
-      "importing_clawhub": "ClawHub からインポート中…",
       "url_label": "スキル URL",
-      "importing": "インポート中…",
       "supported_sources": "対応ソース",
-      "toast_imported": "スキルをインポートしました",
-      "name_conflict_hint": " インポートしたスキル名はすでに存在します。再試行する前に既存のものを削除してください。",
+      "import": "インポート",
+      "importing": "インポート中…",
+      "importing_clawhub": "ClawHub からインポート中…",
+      "importing_skills_sh": "Skills.sh からインポート中…",
       "importing_github": "GitHub からインポート中…",
-      "cancel": "キャンセル",
+      "name_conflict_hint": " インポートしたスキル名はすでに存在します。再試行する前に既存のものを削除してください。",
       "fallback_error": "インポートに失敗しました",
-      "import": "インポート"
+      "cancel": "キャンセル",
+      "toast_imported": "スキルをインポートしました"
     },
-    "method": {
-      "chooser": {
-        "title": "新規スキル",
-        "desc": "スキルを追加する方法を選択してください。"
-      },
-      "manual": {
-        "title": "手動で作成",
-        "desc": "空の SKILL.md から作成します。"
-      },
-      "local": {
-        "title": "ローカルからインポート",
-        "desc": "SKILL.md を含むフォルダ、または .skill / .zip を選択します。"
-      },
-      "bulk": {
-        "title": "セットをインポート",
-        "desc": "GitHub リポジトリまたはローカルフォルダから複数のスキルを一括インポートします。"
-      },
-      "url": {
-        "title": "URL からインポート",
-        "desc": "公開済みのスキルを URL で取得します。"
-      },
-      "runtime": {
-        "title": "ランタイムからコピー",
-        "desc": "ローカルランタイムにあるスキルをワークスペースに昇格します。"
-      }
+    "method_card": {
+      "bulk_desc": "複数のスキルを一括で — GitHub リポジトリまたはローカルフォルダから。",
+      "bulk_title": "セットをインポート",
+      "manual_desc": "空の SKILL.md から始めて、独自の指示を記述します。",
+      "manual_title": "手動で作成",
+      "runtime_desc": "ローカルランタイムにすでにインストールされているスキルを昇格します。",
+      "runtime_title": "ランタイムからコピー",
+      "url_desc": "ClawHub または Skills.sh の公開スキルを取得します。",
+      "url_title": "URL からインポート"
     }
   },
-  "toolbar": {
-    "clear_filters": "フィルターを解除",
-    "section_usage": "使用状況",
-    "direction_desc": "降順",
-    "filter_label": "フィルター",
-    "sort_by": "並び替え",
-    "display": "表示",
-    "direction_asc": "昇順",
-    "section_columns": "表示する列",
-    "filter_active_count_other": "{{count}} 件のフィルター",
-    "result_count_title": "該当スキル / 全スキル"
+  "runtime_import": {
+    "runtime_label": "ランタイム",
+    "runtime_placeholder": "ローカルランタイムを選択",
+    "no_local_runtimes_title": "利用可能なローカルランタイムがありません",
+    "no_local_runtimes_hint": "ローカルスキルを参照してインポートするには、ローカルランタイムを接続してください。",
+    "choose_runtime": "続行するにはランタイムを選択してください",
+    "must_be_online": "ローカルスキルを参照するには、ランタイムがオンラインである必要があります。",
+    "load_failed": "ランタイムのローカルスキルを読み込めませんでした",
+    "not_supported": "このランタイムプロバイダーは、まだローカルスキル一覧の取得に対応していません。",
+    "no_skills_title": "ローカルスキルが見つかりません",
+    "search_placeholder": "ローカルスキルを検索",
+    "no_search_results_hint": "\"{{query}}\" に一致するローカルスキルはありません。",
+    "ignored_files_hint": "シンボリックリンク、読み取れないファイル、サイズが大きすぎるファイル、非常に大きなバンドルはインポート時に無視されます。",
+    "ready": "インポートの準備完了",
+    "into_workspace": "をこのワークスペースに。",
+    "select_skill": "続行するにはスキルを選択してください。",
+    "import_button": "ワークスペースにインポート",
+    "importing": "インポート中…",
+    "skill_files_other": "{{count}} 個のファイル",
+    "skill_name_label": "ワークスペースのスキル名",
+    "skill_description_label": "説明",
+    "skill_description_placeholder": "任意 — エージェントがこのスキルをいつ使うべきかを説明してください。",
+    "toast_imported": "スキルをインポートしました",
+    "toast_import_failed": "スキルをインポートできませんでした",
+    "select_all": "すべて選択（{{count}}）",
+    "bulk_ready": "{{count}} 個のスキルを選択中",
+    "bulk_import_button": "{{count}} 個のスキルをインポート",
+    "bulk_progress": "インポート中 {{completed}} / {{total}}…",
+    "bulk_cancel_button": "キャンセル",
+    "bulk_complete_hint": "インポートが完了しました。",
+    "bulk_cancelled_hint": "インポートをキャンセルしました。",
+    "bulk_done_button": "完了",
+    "bulk_summary_created": "作成済み",
+    "bulk_summary_updated": "更新済み",
+    "bulk_summary_conflicts": "競合",
+    "bulk_summary_skipped": "スキップ",
+    "bulk_summary_failed": "失敗",
+    "conflict_single_title": "同じ名前のスキルがすでに存在します",
+    "conflict_bulk_title": "{{count}} 個のスキルに判断が必要です",
+    "conflict_hint": "既存のワークスペーススキルを上書きするか、新しい名前でインポートするか、スキップするかを選択してください。",
+    "conflict_locked_creator": "このスキルは {{creator}} が作成しました。ローカルインポートで上書きできるのは作成者だけです。変更が必要な場合は、スキル詳細ページで編集してください。",
+    "conflict_locked": "ローカルインポートでこのスキルを上書きできるのは作成者だけです。変更が必要な場合は、スキル詳細ページで編集してください。",
+    "conflict_overwrite": "上書き",
+    "conflict_rename": "名前を変更",
+    "conflict_skip": "スキップ",
+    "conflict_cancel": "キャンセル",
+    "conflict_overwrite_all": "すべて上書き",
+    "conflict_skip_all": "すべてスキップ",
+    "conflict_rename_label": "新しいスキル名",
+    "conflict_footer": "{{count}} 件の競合判断が残っています。",
+    "conflict_apply_button": "決定を適用",
+    "conflict_missing_resolution": "この競合の処理方法を選択してください。",
+    "conflict_name_still_exists": "その名前はすでに存在します。別の名前を選択するか、スキップしてください。",
+    "bulk_summary_imported": "インポート済み",
+    "no_search_results_title": "一致するローカルスキルはありません",
+    "no_skills_hint": "このランタイムには、まだ検出可能なローカルスキルがありません。"
   },
   "file_tree": {
     "no_files": "ファイルなし",
     "actions": {
+      "label": "{{path}} の操作",
       "edit": "編集",
-      "delete": "削除",
       "rename": "名前を変更",
-      "label": "{{path}} の操作"
+      "delete": "削除"
     }
-  },
-  "runtime_import": {
-    "bulk_progress": "インポート中 {{completed}} / {{total}}…",
-    "bulk_done_button": "完了",
-    "conflict_overwrite_all": "すべて上書き",
-    "bulk_ready": "{{count}} 個のスキルを選択中",
-    "conflict_bulk_title": "{{count}} 個のスキルに判断が必要です",
-    "bulk_import_button": "{{count}} 個のスキルをインポート",
-    "ignored_files_hint": "シンボリックリンク、読み取れないファイル、サイズが大きすぎるファイル、非常に大きなバンドルはインポート時に無視されます。",
-    "bulk_cancelled_hint": "インポートをキャンセルしました。",
-    "ready": "インポートの準備完了",
-    "skill_name_label": "ワークスペースのスキル名",
-    "bulk_summary_created": "作成済み",
-    "no_local_runtimes_hint": "ローカルスキルを参照してインポートするには、ローカルランタイムを接続してください。",
-    "search_placeholder": "ローカルスキルを検索",
-    "bulk_summary_updated": "更新済み",
-    "bulk_summary_failed": "失敗",
-    "bulk_summary_skipped": "スキップ",
-    "bulk_summary_conflicts": "競合",
-    "conflict_name_still_exists": "その名前はすでに存在します。別の名前を選択するか、スキップしてください。",
-    "toast_import_failed": "スキルをインポートできませんでした",
-    "conflict_locked": "ローカルインポートでこのスキルを上書きできるのは作成者だけです。変更が必要な場合は、スキル詳細ページで編集してください。",
-    "conflict_overwrite": "上書き",
-    "conflict_cancel": "キャンセル",
-    "no_search_results_hint": "\"{{query}}\" に一致するローカルスキルはありません。",
-    "import_button": "ワークスペースにインポート",
-    "conflict_skip_all": "すべてスキップ",
-    "select_all": "すべて選択（{{count}}）",
-    "conflict_skip": "スキップ",
-    "no_search_results_title": "一致するローカルスキルはありません",
-    "conflict_footer": "{{count}} 件の競合判断が残っています。",
-    "choose_runtime": "続行するにはランタイムを選択してください",
-    "no_local_runtimes_title": "利用可能なローカルランタイムがありません",
-    "importing": "インポート中…",
-    "bulk_cancel_button": "キャンセル",
-    "no_skills_hint": "このランタイムには、まだ検出可能なローカルスキルがありません。",
-    "conflict_locked_creator": "このスキルは {{creator}} が作成しました。ローカルインポートで上書きできるのは作成者だけです。変更が必要な場合は、スキル詳細ページで編集してください。",
-    "conflict_missing_resolution": "この競合の処理方法を選択してください。",
-    "bulk_summary_imported": "インポート済み",
-    "skill_files_other": "{{count}} 個のファイル",
-    "select_skill": "続行するにはスキルを選択してください。",
-    "conflict_single_title": "同じ名前のスキルがすでに存在します",
-    "must_be_online": "ローカルスキルを参照するには、ランタイムがオンラインである必要があります。",
-    "conflict_rename_label": "新しいスキル名",
-    "skill_description_placeholder": "任意 — エージェントがこのスキルをいつ使うべきかを説明してください。",
-    "into_workspace": "をこのワークスペースに。",
-    "no_skills_title": "ローカルスキルが見つかりません",
-    "bulk_complete_hint": "インポートが完了しました。",
-    "conflict_apply_button": "決定を適用",
-    "load_failed": "ランタイムのローカルスキルを読み込めませんでした",
-    "conflict_rename": "名前を変更",
-    "not_supported": "このランタイムプロバイダーは、まだローカルスキル一覧の取得に対応していません。",
-    "toast_imported": "スキルをインポートしました",
-    "runtime_label": "ランタイム",
-    "skill_description_label": "説明",
-    "runtime_placeholder": "ローカルランタイムを選択",
-    "conflict_hint": "既存のワークスペーススキルを上書きするか、新しい名前でインポートするか、スキップするかを選択してください。"
-  },
-  "page": {
-    "tagline": "このワークスペースのどのエージェントでも使用できる指示です。",
-    "new_skill": "新規スキル",
-    "supporting_data_warning": "一部のワークスペースデータを読み込めませんでした。作成者の表示、ランタイム名、編集権限が不完全に見える場合があります。",
-    "list_error": {
-      "title": "スキルを読み込めませんでした",
-      "retry": "再試行",
-      "fallback": "スキル一覧の取得中に問題が発生しました。"
-    },
-    "scopes": {
-      "used": {
-        "description": "1 つ以上のエージェントに割り当てられたスキル",
-        "label": "使用中"
-      },
-      "unused": {
-        "description": "どのエージェントにも割り当てられていないスキル",
-        "label": "未使用"
-      },
-      "all": {
-        "description": "このワークスペースのすべてのスキル",
-        "label": "すべて"
-      },
-      "mine": {
-        "description": "あなたが作成したスキル",
-        "label": "自分が作成"
-      }
-    },
-    "title": "スキル",
-    "intro_banner": {
-      "title": "ワークスペースと共有されます。",
-      "highlight": "ローカルランタイムのスキルは、ここにコピーするまで非公開のままです。",
-      "body": "誰でもスキルを作成したり、URL やローカルフォルダからインポートしたり、ローカルランタイムからコピーしたりでき、すべてのエージェントが使用できます。"
-    },
-    "empty": {
-      "description": "最初のスキルを作成するか、URL やローカルフォルダからインポートするか、接続済みのランタイムからコピーしてください。ワークスペースのすべてのエージェントが使用できます。",
-      "title": "まだスキルがありません"
-    },
-    "no_matches": {
-      "title": "一致なし",
-      "try_different": " 別の検索語を試してください。",
-      "with_query": "「{{query}}」に一致するスキルがありません{{filterSuffix}}。",
-      "with_query_filter_suffix": "（このフィルター内）",
-      "filter_only": "このフィルターに一致するスキルがありません。"
-    },
-    "learn_more": "詳しく見る →",
-    "search_placeholder": "スキルを検索…"
-  },
-  "bulk_import": {
-    "source_label": "ソース",
-    "source_github": "GitHub リポジトリ",
-    "source_folder": "ローカルフォルダ",
-    "github_url_label": "リポジトリまたはフォルダの URL",
-    "github_url_placeholder": "github.com/owner/repo または .../tree/main/skills",
-    "discover": "検出",
-    "discovering": "検出中…",
-    "folder_pick": "フォルダを選択",
-    "folder_drop_hint": "またはここにフォルダをドロップ",
-    "folder_reading": "フォルダを読み込み中…",
-    "candidates_title": "見つかったスキル",
-    "already_exists": "すでに存在します",
-    "empty_no_skills": "ここには SKILL.md が見つかりませんでした。",
-    "empty_hint": "各スキルは SKILL.md を含むフォルダです。",
-    "capped_notice": "最初の {{count}} 件のスキルを表示しています。ほかにも見つかりました。",
-    "folder_too_large": "フォルダが大きすぎてブラウザで読み込めません。",
-    "discover_failed": "このソースを読み込めませんでした。",
-    "import_selected": "選択した {{count}} 件をインポート"
-  },
-  "actions": {
-    "no_agents_match": "一致するエージェントがありません。",
-    "delete": "削除",
-    "add_dialog_description": "選択したスキルを追加するエージェントを選んでください。",
-    "added_toast": "{{name}} に追加しました",
-    "updated_toast_other": "ソースから {{count}} 件のスキルを更新しました",
-    "my_agents": "自分のエージェント",
-    "delete_dialog_desc_other": "選択した {{count}} 件のスキルを完全に削除し、すべてのエージェントから取り外します。",
-    "deleted_toast_other": "{{count}} 件のスキルを削除しました",
-    "update_summary_skipped_other": "{{count}} 件はソースから更新できないためスキップします",
-    "added_multi_toast_other": "{{count}} 件のエージェントに追加しました",
-    "refresh": "ソースから更新",
-    "search_placeholder": "エージェントを検索…",
-    "row_menu": "操作",
-    "update_none": "選択内容に更新できるインポート済みスキルがありません",
-    "update_partial_toast": "{{count}} 件を更新、{{failed}} 件は失敗しました",
-    "selected": "{{count}} 件選択中",
-    "no_agents": "利用可能なエージェントがありません",
-    "clear_selection": "選択を解除",
-    "update_summary_selected_other": "{{count}} 件をソースから更新します",
-    "update_updating": "更新中 {{done}}/{{total}}…",
-    "delete_failed_toast": "スキルの削除に失敗しました",
-    "add_failed_toast": "スキルの追加に失敗しました",
-    "adding": "追加中...",
-    "add_to_agent": "エージェントに追加",
-    "update": "更新",
-    "cancel": "キャンセル",
-    "has_partial": "{{owned}}/{{total}} 追加済み",
-    "update_dialog_title": "ソースからスキルを更新しますか？",
-    "delete_dialog_title_other": "{{count}} 件のスキルを削除しますか？",
-    "add_confirm": "追加（{{num}}）",
-    "delete_no_permission": "作成者または管理者のみ削除できるスキルが含まれています",
-    "other_agents": "その他のエージェント",
-    "update_confirm": "{{count}} 件を更新"
   },
   "file_viewer": {
-    "raw_placeholder": "ファイルの内容...",
-    "raw_aria": "{{path}} のプレーンテキスト",
+    "no_content": "*まだ内容がありません*",
     "markdown_placeholder": "Markdown の内容を記述...",
-    "no_content": "*まだ内容がありません*"
+    "raw_placeholder": "ファイルの内容...",
+    "raw_aria": "{{path}} のプレーンテキスト"
   },
-  "table": {
-    "source_skills_sh": "Skills.sh から",
-    "source_manual": "手動で作成",
-    "source_runtime_named": "{{name}} から",
-    "created": "作成日",
-    "source_runtime_unknown": "ランタイムから",
-    "lock_tooltip": "読み取り専用 — 作成者または管理者のみが編集できます",
-    "unused": "— 未使用",
-    "source_runtime_provider": "{{provider}} ランタイムから",
-    "used_by": "使用中",
-    "updated": "更新日",
-    "name": "名前",
-    "source": "ソース",
-    "source_github": "GitHub から",
-    "source_clawhub": "ClawHub から",
-    "created_by": "追加者",
-    "by_creator": "{{name}}"
-  },
-  "detail": {
-    "tabs": {
-      "aria": "スキルのセクション",
-      "files_other": "ファイル {{count}}",
-      "overview": "概要"
-    },
-    "toast_delete_failed": "スキルを削除できませんでした",
-    "not_found": {
-      "back": "スキルに戻る",
-      "title": "スキルが見つかりません",
-      "fallback": "このスキルは削除されたか、アクセス権を失った可能性があります。"
-    },
-    "delete_dialog": {
-      "warning": "この操作は元に戻せません。",
-      "title": "スキルを削除しますか？",
-      "description_no_agents": "「{{name}}」を完全に削除し、すべてのエージェントから削除します。",
-      "cancel": "キャンセル",
-      "description_with_agents_other": "「{{name}}」を完全に削除し、現在使用中の {{count}} 個のエージェントから削除します。",
-      "confirm": "完全に削除",
-      "deleting": "削除中…"
-    },
-    "toast_saved": "スキルを保存しました",
-    "delete_tooltip": "スキルを削除",
-    "read_only": "読み取り専用",
-    "overview": {
-      "properties": "プロパティ",
-      "description_hint": "{{count}} 文字。エージェントはこの説明を読んでスキルを読み込むか判断します。",
-      "used_by_other": "{{count}} 個のエージェントが使用中",
-      "labels": "ラベル",
-      "permissions_locked_creator": "作成者（{{name}}）またはワークスペース管理者のみがこのスキルを編集できます。",
-      "properties_hint": "これらの項目は SKILL.md のフロントマターと同期します。",
-      "permissions_locked": "作成者またはワークスペース管理者のみがこのスキルを編集できます。",
-      "description": "説明",
-      "used_by_empty": "まだどのエージェントにも割り当てられていません。エージェントのスキルタブを開いて割り当ててください。",
-      "name": "名前",
-      "permissions_owner": "このスキルを編集・削除できます。変更は次回のエージェント実行から反映されます。"
-    },
-    "all_skills": "すべてのスキル",
-    "refresh": {
-      "button": "更新",
-      "source_skills_sh": "Skills.sh",
-      "toast_success": "{{source}} からスキルを更新しました",
-      "dialog": {
-        "warning": "このスキルへのローカル編集は上書きされます。エージェントへの割り当て、ラベル、作成者は保持されます。",
-        "title": "ソースから更新しますか？",
-        "description": "「{{name}}」を {{source}} から再ダウンロードし、名前・説明・SKILL.md・ファイルを最新バージョンで置き換えます。",
-        "refreshing": "更新中…",
-        "cancel": "キャンセル",
-        "confirm": "更新"
-      },
-      "tooltip": "ソースからスキルを再ダウンロードします",
-      "source_github": "GitHub",
-      "source_clawhub": "ClawHub",
-      "toast_failed": "スキルの更新に失敗しました"
-    },
-    "toast_save_failed": "スキルを保存できませんでした",
-    "add_file": {
-      "placeholder": "templates/review.md",
-      "add": "追加",
-      "cancel": "キャンセル",
-      "errors": {
-        "double_dot": "パスに「..」を含めることはできません。",
-        "empty": "パスは空にできません。",
-        "is_directory": "同名のフォルダーが既に存在します",
-        "reserved": "SKILL.md はメインファイル用に予約されています。",
-        "exists": "このパスにはすでにファイルが存在します。",
-        "under_file": "その場所はすでにファイルが使用しています",
-        "absolute": "絶対パスは使用できません。"
-      }
-    },
-    "toast_deleted": "スキルを削除しました",
-    "name_placeholder": "skill-name",
-    "supporting_data_warning": "一部のワークスペースデータを読み込めませんでした。次回の更新まで、作成者の表示、ランタイム名、編集権限が不完全に見える場合があります。",
-    "description_placeholder": "エージェントがこのスキルをいつ使うべきかを 1 文で説明してください…",
-    "delete_file": "ファイルを削除",
-    "header": {
-      "used_by_other": "{{count}} 個のエージェントが使用中",
-      "files_other": "{{count}} 個のファイル",
-      "updated": "{{when}}に更新",
-      "updated_by": "{{name}} が{{when}}に更新"
-    },
-    "subline": {
-      "origin_runtime_named": "ローカルランタイム · {{name}}",
-      "origin_runtime_provider": "ローカルランタイム · {{provider}}",
-      "origin_clawhub": "インポート済み · ClawHub",
-      "origin_github": "インポート済み · GitHub",
-      "origin_skills_sh": "インポート済み · Skills.sh",
-      "origin_workspace": "手動で作成",
-      "origin_runtime_unknown": "ローカルランタイム"
-    },
-    "save_bar": {
-      "changed_files_other": "ファイル{{count}}件",
-      "saving": "保存中…",
-      "discard": "破棄",
-      "changed_summary": "変更あり:{{parts}}",
-      "save": "変更を保存"
-    },
-    "delete_aria": "スキルを削除",
-    "files": {
-      "mode_preview": "プレビュー",
-      "supporting_other": "補助ファイル {{count}}",
-      "main": "メインファイル",
-      "mode_aria": "ファイル表示",
-      "supporting_empty": "補助ファイルはありません。",
-      "mode_raw": "プレーンテキスト",
-      "list_aria": "スキルのファイル",
-      "add_file": "新規ファイル",
-      "mode_edit": "編集"
-    },
-    "conflict_banner": {
-      "body": "あなたの編集内容は保持されています。破棄すると相手の変更を取り込み、保存すると上書きします。",
-      "title": "他のユーザーがこのスキルを更新しました"
-    }
+  "bulk_import": {
+    "already_exists": "すでに存在します",
+    "candidates_title": "見つかったスキル",
+    "capped_notice": "最初の {{count}} 件のスキルを表示しています。ほかにも見つかりました。",
+    "discover": "検出",
+    "discover_failed": "このソースを読み込めませんでした。",
+    "discovering": "検出中…",
+    "empty_hint": "各スキルは SKILL.md を含むフォルダです。",
+    "empty_no_skills": "ここには SKILL.md が見つかりませんでした。",
+    "folder_drop_hint": "またはここにフォルダをドロップ",
+    "folder_pick": "フォルダを選択",
+    "folder_reading": "フォルダを読み込み中…",
+    "folder_too_large": "フォルダが大きすぎてブラウザで読み込めません。",
+    "github_url_label": "リポジトリまたはフォルダの URL",
+    "github_url_placeholder": "github.com/owner/repo または .../tree/main/skills",
+    "import_selected": "選択した {{count}} 件をインポート",
+    "source_folder": "ローカルフォルダ",
+    "source_github": "GitHub リポジトリ",
+    "source_label": "ソース"
   }
 }

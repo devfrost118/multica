@@ -32,13 +32,13 @@
     "success": "已归档小队"
   },
   "name_editor": {
-    "title": "Rename squad",
-    "placeholder": "Squad name",
-    "required": "Name is required",
+    "title": "重命名小队",
+    "placeholder": "小队名称",
+    "required": "名称不能为空",
     "cancel": "取消",
-    "save": "Save",
-    "saved": "Saved",
-    "save_failed": "Failed to save"
+    "save": "保存",
+    "saved": "已保存",
+    "save_failed": "保存失败"
   },
   "add_member_dialog": {
     "title": "添加成员",
@@ -47,12 +47,13 @@
     "label_role": "角色",
     "label_optional": "（可选）",
     "cancel": "取消",
-    "select_target": "Select a member or agent",
-    "search_placeholder": "Search members or agents...",
-    "members_section": "Members",
-    "agents_section": "Agents",
-    "role_placeholder": "e.g. Reviewer, Frontend Lead",
-    "add": "Add"
+    "select_target": "选择成员或智能体",
+    "search_placeholder": "搜索成员或智能体...",
+    "members_section": "成员",
+    "agents_section": "智能体",
+    "role_placeholder": "例如：审查者、前端负责人",
+    "add": "添加",
+    "placeholder_role_inline": "添加角色…"
   },
   "role_editor": {
     "empty": "添加角色…",
@@ -62,8 +63,8 @@
     "title": "编辑描述",
     "placeholder_empty": "添加描述",
     "cancel": "取消",
-    "responsibility_placeholder": "What is this squad responsible for?",
-    "save": "Save"
+    "responsibility_placeholder": "这个小队负责什么？",
+    "save": "保存"
   },
   "discard_changes_dialog": {
     "title": "放弃未保存的修改？",
@@ -124,7 +125,7 @@
     "description": "小队指引会在 Leader 智能体处理分配给该小队的任务时注入到它的 prompt 中。可用来给 Leader 提供贯穿全队的指导、协作规范，或每次 task 都应遵循的上下文。",
     "unsaved_changes": "有未保存的修改",
     "save_button": "保存",
-    "placeholder": "e.g. Always start by writing a failing test. Prefer small, atomic commits."
+    "placeholder": "例如：始终先编写失败测试。提交应保持小而独立。"
   },
   "scope": {
     "mine": "我的",
